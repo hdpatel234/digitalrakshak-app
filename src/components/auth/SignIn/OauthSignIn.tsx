@@ -2,7 +2,7 @@
 
 import Button from '@/components/ui/Button'
 
-type OauthSignInType = 'google' | 'github'
+type OauthSignInType = 'google'
 
 export type OnOauthSignInPayload = {
     type: OauthSignInType
@@ -21,10 +21,6 @@ const OauthSignIn = ({ onOauthSignIn, setMessage }: OauthSignInProps) => {
         onOauthSignIn?.({ type: 'google', setMessage })
     }
 
-    const handleGithubSignIn = async () => {
-        onOauthSignIn?.({ type: 'github', setMessage })
-    }
-
     return (
         <div className="flex items-center gap-2">
             <Button
@@ -39,20 +35,6 @@ const OauthSignIn = ({ onOauthSignIn, setMessage }: OauthSignInProps) => {
                         alt="Google sign in"
                     />
                     <span>Google</span>
-                </div>
-            </Button>
-            <Button
-                className="flex-1"
-                type="button"
-                onClick={handleGithubSignIn}
-            >
-                <div className="flex items-center justify-center gap-2">
-                    <img
-                        className="h-[25px] w-[25px]"
-                        src="/img/others/github.png"
-                        alt="Google sign in"
-                    />
-                    <span>Github</span>
                 </div>
             </Button>
         </div>
