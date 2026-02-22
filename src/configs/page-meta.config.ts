@@ -1,9 +1,9 @@
 import { Metadata } from 'next'
 
 const pageMeta: Metadata = {
-    title: 'Ecme - The Ultimate Next & TypeScript Web Template',
+    title: 'Digital Rakshak - The ultimate security solution for your digital identity',
     description:
-        'Admin Template and Starter Kit with React, Tailwind Components and Next.js',
+        'Digital Rakshak is a comprehensive security solution designed to protect your digital identity and online presence. With advanced features and cutting-edge technology, Digital Rakshak offers robust protection against cyber threats, ensuring your personal information and online activities remain secure.',
     icons: {
         icon: '/favicon.ico',
     },
