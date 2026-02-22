@@ -76,18 +76,6 @@ const SignIn = ({
                     onOauthSignIn={onOauthSignIn}
                 />
             </div>
-            <div>
-                <div className="mt-6 text-center">
-                    <span>{`Don't have an account yet?`} </span>
-                    <ActionLink
-                        href={signUpUrl}
-                        className="heading-text font-bold"
-                        themeColor={false}
-                    >
-                        Sign up
-                    </ActionLink>
-                </div>
-            </div>
         </>
     )
 }
