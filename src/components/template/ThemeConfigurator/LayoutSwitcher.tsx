@@ -7,14 +7,12 @@ import {
     LAYOUT_TOP_BAR_CLASSIC,
     LAYOUT_FRAMELESS_SIDE,
     LAYOUT_CONTENT_OVERLAY,
-    LAYOUT_BLANK,
 } from '@/constants/theme.constant'
 import CollapsibleSideSvg from '@/assets/svg/CollapsibleSideSvg'
 import StackedSideSvg from '@/assets/svg/StackedSideSvg'
 import TopBarClassicSvg from '@/assets/svg/TopBarClassicSvg'
 import FrameLessSideSvg from '@/assets/svg/FrameLessSideSvg'
 import ContentOverlaySvg from '@/assets/svg/ContentOverlaySvg'
-import BlankSvg from '@/assets/svg/BlankSvg'
 import type { LayoutType } from '@/@types/theme'
 
 const layouts = [

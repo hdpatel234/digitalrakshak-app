@@ -18,7 +18,6 @@ type SignInProps = {
 }
 
 const SignIn = ({
-    signUpUrl = '/sign-up',
     forgetPasswordUrl = '/forgot-password',
     onSignIn,
     onOauthSignIn,

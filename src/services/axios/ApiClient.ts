@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError, Method } from 'axios';
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   status: boolean;
   success?: boolean;
   message: string;
@@ -9,12 +9,8 @@ export interface ApiResponse<T = any> {
   status_code?: number;
 }
 
-export interface ApiErrorResponse {
-  status: boolean;
-  message: string;
-  errors?: Record<string, string[]> | null;
+export interface ApiErrorResponse<T = unknown> extends ApiResponse<T> {
   status_code: number;
-  data?: any;
 }
 
 class ApiClient {
@@ -74,35 +70,42 @@ class ApiClient {
    * Format successful response
    */
   private formatSuccessResponse<T>(response: AxiosResponse): ApiResponse<T> {
-    const responseData = response.data || {};
+    const responseData = (response.data || {}) as Partial<ApiResponse<T>> & Record<string, unknown>;
 
-    const isSuccess =
-      typeof responseData.status === 'boolean'
-        ? responseData.status
-        : typeof responseData.success === 'boolean'
-          ? responseData.success
-          : true;
+    if (
+      typeof responseData.status === 'boolean' ||
+      typeof responseData.success === 'boolean'
+    ) {
+      return responseData as ApiResponse<T>;
+    }
 
-    return responseData.data || responseData;
+    return {
+      status: true,
+      message: 'Request successful',
+      data: responseData as T,
+    };
   }
 
   /**
    * Format error response
    */
-  private formatErrorResponse(error: AxiosError): ApiErrorResponse {
+  private formatErrorResponse<T>(error: AxiosError): ApiErrorResponse<T> {
     const response = error.response;
-    const responseData = response?.data as any || {};
+    const responseData = (response?.data as Partial<ApiErrorResponse<T>> & Record<string, unknown>) || {};
     const statusCode = response?.status || 500;
-    const isSuccess =
-      typeof responseData.status === 'boolean'
-        ? responseData.status
-        : typeof responseData.success === 'boolean'
-          ? responseData.success
-          : false;
     
     // Handle validation errors (422)
     if (statusCode === 422 && responseData.errors) {
-      return responseData;
+      return {
+        status: false,
+        status_code: statusCode,
+        message:
+          typeof responseData.message === 'string'
+            ? responseData.message
+            : 'Validation failed',
+        errors: responseData.errors,
+        data: responseData.data as T | undefined,
+      };
     }
     
     // Handle unauthorized (401)
@@ -110,22 +113,37 @@ class ApiClient {
       // Clear invalid token
       this.clearToken();
       
-      return responseData || 'Unauthorized';
+      return {
+        status: false,
+        status_code: statusCode,
+        message:
+          typeof responseData.message === 'string'
+            ? responseData.message
+            : 'Unauthorized',
+        errors: responseData.errors,
+        data: responseData.data as T | undefined,
+      };
     }
     
-    return responseData || {};
+    return {
+      status: false,
+      status_code: statusCode,
+      message: this.getErrorMessage(error),
+      errors: responseData.errors,
+      data: responseData.data as T | undefined,
+    };
   }
 
   /**
    * Format exception response for network errors
    */
-  private formatExceptionResponse(error: Error): ApiErrorResponse {
+  private formatExceptionResponse<T>(error: Error): ApiErrorResponse<T> {
     return {
       status: false,
       status_code: 500,
       message: 'API connection error: ' + error.message,
       errors: null,
-      data: null,
+      data: undefined,
     };
   }
 
@@ -134,13 +152,13 @@ class ApiClient {
    */
   private getErrorMessage(error: AxiosError): string {
     const response = error.response;
-    const responseData = response?.data as any;
+    const responseData = response?.data as Record<string, unknown> | undefined;
 
-    if (responseData?.message) {
+    if (typeof responseData?.message === 'string') {
       return responseData.message;
     }
 
-    if (responseData?.error) {
+    if (typeof responseData?.error === 'string') {
       return responseData.error;
     }
 
@@ -197,10 +215,10 @@ class ApiClient {
   /**
    * Make HTTP request
    */
-  async request<T = any>(
+  async request<T = unknown>(
     method: string,
     endpoint: string,
-    data: any = {},
+    data: unknown = {},
     withAuth: boolean = true
   ): Promise<ApiResponse<T>> {
     // Clean endpoint
@@ -221,7 +239,7 @@ class ApiClient {
 
       // Add data based on method
       if (method.toLowerCase() === 'get') {
-        config.params = data;
+        config.params = data as AxiosRequestConfig['params'];
       } else {
         config.data = data;
       }
@@ -232,30 +250,30 @@ class ApiClient {
       return this.formatSuccessResponse<T>(response);
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        return this.formatErrorResponse(error);
+        return this.formatErrorResponse<T>(error);
       }
-      return this.formatExceptionResponse(error as Error);
+      return this.formatExceptionResponse<T>(error as Error);
     }
   }
 
   // Convenience methods
-  async get<T = any>(endpoint: string, params: any = {}, withAuth: boolean = true): Promise<ApiResponse<T>> {
+  async get<T = unknown>(endpoint: string, params: unknown = {}, withAuth: boolean = true): Promise<ApiResponse<T>> {
     return this.request<T>('get', endpoint, params, withAuth);
   }
 
-  async post<T = any>(endpoint: string, data: any = {}, withAuth: boolean = true): Promise<ApiResponse<T>> {
+  async post<T = unknown>(endpoint: string, data: unknown = {}, withAuth: boolean = true): Promise<ApiResponse<T>> {
     return this.request<T>('post', endpoint, data, withAuth);
   }
 
-  async put<T = any>(endpoint: string, data: any = {}, withAuth: boolean = true): Promise<ApiResponse<T>> {
+  async put<T = unknown>(endpoint: string, data: unknown = {}, withAuth: boolean = true): Promise<ApiResponse<T>> {
     return this.request<T>('put', endpoint, data, withAuth);
   }
 
-  async delete<T = any>(endpoint: string, data: any = {}, withAuth: boolean = true): Promise<ApiResponse<T>> {
+  async delete<T = unknown>(endpoint: string, data: unknown = {}, withAuth: boolean = true): Promise<ApiResponse<T>> {
     return this.request<T>('delete', endpoint, data, withAuth);
   }
 
-  async patch<T = any>(endpoint: string, data: any = {}, withAuth: boolean = true): Promise<ApiResponse<T>> {
+  async patch<T = unknown>(endpoint: string, data: unknown = {}, withAuth: boolean = true): Promise<ApiResponse<T>> {
     return this.request<T>('patch', endpoint, data, withAuth);
   }
 }
