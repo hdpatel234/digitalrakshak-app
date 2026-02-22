@@ -9,7 +9,7 @@ const ThemeSwitcher = () => {
     const mode = useTheme((state) => state.mode)
 
     return (
-        <div className="inline-flex items-center gap-2">
+        <div className="grid grid-cols-5 gap-2">
             {Object.entries(presetThemeSchemaConfig).map(([key, value]) => (
                 <button
                     key={key}
