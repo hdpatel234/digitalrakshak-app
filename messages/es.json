@@ -28,6 +28,18 @@
             "customerCreateDesc": "Agregar un nuevo cliente",
             "customerDetailsDesc": "Información detallada del cliente"
         },
+        "conceptsCandidates": {
+            "candidates": "Candidatos",
+            "candidateList": "Lista",
+            "candidateEdit": "Editar",
+            "candidateCreate": "Crear",
+            "candidateDetails": "Detalles",
+            "candidatesDesc": "Gestión de candidatos",
+            "candidateListDesc": "Lista de todos los candidatos",
+            "candidateEditDesc": "Editar información del candidato",
+            "candidateCreateDesc": "Agregar un nuevo candidato",
+            "candidateDetailsDesc": "Información detallada del candidato"
+        },
         "conceptsProducts": {
             "products": "Productos",
             "productList": "Lista",
@@ -37,6 +49,16 @@
             "productListDesc": "Todos los productos listados",
             "productEditDesc": "Editar detalles del producto",
             "productCreateDesc": "Agregar un nuevo producto"
+        },
+        "conceptsServices": {
+            "services": "Servicios",
+            "serviceList": "Lista",
+            "serviceEdit": "Editar",
+            "serviceCreate": "Crear",
+            "servicesDesc": "Gestión de servicios",
+            "serviceListDesc": "Lista de todos los servicios",
+            "serviceEditDesc": "Editar detalles del servicio",
+            "serviceCreateDesc": "Agregar un nuevo servicio"
         },
         "conceptsProjects": {
             "projects": "Proyectos",

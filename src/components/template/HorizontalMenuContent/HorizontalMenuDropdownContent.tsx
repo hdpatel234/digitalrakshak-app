@@ -149,72 +149,80 @@ const ColumnsLayout = (
         routeKey,
         userAuthority,
     } = props
+    const hasSubMenuItems = navigationTree.some((nav) => nav.subMenu.length > 0)
 
     return (
         <div className="flex max-w-[1400px] w-full">
-            <div
-                className={classNames(
-                    'grid gap-y-6 gap-x-8 p-6 flex-1',
-                    gridClasses[columns]?.grid,
-                )}
-            >
-                {navigationTree.map((nav) => {
-                    if (nav.subMenu.length > 0) {
-                        return (
-                            <AuthorityCheck
-                                key={nav.key}
-                                userAuthority={userAuthority}
-                                authority={nav.authority}
-                            >
-                                <div className="max-w-[250px]">
-                                    {showColumnTitle && (
-                                        <div className="heading-text font-bold mb-2">
-                                            {t(nav.translateKey, nav.title)}
-                                        </div>
-                                    )}
-                                    {nav.subMenu.map((subNav) => (
-                                        <AuthorityCheck
-                                            key={subNav.key}
-                                            userAuthority={userAuthority}
-                                            authority={subNav.authority}
-                                        >
-                                            <div key={subNav.key}>
-                                                <MenuLink
-                                                    path={subNav.path}
-                                                    isExternalLink={
-                                                        subNav.isExternalLink
-                                                    }
-                                                    icon={
-                                                        navigationIcon[
-                                                            subNav.icon
-                                                        ] || <TbCircle />
-                                                    }
-                                                    title={t(
-                                                        subNav.translateKey,
-                                                        subNav.title,
-                                                    )}
-                                                    description={t(
-                                                        subNav.meta?.description
-                                                            ?.translateKey ||
-                                                            '',
-                                                        subNav.meta?.description
-                                                            ?.label || '',
-                                                    )}
-                                                    active={
-                                                        subNav.key === routeKey
-                                                    }
-                                                    onClick={onDropdownClose}
-                                                />
+            {hasSubMenuItems && (
+                <div
+                    className={classNames(
+                        'grid gap-y-6 gap-x-8 p-6 flex-1',
+                        gridClasses[columns]?.grid,
+                    )}
+                >
+                    {navigationTree.map((nav) => {
+                        if (nav.subMenu.length > 0) {
+                            return (
+                                <AuthorityCheck
+                                    key={nav.key}
+                                    userAuthority={userAuthority}
+                                    authority={nav.authority}
+                                >
+                                    <div className="max-w-[250px]">
+                                        {showColumnTitle && (
+                                            <div className="heading-text font-bold mb-2">
+                                                {t(nav.translateKey, nav.title)}
                                             </div>
-                                        </AuthorityCheck>
-                                    ))}
-                                </div>
-                            </AuthorityCheck>
-                        )
-                    }
-                    return null
-                })}
-            </div>
+                                        )}
+                                        {nav.subMenu.map((subNav) => (
+                                            <AuthorityCheck
+                                                key={subNav.key}
+                                                userAuthority={userAuthority}
+                                                authority={subNav.authority}
+                                            >
+                                                <div key={subNav.key}>
+                                                    <MenuLink
+                                                        path={subNav.path}
+                                                        isExternalLink={
+                                                            subNav.isExternalLink
+                                                        }
+                                                        icon={
+                                                            navigationIcon[
+                                                                subNav.icon
+                                                            ] || <TbCircle />
+                                                        }
+                                                        title={t(
+                                                            subNav.translateKey,
+                                                            subNav.title,
+                                                        )}
+                                                        description={t(
+                                                            subNav.meta
+                                                                ?.description
+                                                                ?.translateKey ||
+                                                                '',
+                                                            subNav.meta
+                                                                ?.description
+                                                                ?.label || '',
+                                                        )}
+                                                        active={
+                                                            subNav.key ===
+                                                            routeKey
+                                                        }
+                                                        onClick={
+                                                            onDropdownClose
+                                                        }
+                                                    />
+                                                </div>
+                                            </AuthorityCheck>
+                                        ))}
+                                    </div>
+                                </AuthorityCheck>
+                            )
+                        }
+                        return null
+                    })}
+                </div>
+            )}
             {navigationTree.some((nav) => nav.type === NAV_ITEM_TYPE_ITEM) && (
                 <div
                     className={classNames(

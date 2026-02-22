@@ -28,6 +28,18 @@
             "customerCreateDesc": "إضافة عميل جديد",
             "customerDetailsDesc": "معلومات مفصلة عن العميل"
         },
+        "conceptsCandidates": {
+            "candidates": "المرشحون",
+            "candidateList": "القائمة",
+            "candidateEdit": "تعديل",
+            "candidateCreate": "إنشاء",
+            "candidateDetails": "التفاصيل",
+            "candidatesDesc": "إدارة المرشحين",
+            "candidateListDesc": "قائمة جميع المرشحين",
+            "candidateEditDesc": "تعديل معلومات المرشح",
+            "candidateCreateDesc": "إضافة مرشح جديد",
+            "candidateDetailsDesc": "معلومات المرشح التفصيلية"
+        },
         "conceptsProducts": {
             "products": "المنتجات",
             "productList": "القائمة",
@@ -37,6 +49,16 @@
             "productListDesc": "جميع المنتجات المدرجة",
             "productEditDesc": "تعديل تفاصيل المنتج",
             "productCreateDesc": "إضافة منتج جديد"
+        },
+        "conceptsServices": {
+            "services": "الخدمات",
+            "serviceList": "القائمة",
+            "serviceEdit": "تعديل",
+            "serviceCreate": "إنشاء",
+            "servicesDesc": "إدارة الخدمات",
+            "serviceListDesc": "قائمة جميع الخدمات",
+            "serviceEditDesc": "تعديل تفاصيل الخدمة",
+            "serviceCreateDesc": "إضافة خدمة جديدة"
         },
         "conceptsProjects": {
             "projects": "المشاريع",

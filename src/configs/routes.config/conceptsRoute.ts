@@ -3,6 +3,105 @@ import { ADMIN, USER } from '@/constants/roles.constant'
 import type { Routes } from '@/@types/routes'
 
 const conceptsRoute: Routes = {
+    // Candidates
+    '/candidates/list': {
+        key: 'concepts.candidates.candidateList',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        }
+    },
+    '/candidates/create': {
+        key: 'concepts.candidates.candidateCreate',
+        authority: [ADMIN, USER],
+        meta: {
+            header: {
+                title: 'Create candidate',
+                description: 'Create a new candidate',
+                contained: true,
+            },
+        }
+    },
+
+    '/candidates/edit/[slug]': {
+        key: 'concepts.candidates.candidateEdit',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        },
+        dynamicRoute: true
+    },
+
+    '/candidates/details/[slug]': {
+        key: 'concepts.candidates.candidateDetails',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        },
+        dynamicRoute: true
+    },
+
+    // Packages
+    '/packages/list': {
+        key: 'concepts.packages.packagesList',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        }
+    },
+    '/packages/create': {
+        key: 'concepts.packages.packageCreate',
+        authority: [ADMIN, USER],
+        meta: {
+            header: {
+                title: 'Create package',
+                description: 'Create a new package',
+                contained: true,
+            },
+        }
+    },
+
+    // Services
+    '/services/list': {
+        key: 'concepts.services.serviceList',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        }
+    },
+    '/services/create': {
+        key: 'concepts.services.serviceCreate',
+        authority: [ADMIN, USER],
+        meta: {
+            header: {
+                title: 'Create service',
+                description: 'Create a new service',
+                contained: true,
+            },
+        }
+    },
+
+    // Orders
+    '/orders/list': {
+        key: 'concepts.orders.ordersList',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        }
+    },
+    '/orders/create': {
+        key: 'concepts.orders.orderCreate',
+        authority: [ADMIN, USER],
+        meta: {
+            header: {
+                title: 'Create order',
+                description: 'Create a new order',
+                contained: true,
+            },
+        }
+    },
+
+    // Others
     '/concepts/ai/chat': {
         key: 'concepts.ai.chat',
         authority: [ADMIN, USER],

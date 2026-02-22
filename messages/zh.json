@@ -28,6 +28,18 @@
             "customerCreateDesc": "添加新客户",
             "customerDetailsDesc": "客户详细信息"
         },
+        "conceptsCandidates": {
+            "candidates": "候选人",
+            "candidateList": "列表",
+            "candidateEdit": "编辑",
+            "candidateCreate": "创建",
+            "candidateDetails": "详情",
+            "candidatesDesc": "候选人管理",
+            "candidateListDesc": "所有候选人列表",
+            "candidateEditDesc": "编辑候选人信息",
+            "candidateCreateDesc": "添加新候选人",
+            "candidateDetailsDesc": "候选人详细信息"
+        },
         "conceptsProducts": {
             "products": "产品",
             "productList": "列表",
@@ -51,6 +63,16 @@
             "projectDetailsDesc": "项目详细信息",
             "projectTasksDesc": "管理项目任务",
             "projectIssueDesc": "解决项目问题"
+        },
+        "conceptsServices": {
+            "services": "服务",
+            "serviceList": "列表",
+            "serviceEdit": "编辑",
+            "serviceCreate": "创建",
+            "servicesDesc": "服务管理",
+            "serviceListDesc": "所有服务列表",
+            "serviceEditDesc": "编辑服务详情",
+            "serviceCreateDesc": "添加新服务"
         },
         "conceptsOrders": {
             "orders": "订单",

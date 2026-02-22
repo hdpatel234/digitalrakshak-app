@@ -28,15 +28,37 @@
             "customerCreateDesc": "Add a new customer",
             "customerDetailsDesc": "Detailed customer info"
         },
+        "conceptsCandidates": {
+            "candidates": "Candidates",
+            "candidateList": "List",
+            "candidateEdit": "Edit",
+            "candidateCreate": "Create",
+            "candidateDetails": "Details",
+            "candidatesDesc": "Candidate management",
+            "candidateListDesc": "List of all candidates",
+            "candidateEditDesc": "Edit candidate info",
+            "candidateCreateDesc": "Add a new candidate",
+            "candidateDetailsDesc": "Detailed candidate info"
+        },
         "conceptsProducts": {
-            "products": "Products",
+            "products": "Packages",
             "productList": "List",
             "productEdit": "Edit",
             "productCreate": "Create",
-            "productsDesc": "Product inventory management",
-            "productListDesc": "All products listed",
-            "productEditDesc": "Edit product details",
-            "productCreateDesc": "Add new product"
+            "productsDesc": "Package inventory management",
+            "productListDesc": "All packages listed",
+            "productEditDesc": "Edit package details",
+            "productCreateDesc": "Add new package"
+        },
+        "conceptsServices": {
+            "services": "Services",
+            "serviceList": "List",
+            "serviceEdit": "Edit",
+            "serviceCreate": "Create",
+            "servicesDesc": "Service management",
+            "serviceListDesc": "All services listed",
+            "serviceEditDesc": "Edit service details",
+            "serviceCreateDesc": "Add new service"
         },
         "conceptsProjects": {
             "projects": "Projects",
