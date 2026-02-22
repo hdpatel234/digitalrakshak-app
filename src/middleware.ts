@@ -17,7 +17,16 @@ const apiAuthPrefix = `${appConfig.apiPrefix}/auth`
 
 export default auth((req) => {
     const { nextUrl } = req
-    const isSignedIn = !!req.auth
+    const accessTokenExpiresAt = Number(
+        (req.auth as Record<string, unknown> | null)?.accessTokenExpiresAt || 0,
+    )
+
+    const hasRefreshError =
+        (req.auth as Record<string, unknown> | null)?.error ===
+        'RefreshAccessTokenError'
+    const isTokenExpired =
+        accessTokenExpiresAt > 0 && Date.now() >= accessTokenExpiresAt
+    const isSignedIn = !!req.auth && !hasRefreshError && !isTokenExpired
 
     const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix)
     const isPublicRoute = publicRoutes.includes(nextUrl.pathname)
@@ -25,6 +34,18 @@ export default auth((req) => {
 
     /** Skip auth middleware for api routes */
     if (isApiAuthRoute) return
+
+    if (hasRefreshError || isTokenExpired) {
+        const signOutUrl = new URL(
+            `${apiAuthPrefix}/signout`,
+            nextUrl.origin,
+        )
+        signOutUrl.searchParams.set(
+            'callbackUrl',
+            appConfig.unAuthenticatedEntryPath,
+        )
+        return Response.redirect(signOutUrl)
+    }
 
     if (isAuthRoute) {
         if (isSignedIn) {

@@ -32,8 +32,7 @@ const SignInClient = () => {
     const handleOAuthSignIn = async ({ type }: OnOauthSignInPayload) => {
         if (type === 'google') {
             await handleOauthSignIn('google')
-        }
-        if (type === 'github') {
+        } else if (type === 'github') {
             await handleOauthSignIn('github')
         }
     }
