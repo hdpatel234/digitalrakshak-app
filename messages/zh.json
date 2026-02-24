@@ -7,6 +7,13 @@
             "project": "项目",
             "marketing": "营销"
         },
+        "billing": {
+            "billing": "账单",
+            "invoices": "发票",
+            "subscriptions": "订阅",
+            "paymentMethods": "支付方式",
+            "billingHistory": "账单历史"
+        },
         "concepts": "概念",
         "operations": "操作",
         "helpSupports": "帮助与支持",

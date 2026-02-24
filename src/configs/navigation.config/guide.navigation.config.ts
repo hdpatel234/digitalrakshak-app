@@ -1,10 +1,10 @@
-import { GUIDE_PREFIX_PATH } from '@/constants/route.constant'
 import {
     NAV_ITEM_TYPE_TITLE,
     NAV_ITEM_TYPE_ITEM,
 } from '@/constants/navigation.constant'
 import { ADMIN, USER } from '@/constants/roles.constant'
 import type { NavigationTree } from '@/@types/navigation'
+import { GUIDE_PREFIX_PATH } from '@/constants/route.constant'
 
 const guideNavigationConfig: NavigationTree[] = [
     {
@@ -28,6 +28,22 @@ const guideNavigationConfig: NavigationTree[] = [
                     description: {
                         translateKey: 'nav.guide.helpDesk',
                         label: 'Help Desk support',
+                    },
+                },
+                subMenu: [],
+            },
+            {
+                key: 'guide.documentation',
+                path: `${GUIDE_PREFIX_PATH}/documentation/introduction`,
+                title: 'Documentation',
+                translateKey: 'nav.guide.documentation',
+                icon: 'documentation',
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [ADMIN, USER],
+                meta: {
+                    description: {
+                        translateKey: 'nav.guide.documentationDesc',
+                        label: 'General template guide',
                     },
                 },
                 subMenu: [],

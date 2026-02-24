@@ -7,6 +7,13 @@
             "project": "المشاريع",
             "marketing": "التسويق"
         },
+        "billing": {
+            "billing": "الفوترة",
+            "invoices": "الفواتير",
+            "subscriptions": "الاشتراكات",
+            "paymentMethods": "طرق الدفع",
+            "billingHistory": "تاريخ الفوترة"
+        },
         "concepts": "المفاهيم",
         "operations": "العمليات",
         "helpSupports": "المساعدة والدعم",

@@ -7,6 +7,13 @@
             "project": "Project",
             "marketing": "Marketing"
         },
+        "billing": {
+            "billing": "Billing",
+            "invoices": "Invoices",
+            "subscriptions": "Subscriptions",
+            "paymentMethods": "Payment Methods",
+            "billingHistory": "Billing History"
+        },
         "concepts": "Concepts",
         "operations": "Operations",
         "helpSupports": "Help & Supports",

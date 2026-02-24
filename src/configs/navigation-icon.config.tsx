@@ -198,7 +198,11 @@ const navigationIcon: NavigationIcons = {
     sharedComponentDoc: <PiShareNetworkDuotone />,
     utilsDoc: <PiToolboxDuotone />,
     changeLog: <PiCodeDuotone />,
-    services: <PiBriefcaseBold />
+    services: <PiBriefcaseBold />,
+    invoice: <PiFileTextDuotone />,
+    subscription: <PiProjectorScreenChartDuotone />,
+    paymentMethods: <PiCurrencyCircleDollarDuotone />,
+    billingHistory: <PiCalendarCheckDuotone />,
 }
 
 export default navigationIcon
