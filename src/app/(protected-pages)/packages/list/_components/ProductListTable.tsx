@@ -104,7 +104,7 @@ const ProductListTable = ({
     const { onAppendQueryParams } = useAppendQueryParams()
 
     const handleEdit = (product: Product) => {
-        router.push(`/concepts/products/product-edit/${product.id}`)
+        router.push(`/packages/edit/${product.id}`)
     }
 
     const handleConfirmDelete = () => {

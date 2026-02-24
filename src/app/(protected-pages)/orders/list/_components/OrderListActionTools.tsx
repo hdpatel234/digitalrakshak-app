@@ -34,7 +34,7 @@ const OrderListActionTools = () => {
             <Button
                 variant="solid"
                 icon={<TbPlus className="text-xl" />}
-                onClick={() => router.push('/concepts/orders/order-create')}
+                onClick={() => router.push('/orders/create')}
             >
                 Add new
             </Button>

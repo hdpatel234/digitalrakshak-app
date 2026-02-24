@@ -9,8 +9,8 @@ const conceptsNavigationConfig: NavigationTree[] = [
     {
         key: 'concepts',
         path: '',
-        title: 'Concepts',
-        translateKey: 'nav.concepts',
+        title: 'Operations',
+        translateKey: 'nav.operations',
         icon: 'concepts',
         type: NAV_ITEM_TYPE_TITLE,
         authority: [ADMIN, USER],

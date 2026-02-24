@@ -675,17 +675,17 @@ const utilsDocRoute: Routes = {
 }
 
 const guideRoute: Routes = {
-    ...documentationRoute,
-    ...shareComponentDocRoute,
-    ...utilsDocRoute,
-    '/guide/changelog': {
-        key: 'guide.utilsDoc',
-        authority: [ADMIN, USER],
-        meta: {
-            pageBackgroundType: 'plain',
-            pageContainerType: 'contained',
-        },
-    },
+    // ...documentationRoute,
+    // ...shareComponentDocRoute,
+    // ...utilsDocRoute,
+    // '/guide/changelog': {
+    //     key: 'guide.utilsDoc',
+    //     authority: [ADMIN, USER],
+    //     meta: {
+    //         pageBackgroundType: 'plain',
+    //         pageContainerType: 'contained',
+    //     },
+    // },
 }
 
 export default guideRoute

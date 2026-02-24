@@ -27,7 +27,7 @@ const ProductListActionTools = () => {
             <Button
                 variant="solid"
                 icon={<TbPlus className="text-xl" />}
-                onClick={() => router.push('/concepts/products/product-create')}
+                onClick={() => router.push('/packages/create')}
             >
                 Add products
             </Button>

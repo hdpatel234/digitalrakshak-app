@@ -8,6 +8,8 @@
             "marketing": "营销"
         },
         "concepts": "概念",
+        "operations": "操作",
+        "helpSupports": "帮助与支持",
         "conceptsAi": {
             "ai": "人工智能",
             "chat": "聊天",
@@ -258,7 +260,10 @@
             "documentation": "文档",
             "sharedComponentDoc": "共享组件",
             "utilsDoc": "工具",
-            "changeLog": "更新日志"
+            "changeLog": "更新日志",
+            "tickets": "工单",
+            "helpDesk": "帮助台",
+            "ticketSupport": "工单支持"
         }
     }
 }

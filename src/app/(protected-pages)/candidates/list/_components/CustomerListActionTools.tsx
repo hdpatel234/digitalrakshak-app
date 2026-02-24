@@ -35,7 +35,7 @@ const CustomerListActionTools = () => {
                 variant="solid"
                 icon={<TbUserPlus className="text-xl" />}
                 onClick={() =>
-                    router.push('/concepts/customers/customer-create')
+                    router.push('/candidates/create')
                 }
             >
                 Add new

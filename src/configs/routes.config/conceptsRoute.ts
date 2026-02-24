@@ -12,7 +12,7 @@ const conceptsRoute: Routes = {
         }
     },
     '/candidates/create': {
-        key: 'concepts.candidates.candidateCreate',
+        key: 'concepts.candidates.candidateList',
         authority: [ADMIN, USER],
         meta: {
             header: {
@@ -24,7 +24,7 @@ const conceptsRoute: Routes = {
     },
 
     '/candidates/edit/[slug]': {
-        key: 'concepts.candidates.candidateEdit',
+        key: 'concepts.candidates.candidateList',
         authority: [ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
@@ -33,7 +33,7 @@ const conceptsRoute: Routes = {
     },
 
     '/candidates/details/[slug]': {
-        key: 'concepts.candidates.candidateDetails',
+        key: 'concepts.candidates.candidateList',
         authority: [ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
@@ -50,7 +50,7 @@ const conceptsRoute: Routes = {
         }
     },
     '/packages/create': {
-        key: 'concepts.packages.packageCreate',
+        key: 'concepts.packages.packagesList',
         authority: [ADMIN, USER],
         meta: {
             header: {
@@ -59,6 +59,22 @@ const conceptsRoute: Routes = {
                 contained: true,
             },
         }
+    },
+    '/packages/edit/[slug]': {
+        key: 'concepts.packages.packagesList',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        },
+        dynamicRoute: true
+    },
+    '/packages/details/[slug]': {
+        key: 'concepts.packages.packagesList',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        },
+        dynamicRoute: true
     },
 
     // Services
@@ -70,7 +86,7 @@ const conceptsRoute: Routes = {
         }
     },
     '/services/create': {
-        key: 'concepts.services.serviceCreate',
+        key: 'concepts.services.serviceList',
         authority: [ADMIN, USER],
         meta: {
             header: {
@@ -79,6 +95,14 @@ const conceptsRoute: Routes = {
                 contained: true,
             },
         }
+    },
+    '/services/edit/[slug]': {
+        key: 'concepts.services.serviceList',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        },
+        dynamicRoute: true
     },
 
     // Orders
@@ -90,7 +114,7 @@ const conceptsRoute: Routes = {
         }
     },
     '/orders/create': {
-        key: 'concepts.orders.orderCreate',
+        key: 'concepts.orders.ordersList',
         authority: [ADMIN, USER],
         meta: {
             header: {
@@ -100,7 +124,15 @@ const conceptsRoute: Routes = {
             },
         }
     },
-
+    '/orders/details/[slug]': {
+        key: 'concepts.orders.ordersList',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        },
+        dynamicRoute: true
+    },
+    
     // Others
     '/concepts/ai/chat': {
         key: 'concepts.ai.chat',

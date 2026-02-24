@@ -8,6 +8,8 @@
             "marketing": "التسويق"
         },
         "concepts": "المفاهيم",
+        "operations": "العمليات",
+        "helpSupports": "المساعدة والدعم",
         "conceptsAi": {
             "ai": "الذكاء الاصطناعي",
             "chat": "الدردشة",
@@ -258,7 +260,10 @@
             "documentation": "الوثائق",
             "sharedComponentDoc": "المكون المشترك",
             "utilsDoc": "الأدوات",
-            "changeLog": "سجل التغييرات"
+            "changeLog": "سجل التغييرات",
+            "tickets": "التذاكر",
+            "helpDesk": "مكتب المساعدة",
+            "ticketSupport": "دعم التذاكر"
         }
     }
 }

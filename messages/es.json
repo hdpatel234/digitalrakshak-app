@@ -8,6 +8,8 @@
             "marketing": "Marketing"
         },
         "concepts": "Conceptos",
+        "operations": "Operaciones",
+        "helpSupports": "Ayuda y Soportes",
         "conceptsAi": {
             "ai": "IA",
             "chat": "Chat",
@@ -258,7 +260,10 @@
             "documentation": "Documentación",
             "sharedComponentDoc": "Componente Compartido",
             "utilsDoc": "Utilidades",
-            "changeLog": "Registro de Cambios"
+            "changeLog": "Registro de Cambios",
+            "tickets": "Tickets",
+            "helpDesk": "Mesa de Ayuda",
+            "ticketSupport": "Soporte de Tickets"
         }
     }
 }

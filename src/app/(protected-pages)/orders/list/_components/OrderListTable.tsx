@@ -46,7 +46,7 @@ const OrderColumn = ({ row }: { row: Order }) => {
     const router = useRouter()
 
     const onView = () => {
-        router.push(`/concepts/orders/order-details/${row.id}`)
+        router.push(`/orders/details/${row.id}`)
     }
 
     return (
@@ -69,7 +69,7 @@ const ActionColumn = ({
     const router = useRouter()
 
     const onView = () => {
-        router.push(`/concepts/orders/order-details/${row.id}`)
+        router.push(`/orders/details/${row.id}`)
     }
 
     return (
