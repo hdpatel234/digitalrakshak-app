@@ -199,10 +199,15 @@ const navigationIcon: NavigationIcons = {
     utilsDoc: <PiToolboxDuotone />,
     changeLog: <PiCodeDuotone />,
     services: <PiBriefcaseBold />,
+    operations: <PiGearDuotone />,
+    billing: <PiCurrencyCircleDollarDuotone />,
     invoice: <PiFileTextDuotone />,
     subscription: <PiProjectorScreenChartDuotone />,
     paymentMethods: <PiCurrencyCircleDollarDuotone />,
     billingHistory: <PiCalendarCheckDuotone />,
+    guide: <PiCompassDuotone />,
+    helpSupports: <PiCompassDuotone />,
+    helpDesk: <PiEnvelopeDuotone />
 }
 
 export default navigationIcon

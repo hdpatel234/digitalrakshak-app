@@ -15,6 +15,12 @@ const guideNavigationConfig: NavigationTree[] = [
         icon: 'guide',
         type: NAV_ITEM_TYPE_TITLE,
         authority: [ADMIN, USER],
+        meta: {
+            horizontalMenu: {
+                layout: 'columns',
+                columns: 4,
+            },
+        },
         subMenu: [
             {
                 key: 'guide.tickets',
@@ -24,12 +30,6 @@ const guideNavigationConfig: NavigationTree[] = [
                 icon: 'mail',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [ADMIN, USER],
-                meta: {
-                    description: {
-                        translateKey: 'nav.guide.helpDesk',
-                        label: 'Help Desk support',
-                    },
-                },
                 subMenu: [],
             },
             {
@@ -40,12 +40,6 @@ const guideNavigationConfig: NavigationTree[] = [
                 icon: 'documentation',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [ADMIN, USER],
-                meta: {
-                    description: {
-                        translateKey: 'nav.guide.documentationDesc',
-                        label: 'General template guide',
-                    },
-                },
                 subMenu: [],
             },
         ],

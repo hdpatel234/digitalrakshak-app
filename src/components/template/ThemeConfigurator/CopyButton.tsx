@@ -24,7 +24,7 @@ export const themeConfig: ThemeConfig = ${JSON.stringify(config, null, 2)}
 `)
 
         toast.push(
-            <Notification title="Copy Success" type="success">
+            <Notification title="Save Success" type="success">
                 {`Please replace themeConfig in 'src/configs/theme.config.ts'`}
             </Notification>,
             {
@@ -35,7 +35,7 @@ export const themeConfig: ThemeConfig = ${JSON.stringify(config, null, 2)}
 
     return (
         <Button block variant="solid" onClick={handleCopy}>
-            Copy config
+            Save Display Settings
         </Button>
     )
 }

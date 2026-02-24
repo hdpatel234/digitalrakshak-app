@@ -18,8 +18,8 @@ const uiComponentNavigationConfig: NavigationTree[] = [
         authority: [ADMIN, USER],
         meta: {
             horizontalMenu: {
-                layout: 'tabs',
-                columns: 2,
+                layout: 'columns',
+                columns: 4,
             },
         },
         subMenu: [
@@ -36,9 +36,9 @@ const uiComponentNavigationConfig: NavigationTree[] = [
             {
                 key: 'billing.subscriptions',
                 path: `/subscriptions`,
-                title: 'Subscriptions', // TODO: translate
+                title: 'Subscriptions',
                 translateKey: 'nav.billing.subscriptions',
-                icon: 'subscription',   // TODO: add icon
+                icon: 'subscription',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [ADMIN, USER],
                 subMenu: [],
@@ -58,7 +58,7 @@ const uiComponentNavigationConfig: NavigationTree[] = [
                 path: `/billing-history`,
                 title: 'Billing History',
                 translateKey: 'nav.billing.billingHistory',
-                icon: 'billingHistory', // TODO: add icon
+                icon: 'billingHistory',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [ADMIN, USER],
                 subMenu: [],
