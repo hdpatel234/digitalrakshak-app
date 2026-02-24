@@ -4,7 +4,6 @@ import {
 } from '@/constants/navigation.constant'
 import { ADMIN, USER } from '@/constants/roles.constant'
 import type { NavigationTree } from '@/@types/navigation'
-import { GUIDE_PREFIX_PATH } from '@/constants/route.constant'
 
 const guideNavigationConfig: NavigationTree[] = [
     {
@@ -24,7 +23,7 @@ const guideNavigationConfig: NavigationTree[] = [
         subMenu: [
             {
                 key: 'guide.tickets',
-                path: `https://support.digitalrakshak.com/`,
+                path: `/help-desk`,
                 title: 'Help Desk',
                 translateKey: 'nav.guide.helpDesk',
                 icon: 'mail',
@@ -33,8 +32,18 @@ const guideNavigationConfig: NavigationTree[] = [
                 subMenu: [],
             },
             {
+                key: 'guide.ourProducts',
+                path: `/our-products`,
+                title: 'Our Products',
+                translateKey: 'nav.guide.ourProducts',
+                icon: 'ourProducts',
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [ADMIN, USER],
+                subMenu: [],
+            },
+            {
                 key: 'guide.documentation',
-                path: `${GUIDE_PREFIX_PATH}/documentation/introduction`,
+                path: `/documentation/introduction`,
                 title: 'Documentation',
                 translateKey: 'nav.guide.documentation',
                 icon: 'documentation',

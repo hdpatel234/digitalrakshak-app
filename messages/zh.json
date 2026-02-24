@@ -270,7 +270,13 @@
             "changeLog": "更新日志",
             "tickets": "工单",
             "helpDesk": "帮助台",
-            "ticketSupport": "工单支持"
+            "ticketSupport": "工单支持",
+            "ourProducts": "我们的产品",
+            "contactUs": "联系我们",
+            "privacyPolicy": "隐私政策",
+            "termsAndConditions": "条款和条件",
+            "termsAndConditionsDesc": "条款和条件",
+            "privacyPolicyDesc": "隐私政策"
         }
     }
 }

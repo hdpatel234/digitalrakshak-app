@@ -270,7 +270,13 @@
             "changeLog": "Registro de Cambios",
             "tickets": "Tickets",
             "helpDesk": "Mesa de Ayuda",
-            "ticketSupport": "Soporte de Tickets"
+            "ticketSupport": "Soporte de Tickets",
+            "ourProducts": "Nuestros Productos",
+            "contactUs": "Contáctanos",
+            "privacyPolicy": "Política de Privacidad",
+            "termsAndConditions": "T&eacute;rminos y Condiciones",
+            "termsAndConditionsDesc": "T&eacute;rminos y Condiciones",
+            "privacyPolicyDesc": "Política de Privacidad"
         }
     }
 }

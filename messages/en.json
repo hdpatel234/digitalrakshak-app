@@ -270,7 +270,13 @@
             "changeLog": "Changelog",
             "tickets": "Tickets",
             "helpDesk": "Help Desk",
-            "ticketSupport": "Ticket Support"
+            "ticketSupport": "Ticket Support",
+            "ourProducts": "Our Products",
+            "contactUs": "Contact Us",
+            "privacyPolicy": "Privacy Policy",
+            "termsAndConditions": "Terms & Conditions",
+            "termsAndConditionsDesc": "Terms and conditions",
+            "privacyPolicyDesc": "Privacy policy"
         }
     }
 }

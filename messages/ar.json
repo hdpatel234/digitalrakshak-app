@@ -270,7 +270,13 @@
             "changeLog": "سجل التغييرات",
             "tickets": "التذاكر",
             "helpDesk": "مكتب المساعدة",
-            "ticketSupport": "دعم التذاكر"
+            "ticketSupport": "دعم التذاكر",
+            "ourProducts": "منتجاتنا",
+            "contactUs": "اتصل بنا",
+            "privacyPolicy": "سياسة الخصوصية",
+            "termsAndConditions": "الشروط و الاحكام",
+            "termsAndConditionsDesc": "الشروط و الاحكام",
+            "privacyPolicyDesc": "سياسة الخصوصية"
         }
     }
 }

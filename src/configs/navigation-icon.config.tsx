@@ -91,6 +91,10 @@ import {
     PiCircleHalfTiltDuotone,
     PiHouseLineDuotone,
     PiBriefcaseBold,
+    PiBookmarkDuotone,
+    PiPackageFill,
+    PiPackageLight,
+    PiPackage,
 } from 'react-icons/pi'
 
 import type { JSX } from 'react'
@@ -207,7 +211,8 @@ const navigationIcon: NavigationIcons = {
     billingHistory: <PiCalendarCheckDuotone />,
     guide: <PiCompassDuotone />,
     helpSupports: <PiCompassDuotone />,
-    helpDesk: <PiEnvelopeDuotone />
+    helpDesk: <PiEnvelopeDuotone />,
+    ourProducts: <PiPackageFill />,
 }
 
 export default navigationIcon
