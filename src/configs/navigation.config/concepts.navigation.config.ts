@@ -1,6 +1,7 @@
 import {
     NAV_ITEM_TYPE_TITLE,
     NAV_ITEM_TYPE_ITEM,
+    NAV_ITEM_TYPE_COLLAPSE,
 } from '@/constants/navigation.constant'
 import { ADMIN, USER } from '@/constants/roles.constant'
 import type { NavigationTree } from '@/@types/navigation'
@@ -22,14 +23,45 @@ const conceptsNavigationConfig: NavigationTree[] = [
         },
         subMenu: [
             {
-                key: 'concepts.candidates.candidateList',
+                key: 'concepts.candidates',
                 path: `/candidates/list`,
                 title: 'Candidates',
                 translateKey: 'nav.conceptsCandidates.candidates',
                 icon: 'customers',
-                type: NAV_ITEM_TYPE_ITEM,
+                type: NAV_ITEM_TYPE_COLLAPSE,
                 authority: [ADMIN, USER],
-                subMenu: [],
+                subMenu: [
+                    {
+                        key: 'concepts.candidates.candidateList',
+                        path: `/candidates/list`,
+                        title: 'Simple',
+                        translateKey: 'nav.conceptsCandidates.candidateList',
+                        icon: '',
+                        type: NAV_ITEM_TYPE_ITEM,
+                        authority: [ADMIN, USER],
+                        subMenu: [],
+                    },
+                    {
+                        key: 'concepts.candidates.candidateCreate',
+                        path: `/candidates/create`,
+                        title: 'Create',
+                        translateKey: 'nav.conceptsCandidates.candidateCreate',
+                        icon: '',
+                        type: NAV_ITEM_TYPE_ITEM,
+                        authority: [ADMIN, USER],
+                        subMenu: [],
+                    },
+                                        {
+                        key: 'concepts.candidates.candidateImport',
+                        path: `/candidates/import`,
+                        title: 'Import',
+                        translateKey: 'nav.conceptsCandidates.candidateImport',
+                        icon: '',
+                        type: NAV_ITEM_TYPE_ITEM,
+                        authority: [ADMIN, USER],
+                        subMenu: [],
+                    },
+                ],
             },
             {
                 key: 'concepts.services.serviceList',

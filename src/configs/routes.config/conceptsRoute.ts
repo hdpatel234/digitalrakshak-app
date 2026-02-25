@@ -12,7 +12,7 @@ const conceptsRoute: Routes = {
         }
     },
     '/candidates/create': {
-        key: 'concepts.candidates.candidateList',
+        key: 'concepts.candidates.candidateCreate',
         authority: [ADMIN, USER],
         meta: {
             header: {
@@ -22,9 +22,20 @@ const conceptsRoute: Routes = {
             },
         }
     },
+    '/candidates/import': {
+        key: 'concepts.candidates.candidateImport',
+        authority: [ADMIN, USER],
+        meta: {
+            header: {
+                title: 'Import candidates',
+                description: 'Import candidates in bulk using a CSV file',
+                contained: true,
+            },
+        }
+    },
 
     '/candidates/edit/[slug]': {
-        key: 'concepts.candidates.candidateList',
+        key: 'concepts.candidates.candidateEdit',
         authority: [ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
@@ -33,7 +44,7 @@ const conceptsRoute: Routes = {
     },
 
     '/candidates/details/[slug]': {
-        key: 'concepts.candidates.candidateList',
+        key: 'concepts.candidates.candidateDetails',
         authority: [ADMIN, USER],
         meta: {
             pageContainerType: 'contained',

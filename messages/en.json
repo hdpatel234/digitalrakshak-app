@@ -41,6 +41,7 @@
             "candidates": "Candidates",
             "candidateList": "List",
             "candidateEdit": "Edit",
+            "candidateImport": "Import",
             "candidateCreate": "Create",
             "candidateDetails": "Details",
             "candidatesDesc": "Candidate management",
