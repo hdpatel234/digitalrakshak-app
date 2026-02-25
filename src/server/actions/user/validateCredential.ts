@@ -63,7 +63,7 @@ const getErrorMessage = (
 export const validateCredentialWithResponse = async (
     values: SignInCredential,
 ): Promise<ValidateCredentialResult> => {
-    const endpoint = '/v1/auth/login'
+    const endpoint = '/auth/login'
 
     const response = await apiClient.post(endpoint, values, false)
     const parsedResponse = (response || {}) as PassportErrorPayload &

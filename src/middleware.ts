@@ -29,22 +29,17 @@ export default auth((req) => {
     const isSignedIn = !!req.auth && !hasRefreshError && !isTokenExpired
 
     const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix)
-    const isPublicRoute = publicRoutes.includes(nextUrl.pathname)
+    const isLogoutRoute = nextUrl.pathname === '/logout'
+    const isPublicRoute = publicRoutes.includes(nextUrl.pathname) || isLogoutRoute
     const isAuthRoute = authRoutes.includes(nextUrl.pathname)
 
     /** Skip auth middleware for api routes */
     if (isApiAuthRoute) return
 
-    if (hasRefreshError || isTokenExpired) {
-        const signOutUrl = new URL(
-            `${apiAuthPrefix}/signout`,
-            nextUrl.origin,
-        )
-        signOutUrl.searchParams.set(
-            'callbackUrl',
-            appConfig.unAuthenticatedEntryPath,
-        )
-        return Response.redirect(signOutUrl)
+    if ((hasRefreshError || isTokenExpired) && !isLogoutRoute) {
+        const logoutUrl = new URL('/logout', nextUrl.origin)
+        logoutUrl.searchParams.set('callbackUrl', appConfig.unAuthenticatedEntryPath)
+        return Response.redirect(logoutUrl)
     }
 
     if (isAuthRoute) {

@@ -16,10 +16,11 @@ class BackendCredentialsSignin extends CredentialsSignin {
 
 type RefreshTokenResponse = {
     status?: boolean
+    success?: boolean
     message?: string
     data?: {
         token_type?: string
-        expires_in?: number
+        expires_in?: number | string
         access_token?: string
         refresh_token?: string
     } | null
@@ -31,6 +32,10 @@ const getApiBaseUrl = () =>
         /\/+$/,
         '',
     )
+
+const refreshTokenEndpoints = [
+    '/auth/refresh-token',
+]
 
 const refreshAccessToken = async (token: Record<string, unknown>) => {
     const refreshToken = (token.refreshToken as string) || ''
@@ -48,48 +53,53 @@ const refreshAccessToken = async (token: Record<string, unknown>) => {
     }
 
     try {
-        const response = await fetch(`${apiBaseUrl}/auth/v1/refresh-token`, {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                refresh_token: refreshToken,
-            }),
-            cache: 'no-store',
-        })
+        for (const endpoint of refreshTokenEndpoints) {
+            const response = await fetch(`${apiBaseUrl}${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    refresh_token: refreshToken,
+                }),
+                cache: 'no-store',
+            })
 
-        const payload = (await response.json()) as RefreshTokenResponse
-        const data = payload?.data
-        const isSuccess =
-            response.ok &&
-            payload?.status === true &&
-            !!data?.access_token &&
-            typeof data?.expires_in === 'number'
+            const payload = (await response.json()) as RefreshTokenResponse
+            const data = payload?.data
+            const expiresIn = Number(data?.expires_in || 0)
+            const isSuccess =
+                response.ok &&
+                (payload?.status === true || payload?.success === true) &&
+                !!data?.access_token &&
+                Number.isFinite(expiresIn) &&
+                expiresIn > 0
 
-        if (!isSuccess || !data) {
+            if (!isSuccess || !data) {
+                continue
+            }
+
+            const accessTokenExpiresAt = Date.now() + expiresIn * 1000
+
             return {
                 ...token,
-                error: 'RefreshAccessTokenError',
-                accessToken: '',
-                refreshToken: '',
-                expiresIn: 0,
-                accessTokenExpiresAt: 0,
+                error: undefined,
+                accessToken: data.access_token || '',
+                refreshToken: data.refresh_token || refreshToken,
+                tokenType: data.token_type || 'Bearer',
+                expiresIn,
+                accessTokenExpiresAt,
             }
         }
 
-        const expiresIn = Number(data.expires_in || 0)
-        const accessTokenExpiresAt = Date.now() + expiresIn * 1000
-
         return {
             ...token,
-            error: undefined,
-            accessToken: data.access_token || '',
-            refreshToken: data.refresh_token || refreshToken,
-            tokenType: data.token_type || 'Bearer',
-            expiresIn,
-            accessTokenExpiresAt,
+            error: 'RefreshAccessTokenError',
+            accessToken: '',
+            refreshToken: '',
+            expiresIn: 0,
+            accessTokenExpiresAt: 0,
         }
     } catch {
         return {
@@ -145,9 +155,9 @@ export default {
                     accessToken?: string
                     refreshToken?: string
                     tokenType?: string
-                    expiresIn?: number
+                    expiresIn?: number | string
                 }
-                const expiresIn = authUser.expiresIn || 0
+                const expiresIn = Number(authUser.expiresIn || 0)
 
                 token.authority = authUser.authority || ['user']
                 token.accessToken = authUser.accessToken || ''
@@ -162,8 +172,9 @@ export default {
 
             const accessTokenExpiresAt = Number(token.accessTokenExpiresAt || 0)
             const now = Date.now()
+            const refreshThresholdMs = 60 * 1000
 
-            if (accessTokenExpiresAt > now) {
+            if (accessTokenExpiresAt > now + refreshThresholdMs) {
                 return token
             }
 
