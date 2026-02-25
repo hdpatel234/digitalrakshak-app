@@ -152,6 +152,7 @@ const navigationIcon: NavigationIcons = {
     customerEdit: <PiPencilSimpleLineDuotone />,
     customerCreate: <PiUserPlusDuotone />,
     customerDetails: <PiUserCircleDuotone />,
+    customerImport: <PiFileTextDuotone />,
     products: <PiPackageDuotone />,
     productList: <PiListStarDuotone />,
     productEdit: <PiNotePencilDuotone />,
