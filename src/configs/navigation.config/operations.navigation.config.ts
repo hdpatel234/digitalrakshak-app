@@ -6,7 +6,7 @@ import {
 import { ADMIN, USER } from '@/constants/roles.constant'
 import type { NavigationTree } from '@/@types/navigation'
 
-const conceptsNavigationConfig: NavigationTree[] = [
+const operationsNavigationConfig: NavigationTree[] = [
     {
         key: 'concepts',
         path: '',
@@ -253,4 +253,4 @@ const conceptsNavigationConfig: NavigationTree[] = [
     },
 ]
 
-export default conceptsNavigationConfig
+export default operationsNavigationConfig

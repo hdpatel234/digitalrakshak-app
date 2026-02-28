@@ -12,7 +12,9 @@
             "invoices": "Invoices",
             "subscriptions": "Subscriptions",
             "paymentMethods": "Payment Methods",
-            "billingHistory": "Billing History"
+            "billingHistory": "Billing History",
+            "paymentHistory": "Payment History",
+            "manageCredits": "Manage Credits"
         },
         "concepts": "Concepts",
         "operations": "Operations",
@@ -292,6 +294,38 @@
             "termsAndConditions": "Terms & Conditions",
             "termsAndConditionsDesc": "Terms and conditions",
             "privacyPolicyDesc": "Privacy policy"
+        },
+
+        "support": {
+            "support": "Support",
+            "myTickets": "My Tickets",
+            "openTicket": "Open Ticket",
+            "ticketHistory": "Ticket History",
+            "knowledgeBase": "Knowledge Base"
+        },
+
+        "reports": {
+            "reports": "Reports",
+            "spendingReport": "Spending Report",
+            "spendingReportDesc": "Spending Report",
+            "ordersReport": "Orders Report",
+            "ordersReportDesc": "Orders Report",
+            "verificationReport": "Verification Report",
+            "verificationReportDesc": "Verification Report",
+            "exportData": "Export Data",
+            "exportDataDesc": "Export Data"
+        },
+
+        "settings": {
+            "settings": "Settings",
+            "companyProfile": "Company Profile",
+            "companyProfileDesc": "Company Profile",
+            "teamMembers": "Team Members",
+            "teamMembersDesc": "Team Members",
+            "apiKeys": "API Keys",
+            "apiKeysDesc": "API Keys",
+            "webhooks": "Webhooks",
+            "webhooksDesc": "Webhooks"
         }
     }
 }

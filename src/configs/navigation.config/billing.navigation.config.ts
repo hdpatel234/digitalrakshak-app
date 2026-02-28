@@ -7,7 +7,7 @@ import {
 import { ADMIN, USER } from '@/constants/roles.constant'
 import type { NavigationTree } from '@/@types/navigation'
 
-const uiComponentNavigationConfig: NavigationTree[] = [
+const billingNavigationConfig: NavigationTree[] = [
     {
         key: 'billing',
         path: '',
@@ -25,7 +25,7 @@ const uiComponentNavigationConfig: NavigationTree[] = [
         subMenu: [
             {
                 key: 'billing.index',
-                path: `/invoices`,
+                path: `/billing/invoices`,
                 title: 'Invoices',
                 translateKey: 'nav.billing.invoices',
                 icon: 'invoice',
@@ -34,31 +34,31 @@ const uiComponentNavigationConfig: NavigationTree[] = [
                 subMenu: [],
             },
             {
-                key: 'billing.subscriptions',
-                path: `/subscriptions`,
-                title: 'Subscriptions',
-                translateKey: 'nav.billing.subscriptions',
-                icon: 'subscription',
+                key: 'billing.paymentHistory',
+                path: `/billing/payment-history`,
+                title: 'Payment History',
+                translateKey: 'nav.billing.paymentHistory',
+                icon: 'billingHistory',
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [ADMIN, USER],
+                subMenu: [],
+            },
+            {
+                key: 'billing.manageCredits',
+                path: `/billing/manage-credits`,
+                title: 'Manage Credits',
+                translateKey: 'nav.billing.manageCredits',
+                icon: 'manageCredits',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [ADMIN, USER],
                 subMenu: [],
             },
             {
                 key: 'billing.paymentMethods',
-                path: `/payment-methods`,
+                path: `/billing/payment-methods`,
                 title: 'Payment Methods',
                 translateKey: 'nav.billing.paymentMethods',
                 icon: 'paymentMethods',
-                type: NAV_ITEM_TYPE_ITEM,
-                authority: [ADMIN, USER],
-                subMenu: [],
-            },
-            {
-                key: 'billing.billingHistory',
-                path: `/billing-history`,
-                title: 'Billing History',
-                translateKey: 'nav.billing.billingHistory',
-                icon: 'billingHistory',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [ADMIN, USER],
                 subMenu: [],
@@ -67,4 +67,4 @@ const uiComponentNavigationConfig: NavigationTree[] = [
     },
 ]
 
-export default uiComponentNavigationConfig
+export default billingNavigationConfig

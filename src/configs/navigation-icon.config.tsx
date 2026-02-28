@@ -95,6 +95,12 @@ import {
     PiPaperPlaneRightDuotone,
     PiClipboardDuotone,
     PiPaperclipBold,
+    PiCoinDuotone,
+    PiLifebuoyDuotone,
+    PiDownloadDuotone,
+    PiCurrencyDollarDuotone,
+    PiBuildingDuotone,
+    PiWebhooksLogoDuotone,
 } from 'react-icons/pi'
 
 import type { JSX } from 'react'
@@ -198,7 +204,7 @@ const navigationIcon: NavigationIcons = {
     dashboardMarketing: <PiMegaphoneDuotone />,
     others: <PiDotsThreeCircleDuotone />,
     accessDenied: <PiCircleHalfTiltDuotone />,
-    landing: <PiHouseLineDuotone  />,
+    landing: <PiHouseLineDuotone />,
     documentation: <PiBookDuotone />,
     sharedComponentDoc: <PiShareNetworkDuotone />,
     utilsDoc: <PiToolboxDuotone />,
@@ -210,6 +216,7 @@ const navigationIcon: NavigationIcons = {
     subscription: <PiProjectorScreenChartDuotone />,
     paymentMethods: <PiCurrencyCircleDollarDuotone />,
     billingHistory: <PiCalendarCheckDuotone />,
+    manageCredits: <PiCoinDuotone />,
     guide: <PiCompassDuotone />,
     helpSupports: <PiCompassDuotone />,
     helpDesk: <PiEnvelopeDuotone />,
@@ -220,6 +227,22 @@ const navigationIcon: NavigationIcons = {
     verificationCompleted: <PiCheckSquareDuotone />,
     verificationReports: <PiPaperclipBold />,
     verificationTracking: <PiClockCountdownDuotone />,
+    support: <PiLifebuoyDuotone />,
+    myTickets: <PiChatCenteredDuotone />,
+    openTicket: <PiPlusSquareDuotone />,
+    ticketHistory: <PiFileTextDuotone />,
+    knowledgeBase: <PiLightbulbDuotone />,
+    reports: <PiChartBarDuotone />,             
+    spendingReport: <PiCurrencyDollarDuotone />, 
+    ordersReport: <PiShoppingCartDuotone />,     
+    productsReport: <PiPackageDuotone />,        
+    verificationReport: <PiShieldCheckDuotone />,
+    exportData: <PiDownloadDuotone />,
+    settings: <PiGearDuotone />,
+    companyProfile: <PiBuildingDuotone />,
+    teamMembers: <PiUsersDuotone />,
+    apiKeys: <PiKeyDuotone />,
+    webhooks: <PiWebhooksLogoDuotone />,           
 }
 
 export default navigationIcon
