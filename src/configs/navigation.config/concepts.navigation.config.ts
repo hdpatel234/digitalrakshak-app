@@ -22,6 +22,7 @@ const conceptsNavigationConfig: NavigationTree[] = [
             },
         },
         subMenu: [
+            // Candidates
             {
                 key: 'concepts.candidates',
                 path: `/candidates/list`,
@@ -51,7 +52,7 @@ const conceptsNavigationConfig: NavigationTree[] = [
                         authority: [ADMIN, USER],
                         subMenu: [],
                     },
-                                        {
+                    {
                         key: 'concepts.candidates.candidateImport',
                         path: `/candidates/import`,
                         title: 'Import',
@@ -63,27 +64,84 @@ const conceptsNavigationConfig: NavigationTree[] = [
                     },
                 ],
             },
+
+            // Invitations
             {
-                key: 'concepts.services',
-                path: `/services/list`,
-                title: 'Services',
-                translateKey: 'nav.conceptsServices.services',
-                icon: 'services',
+                key: 'concepts.invitations',
+                path: '',
+                title: 'Invitations',
+                translateKey: 'nav.conceptsInvitations.invitations',
+                icon: 'invitations',
                 type: NAV_ITEM_TYPE_COLLAPSE,
                 authority: [ADMIN, USER],
                 subMenu: [
                     {
-                        key: 'concepts.services.serviceList',
-                        path: `/services/list`,
+                        key: 'concepts.invitations.invitationsAll',
+                        path: `/invitations/all`,
+                        title: 'All Invitations',
+                        translateKey: 'nav.conceptsInvitations.invitationAll',
+                        icon: 'customerList',
+                        type: NAV_ITEM_TYPE_ITEM,
+                        authority: [ADMIN, USER],
+                        subMenu: [],
+                    },
+                    {
+                        key: 'concepts.invitations.invitationsSent',
+                        path: `/invitations/sent`,
+                        title: 'Sent Invitations',
+                        translateKey: 'nav.conceptsInvitations.invitationSent',
+                        icon: 'customerCreate',
+                        type: NAV_ITEM_TYPE_ITEM,
+                        authority: [ADMIN, USER],
+                        subMenu: [],
+                    },
+                    {
+                        key: 'concepts.invitations.invitationsViewed',
+                        path: `/invitations/viewed`,
+                        title: 'Viewed Invitations',
+                        translateKey: 'nav.conceptsInvitations.invitationViewed',
+                        icon: 'customerImport',
+                        type: NAV_ITEM_TYPE_ITEM,
+                        authority: [ADMIN, USER],
+                        subMenu: [],
+                    },
+                    {
+                        key: 'concepts.invitations.invitationsExpired',
+                        path: `/invitations/expired`,
+                        title: 'Expired Invitations',
+                        translateKey: 'nav.conceptsInvitations.invitationExpired',
+                        icon: 'customerImport',
+                        type: NAV_ITEM_TYPE_ITEM,
+                        authority: [ADMIN, USER],
+                        subMenu: [],
+                    }
+                ],
+            },
+
+            // Orders
+            {
+                key: 'concepts.orders.ordersList',
+                path: '/orders/list',
+                title: 'Orders',
+                translateKey: 'nav.conceptsOrders.orders',
+                icon: 'orders',
+                type: NAV_ITEM_TYPE_COLLAPSE,
+                authority: [ADMIN, USER],
+                subMenu: [
+                    {
+                        key: 'concepts.orders.orderList',
+                        path: '/orders/list',
                         title: 'Simple',
-                        translateKey: 'nav.conceptsServices.serviceList',
-                        icon: '',
+                        translateKey: 'nav.conceptsOrders.orderList',
+                        icon: 'orderList',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
                         subMenu: [],
                     },
                 ],
             },
+
+            // Packages
             {
                 key: 'concepts.packages',
                 path: `/packages/list`,
@@ -115,21 +173,76 @@ const conceptsNavigationConfig: NavigationTree[] = [
                     },
                 ],
             },
+
+            // Verification Status
             {
-                key: 'concepts.orders.ordersList',
-                path: '/orders/list',
-                title: 'Orders',
-                translateKey: 'nav.conceptsOrders.orders',
-                icon: 'orders',
+                key: 'concepts.verificationStatus',
+                path: `/verification-status/list`,
+                title: 'Verification Status',
+                translateKey: 'nav.conceptsVerificationStatus.verificationStatus',
+                icon: 'verificationStatus',
                 type: NAV_ITEM_TYPE_COLLAPSE,
                 authority: [ADMIN, USER],
                 subMenu: [
                     {
-                        key: 'concepts.orders.orderList',
-                        path: '/orders/list',
+                        key: 'concepts.verificationStatus.verificationInProgress',
+                        path: `/verification-status/in-progress`,
+                        title: 'In Progress',
+                        translateKey: 'nav.conceptsVerificationStatus.verificationInProgress',
+                        icon: 'verificationInProgress',
+                        type: NAV_ITEM_TYPE_ITEM,
+                        authority: [ADMIN, USER],
+                        subMenu: [],
+                    },
+                    {
+                        key: 'concepts.verificationStatus.verificationCompleted',
+                        path: `/verification-status/completed`,
+                        title: 'Completed',
+                        translateKey: 'nav.conceptsVerificationStatus.verificationCompleted',
+                        icon: 'verificationCompleted',
+                        type: NAV_ITEM_TYPE_ITEM,
+                        authority: [ADMIN, USER],
+                        subMenu: [],
+                    },
+                    {
+                        key: 'concepts.verificationStatus.verificationReports',
+                        path: `/verification-status/reports`,
+                        title: 'Reports',
+                        translateKey: 'nav.conceptsVerificationStatus.verificationReports',
+                        icon: 'verificationReports',
+                        type: NAV_ITEM_TYPE_ITEM,
+                        authority: [ADMIN, USER],
+                        subMenu: [],
+                    },
+                    {
+                        key: 'concepts.verificationStatus.verificationTracking',
+                        path: `/verification-status/tracking`,
+                        title: 'Tracking',
+                        translateKey: 'nav.conceptsVerificationStatus.verificationTracking',
+                        icon: 'verificationTracking',
+                        type: NAV_ITEM_TYPE_ITEM,
+                        authority: [ADMIN, USER],
+                        subMenu: [],
+                    },
+                ],
+            },
+
+            // Services
+            {
+                key: 'concepts.services',
+                path: `/services/list`,
+                title: 'Services',
+                translateKey: 'nav.conceptsServices.services',
+                icon: 'services',
+                type: NAV_ITEM_TYPE_COLLAPSE,
+                authority: [ADMIN, USER],
+                subMenu: [
+                    {
+                        key: 'concepts.services.serviceList',
+                        path: `/services/list`,
                         title: 'Simple',
-                        translateKey: 'nav.conceptsOrders.orderList',
-                        icon: 'orderList',
+                        translateKey: 'nav.conceptsServices.serviceList',
+                        icon: '',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
                         subMenu: [],

@@ -50,6 +50,20 @@
             "candidateCreateDesc": "添加新候选人",
             "candidateDetailsDesc": "候选人详细信息"
         },
+        "conceptsInvitations": {
+            "invitations": "邀请",
+            "invitationAll": "全部",
+            "invitationSent": "已发送",
+            "invitationViewed": "已查看",
+            "invitationExpired": "已过期"
+        },
+        "conceptsVerificationStatus": {
+            "verificationStatus": "验证状态",
+            "verificationInProgress": "进行中",
+            "verificationCompleted": "已完成",
+            "verificationReports": "报告",
+            "verificationTracking": "跟踪"
+        },
         "conceptsProducts": {
             "products": "产品",
             "productList": "列表",

@@ -50,6 +50,20 @@
             "candidateCreateDesc": "Add a new candidate",
             "candidateDetailsDesc": "Detailed candidate info"
         },
+        "conceptsInvitations": {
+            "invitations": "Invitations",
+            "invitationAll": "All",
+            "invitationSent": "Sent",
+            "invitationViewed": "Viewed",
+            "invitationExpired": "Expired"
+        },
+        "conceptsVerificationStatus": {
+            "verificationStatus": "Verification Status",
+            "verificationInProgress": "In Progress",
+            "verificationCompleted": "Completed",
+            "verificationReports": "Reports",
+            "verificationTracking": "Tracking"
+        },
         "conceptsProducts": {
             "products": "Packages",
             "productList": "List",

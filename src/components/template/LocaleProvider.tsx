@@ -14,8 +14,10 @@ type LocaleProvider = {
 
 const LocaleProvider = ({ messages, children, locale }: LocaleProvider) => {
     useEffect(() => {
-        dateLocales[locale]().then(() => {
-            dayjs.locale(locale)
+        const loadDateLocale = dateLocales[locale] ?? dateLocales.en
+
+        loadDateLocale().then(() => {
+            dayjs.locale(locale in dateLocales ? locale : 'en')
         })
     }, [locale])
 

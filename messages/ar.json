@@ -50,6 +50,20 @@
             "candidateCreateDesc": "إضافة مرشح جديد",
             "candidateDetailsDesc": "معلومات المرشح التفصيلية"
         },
+        "conceptsInvitations": {
+            "invitations": "الدعوات",
+            "invitationAll": "الكل",
+            "invitationSent": "تم الإرسال",
+            "invitationViewed": "تمت المشاهدة",
+            "invitationExpired": "منتهية الصلاحية"
+        },
+        "conceptsVerificationStatus": {
+            "verificationStatus": "حالة التحقق",
+            "verificationInProgress": "قيد التنفيذ",
+            "verificationCompleted": "مكتمل",
+            "verificationReports": "التقارير",
+            "verificationTracking": "التتبع"
+        },
         "conceptsProducts": {
             "products": "المنتجات",
             "productList": "القائمة",

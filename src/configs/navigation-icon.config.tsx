@@ -91,10 +91,10 @@ import {
     PiCircleHalfTiltDuotone,
     PiHouseLineDuotone,
     PiBriefcaseBold,
-    PiBookmarkDuotone,
     PiPackageFill,
-    PiPackageLight,
-    PiPackage,
+    PiPaperPlaneRightDuotone,
+    PiClipboardDuotone,
+    PiPaperclipBold,
 } from 'react-icons/pi'
 
 import type { JSX } from 'react'
@@ -214,6 +214,12 @@ const navigationIcon: NavigationIcons = {
     helpSupports: <PiCompassDuotone />,
     helpDesk: <PiEnvelopeDuotone />,
     ourProducts: <PiPackageFill />,
+    invitations: <PiPaperPlaneRightDuotone />,
+    verificationStatus: <PiClipboardDuotone />,
+    verificationInProgress: <PiSpinnerBallDuotone />,
+    verificationCompleted: <PiCheckSquareDuotone />,
+    verificationReports: <PiPaperclipBold />,
+    verificationTracking: <PiClockCountdownDuotone />,
 }
 
 export default navigationIcon

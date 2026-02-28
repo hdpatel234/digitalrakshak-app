@@ -52,6 +52,69 @@ const conceptsRoute: Routes = {
         dynamicRoute: true
     },
 
+    // Invitations
+    '/invitations/all': {
+        key: 'concepts.invitations.invitationsAll',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        }
+    },
+
+    '/invitations/sent': {
+        key: 'concepts.invitations.invitationsSent',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        }
+    },
+
+    '/invitations/viewed': {
+        key: 'concepts.invitations.invitationsViewed',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        }
+    },
+
+    '/invitations/expired': {
+        key: 'concepts.invitations.invitationsExpired',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        }
+    },
+
+    // Verification Status
+    '/verification-status/in-progress': {
+        key: 'concepts.verificationStatus.verificationInProgress',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        }
+    },
+    '/verification-status/completed': {
+        key: 'concepts.verificationStatus.verificationCompleted',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        }
+    },
+    '/verification-status/reports': {
+        key: 'concepts.verificationStatus.verificationReports',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        }
+    },
+    '/verification-status/tracking': {
+        key: 'concepts.verificationStatus.verificationTracking',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        }
+    },
+
     // Packages
     '/packages/list': {
         key: 'concepts.packages.packagesList',
@@ -143,7 +206,7 @@ const conceptsRoute: Routes = {
         },
         dynamicRoute: true
     },
-    
+
     // Others
     '/concepts/ai/chat': {
         key: 'concepts.ai.chat',
