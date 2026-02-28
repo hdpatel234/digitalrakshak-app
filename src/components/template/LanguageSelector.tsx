@@ -11,7 +11,7 @@ import { useLocale } from 'next-intl'
 import type { CommonProps } from '@/@types/common'
 
 const languageList = [
-    { label: 'English', value: 'en', flag: 'US' },
+    { label: 'English (IN)', value: 'en', flag: 'IN' },
     // { label: 'हिन्दी', value: 'hi', flag: 'IN' },
     // { label: 'ગુજરાતી', value: 'gu', flag: 'IN' },
 ]

@@ -5,10 +5,11 @@ import InputGroup from '@/components/ui/InputGroup'
 import useTheme from '@/utils/hooks/useTheme'
 import { THEME_ENUM } from '@/constants/theme.constant'
 import type { Direction } from '@/@types/theme'
+import useTranslation from '@/utils/hooks/useTranslation'
 
 const dirList = [
-    { value: THEME_ENUM.DIR_LTR, label: 'LTR' },
-    { value: THEME_ENUM.DIR_RTL, label: 'RTL' },
+    { value: THEME_ENUM.DIR_LTR, label: 'displaySettings.ltr' },
+    { value: THEME_ENUM.DIR_RTL, label: 'displaySettings.rtl' },
 ]
 
 const DirectionSwitcher = ({
@@ -16,6 +17,7 @@ const DirectionSwitcher = ({
 }: {
     callBackClose?: () => void
 }) => {
+    const t = useTranslation('header')
     const setDirection = useTheme((state) => state.setDirection)
     const direction = useTheme((state) => state.direction)
 
@@ -32,7 +34,7 @@ const DirectionSwitcher = ({
                     active={direction === dir.value}
                     onClick={() => onDirChange(dir.value)}
                 >
-                    {dir.label}
+                    {t(dir.label)}
                 </Button>
             ))}
         </InputGroup>

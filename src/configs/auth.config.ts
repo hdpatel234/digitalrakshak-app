@@ -139,6 +139,9 @@ export default {
                     email: result.user.email,
                     image: result.user.avatar,
                     authority: result.user.authority,
+                    roles: result.user.roles,
+                    permissions: result.user.permissions,
+                    config: result.user.config,
                     accessToken: result.user.accessToken,
                     refreshToken: result.user.refreshToken,
                     tokenType: result.user.tokenType,
@@ -152,14 +155,28 @@ export default {
             if (user) {
                 const authUser = user as {
                     authority?: string[]
+                    roles?: string[]
+                    permissions?: string[]
+                    config?: Record<string, string>
                     accessToken?: string
                     refreshToken?: string
                     tokenType?: string
                     expiresIn?: number | string
                 }
                 const expiresIn = Number(authUser.expiresIn || 0)
+                const roles = Array.isArray(authUser.roles)
+                    ? authUser.roles
+                    : authUser.authority || ['user']
 
                 token.authority = authUser.authority || ['user']
+                token.roles = roles
+                token.permissions = Array.isArray(authUser.permissions)
+                    ? authUser.permissions
+                    : []
+                token.config =
+                    authUser.config && typeof authUser.config === 'object'
+                        ? authUser.config
+                        : {}
                 token.accessToken = authUser.accessToken || ''
                 token.refreshToken = authUser.refreshToken || ''
                 token.tokenType = authUser.tokenType || 'Bearer'
@@ -193,7 +210,11 @@ export default {
                     ...payload.session.user,
                     id: payload.token.sub,
                     authority: (payload.token.authority as string[]) || ['user'],
+                    roles: (payload.token.roles as string[]) || ['user'],
+                    permissions: (payload.token.permissions as string[]) || [],
                 },
+                config:
+                    (payload.token.config as Record<string, string>) || {},
                 accessToken: isTokenExpired
                     ? ''
                     : ((payload.token.accessToken as string) || ''),

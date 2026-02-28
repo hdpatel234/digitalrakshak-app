@@ -295,7 +295,6 @@
             "termsAndConditionsDesc": "Terms and conditions",
             "privacyPolicyDesc": "Privacy policy"
         },
-
         "support": {
             "support": "Support",
             "myTickets": "My Tickets",
@@ -303,7 +302,6 @@
             "ticketHistory": "Ticket History",
             "knowledgeBase": "Knowledge Base"
         },
-
         "reports": {
             "reports": "Reports",
             "spendingReport": "Spending Report",
@@ -315,7 +313,6 @@
             "exportData": "Export Data",
             "exportDataDesc": "Export Data"
         },
-
         "settings": {
             "settings": "Settings",
             "companyProfile": "Company Profile",
@@ -326,6 +323,48 @@
             "apiKeysDesc": "API Keys",
             "webhooks": "Webhooks",
             "webhooksDesc": "Webhooks"
+        }
+    },
+
+    "header": {
+        "profileDropdown": {
+            "accountSetting": "Account Setting",
+            "activityLog": "Activity Log",
+            "signOut": "Sign Out",
+            "anonymous": "Anonymous",
+            "noEmailAvailable": "No email available"
+        },
+
+        "displaySettings": {
+            "displaySettings": "Display Settings",
+            "darkMode": "Dark Mode",
+            "darkModeDescription": "Switch theme to dark mode",
+            "lightMode": "Light Mode",
+            "direction": "Direction",
+            "rtl": "RTL",
+            "ltr": "LTR",
+            "directionDescription": "Set the text direction",
+            "theme": "Theme",
+            "layout": "Layout",
+            "saveDisplaySettings": "Save Display Settings",
+            "saveTitle": "Success",
+            "saveSuccessMessage": "Display settings saved successfully."
+        },
+
+        "layoutOptions": {
+            "collapsible": "Collapsible",
+            "stacked": "Stacked",
+            "topBar": "Top bar",
+            "frameless": "Frameless",
+            "overlay": "Overlay"
+        },
+
+        "notifications": {
+            "notifications": "Notifications",
+            "noNotification": "No notifications!",
+            "markAllAsRead": "Mark all as read",
+            "noNotificationDesc": "Please Try again later",
+            "viewAll": "View All Activity"
         }
     }
 }

@@ -15,6 +15,8 @@ type PassportUser = {
     is_admin?: boolean
 }
 
+type PassportConfig = Record<string, string>
+
 type PassportLoginPayload = {
     token?: string
     access_token?: string
@@ -22,6 +24,9 @@ type PassportLoginPayload = {
     token_type?: string
     expires_in?: number
     user?: PassportUser
+    config?: PassportConfig
+    roles?: string[]
+    permissions?: string[]
     data?: PassportLoginPayload
 }
 
@@ -35,6 +40,9 @@ export type ValidatedCredentialUser = {
     refreshToken: string
     tokenType: string
     expiresIn: number
+    config: PassportConfig
+    roles: string[]
+    permissions: string[]
 }
 
 type PassportErrorPayload = {
@@ -124,6 +132,14 @@ export const validateCredentialWithResponse = async (
         : user.is_admin
             ? ['admin', 'user']
             : ['user']
+    const roles = Array.isArray(payload.roles) ? payload.roles : authority
+    const permissions = Array.isArray(payload.permissions)
+        ? payload.permissions
+        : []
+    const config =
+        payload.config && typeof payload.config === 'object'
+            ? (payload.config as PassportConfig)
+            : {}
 
     return {
         user: {
@@ -136,6 +152,9 @@ export const validateCredentialWithResponse = async (
             refreshToken: payload.refresh_token || '',
             tokenType: payload.token_type || 'Bearer',
             expiresIn: payload.expires_in || 0,
+            config,
+            roles,
+            permissions,
         },
         message: parsedResponse.message || 'Login successful',
     }

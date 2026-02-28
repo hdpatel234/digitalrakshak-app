@@ -1,5 +1,4 @@
 import classNames from 'classnames'
-import Segment from '@/components/ui/Segment'
 import useTheme from '@/utils/hooks/useTheme'
 import {
     LAYOUT_COLLAPSIBLE_SIDE,
@@ -14,39 +13,40 @@ import TopBarClassicSvg from '@/assets/svg/TopBarClassicSvg'
 import FrameLessSideSvg from '@/assets/svg/FrameLessSideSvg'
 import ContentOverlaySvg from '@/assets/svg/ContentOverlaySvg'
 import type { LayoutType } from '@/@types/theme'
+import useTranslation from '@/utils/hooks/useTranslation'
 
 const layouts = [
     {
         value: LAYOUT_COLLAPSIBLE_SIDE,
-        label: 'Collapsible',
+        label: 'layoutOptions.collapsible',
         src: '/img/thumbs/layouts/classic.jpg',
         srcDark: '/img/thumbs/layouts/classic-dark.jpg',
         svg: <CollapsibleSideSvg height={'100%'} width={'100%'} />,
     },
     {
         value: LAYOUT_STACKED_SIDE,
-        label: 'Stacked',
+        label: 'layoutOptions.stacked',
         src: '/img/thumbs/layouts/modern.jpg',
         srcDark: '/img/thumbs/layouts/modern-dark.jpg',
         svg: <StackedSideSvg height={'100%'} width={'100%'} />,
     },
     {
         value: LAYOUT_TOP_BAR_CLASSIC,
-        label: 'Top bar',
+        label: 'layoutOptions.topBar',
         src: '/img/thumbs/layouts/stackedSide.jpg',
         srcDark: '/img/thumbs/layouts/stackedSide-dark.jpg',
         svg: <TopBarClassicSvg height={'100%'} width={'100%'} />,
     },
     {
         value: LAYOUT_FRAMELESS_SIDE,
-        label: 'Frameless',
+        label: 'layoutOptions.frameless',
         src: '/img/thumbs/layouts/simple.jpg',
         srcDark: '/img/thumbs/layouts/simple-dark.jpg',
         svg: <FrameLessSideSvg height={'100%'} width={'100%'} />,
     },
     {
         value: LAYOUT_CONTENT_OVERLAY,
-        label: 'Overlay',
+        label: 'layoutOptions.overlay',
         src: '/img/thumbs/layouts/decked.jpg',
         srcDark: '/img/thumbs/layouts/decked-dark.jpg',
         svg: <ContentOverlaySvg height={'100%'} width={'100%'} />,
@@ -54,44 +54,36 @@ const layouts = [
 ]
 
 const LayoutSwitcher = () => {
-    const themeLayout = useTheme((state) => state.layout)
+    const t = useTranslation('header')
+    const layoutType = useTheme((state) => state.layout.type)
     const setLayout = useTheme((state) => state.setLayout)
 
     return (
         <div>
-            <Segment
-                className="w-full bg-transparent dark:bg-transparent p-0"
-                value={[]}
-                onChange={(val) => setLayout(val as LayoutType)}
-            >
-                <div className="grid grid-cols-3 gap-4 w-full">
-                    {layouts.map((layout) => (
-                        <Segment.Item key={layout.value} value={layout.value}>
-                            {({ onSegmentItemClick }) => {
-                                const active = themeLayout.type === layout.value
-                                return (
-                                    <div className="text-center">
-                                        <button
-                                            className={classNames(
-                                                'border-2 rounded-xl overflow-hidden',
-                                                active
-                                                    ? 'border-primary dark:border-primary'
-                                                    : 'border-gray-200 dark:border-gray-700',
-                                            )}
-                                            onClick={onSegmentItemClick}
-                                        >
-                                            {layout.svg}
-                                        </button>
-                                        <div className="mt-2 font-semibold">
-                                            {layout.label}
-                                        </div>
-                                    </div>
-                                )
-                            }}
-                        </Segment.Item>
-                    ))}
-                </div>
-            </Segment>
+            <div className="grid grid-cols-3 gap-4 w-full">
+                {layouts.map((layout) => {
+                    const active = layoutType === layout.value
+                    return (
+                        <div className="text-center" key={layout.value}>
+                            <button
+                                type="button"
+                                className={classNames(
+                                    'border-2 rounded-xl overflow-hidden',
+                                    active
+                                        ? 'border-primary dark:border-primary'
+                                        : 'border-gray-200 dark:border-gray-700',
+                                )}
+                                onClick={() => setLayout(layout.value as LayoutType)}
+                            >
+                                {layout.svg}
+                            </button>
+                            <div className="mt-2 font-semibold">
+                                {t(layout.label)}
+                            </div>
+                        </div>
+                    )
+                })}
+            </div>
         </div>
     )
 }

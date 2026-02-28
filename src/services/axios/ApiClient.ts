@@ -219,7 +219,8 @@ class ApiClient {
     method: string,
     endpoint: string,
     data: unknown = {},
-    withAuth: boolean = true
+    withAuth: boolean = true,
+    customConfig: AxiosRequestConfig = {}
   ): Promise<ApiResponse<T>> {
     // Clean endpoint
     endpoint = '/' + endpoint.replace(/^\/+/, '');
@@ -230,12 +231,15 @@ class ApiClient {
       const config: AxiosRequestConfig = {
         method: method as Method,
         url,
+        ...customConfig,
       };
 
-      // Add headers if authentication is required
-      if (withAuth) {
-        config.headers = this.getAuthHeaders();
-      }
+      const customHeaders = (customConfig.headers || {}) as Record<string, string>;
+      const authHeaders = withAuth ? this.getAuthHeaders() : {};
+      config.headers = {
+        ...authHeaders,
+        ...customHeaders,
+      };
 
       // Add data based on method
       if (method.toLowerCase() === 'get') {
@@ -261,20 +265,40 @@ class ApiClient {
     return this.request<T>('get', endpoint, params, withAuth);
   }
 
-  async post<T = unknown>(endpoint: string, data: unknown = {}, withAuth: boolean = true): Promise<ApiResponse<T>> {
-    return this.request<T>('post', endpoint, data, withAuth);
+  async post<T = unknown>(
+    endpoint: string,
+    data: unknown = {},
+    withAuth: boolean = true,
+    customConfig: AxiosRequestConfig = {}
+  ): Promise<ApiResponse<T>> {
+    return this.request<T>('post', endpoint, data, withAuth, customConfig);
   }
 
-  async put<T = unknown>(endpoint: string, data: unknown = {}, withAuth: boolean = true): Promise<ApiResponse<T>> {
-    return this.request<T>('put', endpoint, data, withAuth);
+  async put<T = unknown>(
+    endpoint: string,
+    data: unknown = {},
+    withAuth: boolean = true,
+    customConfig: AxiosRequestConfig = {}
+  ): Promise<ApiResponse<T>> {
+    return this.request<T>('put', endpoint, data, withAuth, customConfig);
   }
 
-  async delete<T = unknown>(endpoint: string, data: unknown = {}, withAuth: boolean = true): Promise<ApiResponse<T>> {
-    return this.request<T>('delete', endpoint, data, withAuth);
+  async delete<T = unknown>(
+    endpoint: string,
+    data: unknown = {},
+    withAuth: boolean = true,
+    customConfig: AxiosRequestConfig = {}
+  ): Promise<ApiResponse<T>> {
+    return this.request<T>('delete', endpoint, data, withAuth, customConfig);
   }
 
-  async patch<T = unknown>(endpoint: string, data: unknown = {}, withAuth: boolean = true): Promise<ApiResponse<T>> {
-    return this.request<T>('patch', endpoint, data, withAuth);
+  async patch<T = unknown>(
+    endpoint: string,
+    data: unknown = {},
+    withAuth: boolean = true,
+    customConfig: AxiosRequestConfig = {}
+  ): Promise<ApiResponse<T>> {
+    return this.request<T>('patch', endpoint, data, withAuth, customConfig);
   }
 }
 

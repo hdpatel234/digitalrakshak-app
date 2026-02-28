@@ -19,6 +19,7 @@ import {
 import isLastChild from '@/utils/isLastChild'
 import useResponsive from '@/utils/hooks/useResponsive'
 import { useRouter } from 'next/navigation'
+import useTranslation from '@/utils/hooks/useTranslation'
 
 import type { DropdownRef } from '@/components/ui/Dropdown'
 
@@ -48,6 +49,8 @@ const _Notification = ({ className }: { className?: string }) => {
     const { larger } = useResponsive()
 
     const router = useRouter()
+
+    const t  = useTranslation('header')
 
     const getNotificationCount = async () => {
         const resp = await apiGetNotificationCount()
@@ -101,7 +104,7 @@ const _Notification = ({ className }: { className?: string }) => {
     const notificationDropdownRef = useRef<DropdownRef>(null)
 
     const handleViewAllActivity = () => {
-        router.push('/concepts/account/activity-log')
+        router.push('/account/activity-log')
         if (notificationDropdownRef.current) {
             notificationDropdownRef.current.handleDropdownClose()
         }
@@ -122,8 +125,8 @@ const _Notification = ({ className }: { className?: string }) => {
         >
             <Dropdown.Item variant="header">
                 <div className="dark:border-gray-700 px-2 flex items-center justify-between mb-1">
-                    <h6>Notifications</h6>
-                    <Tooltip title="Mark all as read">
+                    <h6>{t('notifications.notifications')}</h6>
+                    <Tooltip title={t('notifications.markAllAsRead')}>
                         <Button
                             variant="plain"
                             shape="circle"
@@ -197,8 +200,8 @@ const _Notification = ({ className }: { className?: string }) => {
                                 src="/img/others/no-notification.png"
                                 alt="no-notification"
                             />
-                            <h6 className="font-semibold">No notifications!</h6>
-                            <p className="mt-1">Please Try again later</p>
+                            <h6 className="font-semibold">{t('notifications.noNotification')}</h6>
+                            <p className="mt-1">{t('notifications.noNotificationDesc')}</p>
                         </div>
                     </div>
                 )}
@@ -210,7 +213,7 @@ const _Notification = ({ className }: { className?: string }) => {
                         variant="solid"
                         onClick={handleViewAllActivity}
                     >
-                        View All Activity
+                        {t('notifications.viewAll')}
                     </Button>
                 </div>
             </Dropdown.Item>

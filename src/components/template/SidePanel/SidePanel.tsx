@@ -8,11 +8,14 @@ import SidePanelContent from './SidePanelContent'
 import withHeaderItem from '@/utils/hoc/withHeaderItem'
 import useTheme from '@/utils/hooks/useTheme'
 import type { CommonProps } from '@/@types/common'
+import useTranslation from '@/utils/hooks/useTranslation'
 
 type SidePanelProps = CommonProps
 
 const _SidePanel = (props: SidePanelProps) => {
     const { className, ...rest } = props
+
+    const t = useTranslation('header')
 
     const [isOpen, setIsOpen] = useState(false)
 
@@ -43,7 +46,7 @@ const _SidePanel = (props: SidePanelProps) => {
                 <PiGearDuotone />
             </div>
             <Drawer
-                title="Display Settings"
+                title={t('displaySettings.displaySettings')}
                 isOpen={isOpen}
                 placement={direction === 'rtl' ? 'left' : 'right'}
                 width={375}

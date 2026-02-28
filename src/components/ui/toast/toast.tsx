@@ -53,9 +53,18 @@ function getWrapper(wrapperId?: string) {
 const toast: Toast = (message: ReactNode) => toast.push(message)
 
 toast.push = (message, options = toastDefaultProps as ToastProps) => {
-    let id = options.placement
-    if (options.block) {
-        id = castPlacment(options.placement as NotificationPlacement)
+    const resolvedOptions = {
+        ...toastDefaultProps,
+        ...options,
+        placement:
+            options.placement === PLACEMENT.TOP_CENTER
+                ? PLACEMENT.TOP_END
+                : options.placement,
+    } as ToastProps
+
+    let id = resolvedOptions.placement
+    if (resolvedOptions.block) {
+        id = castPlacment(resolvedOptions.placement as NotificationPlacement)
     }
 
     const wrapper = getWrapper(id)
@@ -64,7 +73,7 @@ toast.push = (message, options = toastDefaultProps as ToastProps) => {
         return wrapper.current.push(message)
     }
 
-    return createWrapper(id ?? '', options).then((ref) => {
+    return createWrapper(id ?? '', resolvedOptions).then((ref) => {
         return ref.current?.push(message)
     })
 }

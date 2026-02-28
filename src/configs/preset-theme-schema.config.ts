@@ -347,23 +347,6 @@ const lavenderTheme: ThemeVariables = {
     },
 }
 
-const coffeeTheme: ThemeVariables = {
-    light: {
-        primary: '#92400e',
-        primaryDeep: '#78350f',
-        primaryMild: '#b45309',
-        primarySubtle: '#92400e1a',
-        neutral: '#ffffff',
-    },
-    dark: {
-        primary: '#d97706',
-        primaryDeep: '#b45309',
-        primaryMild: '#f59e0b',
-        primarySubtle: '#d977061a',
-        neutral: '#422006',
-    },
-}
-
 const presetThemeSchemaConfig: Record<string, ThemeVariables> = {
     default: defaultTheme,
     dark: darkTheme,
@@ -385,7 +368,6 @@ const presetThemeSchemaConfig: Record<string, ThemeVariables> = {
     sunset: sunsetTheme,
     mint: mintTheme,
     lavender: lavenderTheme,
-    coffee: coffeeTheme,
 }
 
 export default presetThemeSchemaConfig

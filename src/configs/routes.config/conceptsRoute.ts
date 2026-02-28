@@ -207,6 +207,26 @@ const conceptsRoute: Routes = {
         dynamicRoute: true
     },
 
+    // Account
+    '/account/settings': {
+        key: 'concepts.account.settings',
+        authority: [ADMIN, USER],
+        meta: {
+            header: {
+                title: 'Settings',
+            },
+            pageContainerType: 'contained',
+        },
+    },
+
+    '/account/activity-log': {
+        key: 'concepts.account.activityLog',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        },
+    },
+
     // Others
     '/concepts/ai/chat': {
         key: 'concepts.ai.chat',

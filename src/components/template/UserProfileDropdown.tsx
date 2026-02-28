@@ -5,6 +5,7 @@ import withHeaderItem from '@/utils/hoc/withHeaderItem'
 import Link from 'next/link'
 import signOut from '@/server/actions/auth/handleSignOut'
 import useCurrentSession from '@/utils/hooks/useCurrentSession'
+import useTranslation from '@/utils/hooks/useTranslation'
 import {
     PiUserDuotone,
     PiGearDuotone,
@@ -15,39 +16,38 @@ import {
 import type { JSX } from 'react'
 
 type DropdownList = {
-    label: string
+    key: string
+    labelKey: string
     path: string
     icon: JSX.Element
 }
 
 const dropdownItemList: DropdownList[] = [
     {
-        label: 'Profile',
-        path: '/concepts/account/settings',
-        icon: <PiUserDuotone />,
-    },
-    {
-        label: 'Account Setting',
-        path: '/concepts/account/settings',
+        key: 'accountSetting',
+        labelKey: 'profileDropdown.accountSetting',
+        path: '/account/settings',
         icon: <PiGearDuotone />,
     },
     {
-        label: 'Activity Log',
-        path: '/concepts/account/activity-log',
+        key: 'activityLog',
+        labelKey: 'profileDropdown.activityLog',
+        path: '/account/activity-log',
         icon: <PiPulseDuotone />,
     },
 ]
 
 const _UserDropdown = () => {
     const { session } = useCurrentSession()
+    const t = useTranslation('header')
 
     const handleSignOut = async () => {
         await signOut()
     }
 
     const avatarProps = {
-        ...(session?.user?.image
-            ? { src: session?.user?.image }
+        ...(session?.user?.avatar
+            ? { src: session?.user?.avatar }
             : { icon: <PiUserDuotone /> }),
     }
 
@@ -67,10 +67,11 @@ const _UserDropdown = () => {
                     <Avatar {...avatarProps} />
                     <div>
                         <div className="font-bold text-gray-900 dark:text-gray-100">
-                            {session?.user?.name || 'Anonymous'}
+                            {session?.user?.name || t('profileDropdown.anonymous')}
                         </div>
                         <div className="text-xs">
-                            {session?.user?.email || 'No email available'}
+                            {session?.user?.email ||
+                                t('profileDropdown.noEmailAvailable')}
                         </div>
                     </div>
                 </div>
@@ -78,28 +79,28 @@ const _UserDropdown = () => {
             <Dropdown.Item variant="divider" />
             {dropdownItemList.map((item) => (
                 <Dropdown.Item
-                    key={item.label}
-                    eventKey={item.label}
+                    key={item.key}
+                    eventKey={item.key}
                     className="px-0"
                 >
                     <Link className="flex h-full w-full px-2" href={item.path}>
                         <span className="flex gap-2 items-center w-full">
                             <span className="text-xl">{item.icon}</span>
-                            <span>{item.label}</span>
+                            <span>{t(item.labelKey)}</span>
                         </span>
                     </Link>
                 </Dropdown.Item>
             ))}
             <Dropdown.Item variant="divider" />
             <Dropdown.Item
-                eventKey="Sign Out"
+                eventKey="signOut"
                 className="gap-2"
                 onClick={handleSignOut}
             >
                 <span className="text-xl">
                     <PiSignOutDuotone />
                 </span>
-                <span>Sign Out</span>
+                <span>{t('profileDropdown.signOut')}</span>
             </Dropdown.Item>
         </Dropdown>
     )
