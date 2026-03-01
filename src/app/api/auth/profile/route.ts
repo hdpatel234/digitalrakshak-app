@@ -7,6 +7,8 @@ type UpstreamProfileResponse = {
     success?: boolean
     message?: string
     data?: unknown
+    status_code?: number
+    error?: string
 }
 
 export async function POST(request: NextRequest) {
@@ -61,6 +63,20 @@ export async function POST(request: NextRequest) {
             },
         )) as UpstreamProfileResponse & { status_code?: number }
 
+        // Check for 500 error
+        if (payload.status_code === 500) {
+            // Return exact error message from backend
+            return NextResponse.json(
+                {
+                    status: false,
+                    message: payload.message || 'Internal server error',
+                    ...(payload.error ? { error: payload.error } : {}),
+                    ...(payload.data ? { data: payload.data } : {}),
+                },
+                { status: 500 },
+            )
+        }
+
         const isSuccess =
             typeof payload.success === 'boolean'
                 ? payload.success
@@ -69,31 +85,43 @@ export async function POST(request: NextRequest) {
                   : false
 
         if (!isSuccess) {
+            // For non-500 errors, return backend message with higher priority
             return NextResponse.json(
                 {
                     status: false,
+                    // Backend message takes priority, fallback to generic message
                     message: payload.message || 'Failed to update profile',
                     ...(payload.data ? { data: payload.data } : {}),
+                    // Include any additional error details from backend
+                    ...(payload.error ? { error: payload.error } : {}),
                 },
                 { status: payload.status_code || 400 },
             )
         }
 
+        // For success responses, use backend message
         return NextResponse.json(
             {
                 status: true,
+                // Backend message takes priority, fallback to generic success message
                 message: payload.message || 'Profile updated successfully',
                 ...(payload.data ? { data: payload.data } : {}),
             },
             { status: 200 },
         )
-    } catch {
+    } catch (error: any) {
+        // Check if error response contains specific error message
+        const errorMessage = error?.response?.data?.message || 
+                            error?.message || 
+                            'Failed to update profile'
+        
         return NextResponse.json(
             {
                 status: false,
-                message: 'Failed to update profile',
+                message: errorMessage,
+                ...(error?.response?.data ? { details: error.response.data } : {}),
             },
-            { status: 500 },
+            { status: error?.response?.status || 500 },
         )
     }
 }
