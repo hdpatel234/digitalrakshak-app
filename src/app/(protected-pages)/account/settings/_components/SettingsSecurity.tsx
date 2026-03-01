@@ -6,9 +6,11 @@ import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import { Form, FormItem } from '@/components/ui/Form'
+import Notification from '@/components/ui/Notification'
+import { toast } from '@/components/ui/toast'
 import classNames from '@/utils/classNames'
-import sleep from '@/utils/sleep'
 import isLastChild from '@/utils/isLastChild'
+import { apiChangePassword } from '@/services/auth/changePassword'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, Controller } from 'react-hook-form'
 import { z } from 'zod'
@@ -70,6 +72,7 @@ const SettingsSecurity = () => {
     const {
         getValues,
         handleSubmit,
+        reset,
         formState: { errors },
         control,
     } = useForm<PasswordSchema>({
@@ -78,10 +81,56 @@ const SettingsSecurity = () => {
 
     const handlePostSubmit = async () => {
         setIsSubmitting(true)
-        await sleep(1000)
-        console.log('getValues', getValues())
-        setConfirmationOpen(false)
-        setIsSubmitting(false)
+        try {
+            const values = getValues()
+            const response = await apiChangePassword({
+                current_password: values.currentPassword,
+                new_password: values.newPassword,
+            })
+
+            const isSuccess =
+                typeof response.success === 'boolean'
+                    ? response.success
+                    : Boolean(response.status)
+
+            if (!isSuccess) {
+                throw new Error(response.message || 'Failed to change password')
+            }
+
+            toast.push(
+                <Notification title="Password updated" type="success">
+                    {response.message ||
+                        'Your password has been changed successfully.'}
+                </Notification>,
+            )
+
+            reset({
+                currentPassword: '',
+                newPassword: '',
+                confirmNewPassword: '',
+            })
+            setConfirmationOpen(false)
+        } catch (error) {
+            setConfirmationOpen(false)
+            reset({
+                currentPassword: '',
+                newPassword: '',
+                confirmNewPassword: '',
+            })
+
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : 'Failed to change password'
+
+            toast.push(
+                <Notification title="Update failed" type="danger">
+                    {message}
+                </Notification>,
+            )
+        } finally {
+            setIsSubmitting(false)
+        }
     }
 
     const onSubmit = async () => {
