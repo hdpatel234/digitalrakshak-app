@@ -9,13 +9,12 @@ const stripAuthReadMore = (message: string) =>
     message.replace(/\.\s*Read more at\s+https?:\/\/\S+$/i, '').trim()
 
 export const onSignInWithCredentials = async (
-    { email, password }: SignInCredential,
+    credentials: SignInCredential,
     callbackUrl?: string,
 ) => {
     try {
         await signIn('credentials', {
-            email,
-            password,
+            ...credentials,
             redirectTo: callbackUrl || appConfig.authenticatedEntryPath,
         })
     } catch (error) {

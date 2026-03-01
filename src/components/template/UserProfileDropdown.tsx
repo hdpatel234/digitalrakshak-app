@@ -3,9 +3,11 @@ import Avatar from '@/components/ui/Avatar'
 import Dropdown from '@/components/ui/Dropdown'
 import withHeaderItem from '@/utils/hoc/withHeaderItem'
 import Link from 'next/link'
-import signOut from '@/server/actions/auth/handleSignOut'
+import { signOut } from 'next-auth/react'
 import useCurrentSession from '@/utils/hooks/useCurrentSession'
 import useTranslation from '@/utils/hooks/useTranslation'
+import appConfig from '@/configs/app.config'
+import { callInternalLogout } from '@/services/auth/logout'
 import {
     PiUserDuotone,
     PiGearDuotone,
@@ -42,7 +44,8 @@ const _UserDropdown = () => {
     const t = useTranslation('header')
 
     const handleSignOut = async () => {
-        await signOut()
+        await callInternalLogout()
+        await signOut({ callbackUrl: appConfig.unAuthenticatedEntryPath })
     }
 
     const avatarProps = {

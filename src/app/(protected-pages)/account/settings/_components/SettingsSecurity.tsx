@@ -176,7 +176,9 @@ const SettingsSecurity = () => {
             >
                 <p>Are you sure you want to change your password?</p>
             </ConfirmDialog>
-            <div className="mb-8">
+            
+            {/* 2 Step Verification */}
+            {/* <div className="mb-8">
                 <h4>2-Step verification</h4>
                 <p>
                     Your account holds great value to hackers. Enable two-step
@@ -234,7 +236,7 @@ const SettingsSecurity = () => {
                         </div>
                     ))}
                 </div>
-            </div>
+            </div> */}
         </div>
     )
 }

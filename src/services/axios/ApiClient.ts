@@ -110,9 +110,6 @@ class ApiClient {
     
     // Handle unauthorized (401)
     if (statusCode === 401) {
-      // Clear invalid token
-      this.clearToken();
-      
       return {
         status: false,
         status_code: statusCode,
@@ -167,16 +164,6 @@ class ApiClient {
     }
 
     return `API request failed with status: ${response?.status || 'unknown'}`;
-  }
-
-  /**
-   * Clear token from storage
-   */
-  private clearToken(): void {
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('auth_token');
-      localStorage.removeItem('auth_token');
-    }
   }
 
   /**

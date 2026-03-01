@@ -1,14 +1,18 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
     SessionProvider as NextAuthSessionProvider,
+    signOut,
     useSession,
 } from 'next-auth/react'
 import SessionContext from './SessionContext'
 import type { Session as NextAuthSession } from 'next-auth'
 import type { AppSession } from './SessionContext'
 import type { Dispatch, ReactNode, SetStateAction } from 'react'
+import appConfig from '@/configs/app.config'
+import apiClient from '@/services/axios/ApiClient'
+import { callInternalLogout } from '@/services/auth/logout'
 
 type Session = NextAuthSession | null
 
@@ -23,10 +27,36 @@ const SessionSync = ({
     onSessionChange: (session: Session) => void
 }) => {
     const { data: liveSession } = useSession()
+    const didHandleSessionError = useRef(false)
 
     useEffect(() => {
         onSessionChange(liveSession || null)
     }, [liveSession, onSessionChange])
+
+    useEffect(() => {
+        const appSession = liveSession as AppSession | null
+        const accessToken = appSession?.accessToken
+
+        if (accessToken) {
+            apiClient.setToken(accessToken)
+        }
+
+        if (
+            appSession?.error === 'RefreshAccessTokenError' &&
+            !didHandleSessionError.current
+        ) {
+            didHandleSessionError.current = true
+
+            const handleExpiredSession = async () => {
+                await callInternalLogout()
+                await signOut({
+                    callbackUrl: appConfig.unAuthenticatedEntryPath,
+                })
+            }
+
+            handleExpiredSession()
+        }
+    }, [liveSession])
 
     return null
 }

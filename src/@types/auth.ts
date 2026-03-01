@@ -1,6 +1,10 @@
 export type SignInCredential = {
     email: string
     password: string
+    ip?: string
+    browser?: string
+    device?: string
+    os?: string
 }
 
 export type SignInResponse = {

@@ -12,6 +12,7 @@ import type { CommonProps } from '@/@types/common'
 
 const languageList = [
     { label: 'English (IN)', value: 'en', flag: 'IN' },
+    // { label: 'English (US)', value: 'en', flag: 'US' },
     // { label: 'हिन्दी', value: 'hi', flag: 'IN' },
     // { label: 'ગુજરાતી', value: 'gu', flag: 'IN' },
 ]
@@ -23,8 +24,27 @@ const _LanguageSelector = ({ className }: CommonProps) => {
         return languageList.find((lang) => lang.value === locale)?.flag
     }, [locale])
 
-    const handleUpdateLocale = async (locale: string) => {
-        await setLocale(locale)
+    const handleUpdateLocale = async (nextLocale: string) => {
+        if (nextLocale === locale) {
+            return
+        }
+
+        try {
+            await fetch('/api/user/config', {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    language: nextLocale,
+                }),
+            })
+        } catch (error) {
+            console.error('Failed to update language config', error)
+        }
+
+        await setLocale(nextLocale)
     }
 
     const selectedLanguage = (

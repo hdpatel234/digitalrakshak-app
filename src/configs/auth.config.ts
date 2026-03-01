@@ -151,7 +151,7 @@ export default {
         }),
     ],
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger, session }) {
             if (user) {
                 const authUser = user as {
                     authority?: string[]
@@ -187,6 +187,25 @@ export default {
                 return token
             }
 
+            if (trigger === 'update' && session?.user) {
+                const updatedUser = session.user as {
+                    name?: string | null
+                    email?: string | null
+                    image?: string | null
+                    avatar?: string | null
+                }
+
+                token.name = updatedUser.name ?? token.name
+                token.email = updatedUser.email ?? token.email
+                token.picture =
+                    updatedUser.avatar ??
+                    updatedUser.image ??
+                    (token.picture as string | undefined) ??
+                    null
+
+                return token
+            }
+
             const accessTokenExpiresAt = Number(token.accessTokenExpiresAt || 0)
             const now = Date.now()
             const refreshThresholdMs = 60 * 1000
@@ -209,6 +228,10 @@ export default {
                 user: {
                     ...payload.session.user,
                     id: payload.token.sub,
+                    avatar:
+                        (payload.token.picture as string | undefined) ||
+                        payload.session.user?.image ||
+                        '',
                     authority: (payload.token.authority as string[]) || ['user'],
                     roles: (payload.token.roles as string[]) || ['user'],
                     permissions: (payload.token.permissions as string[]) || [],

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import Button from '@/components/ui/Button'
 import Upload from '@/components/ui/Upload'
 import Input from '@/components/ui/Input'
@@ -8,11 +8,9 @@ import Select, { Option as DefaultOption } from '@/components/ui/Select'
 import Avatar from '@/components/ui/Avatar'
 import { Form, FormItem } from '@/components/ui/Form'
 import NumericInput from '@/components/shared/NumericInput'
-import { countryList } from '@/constants/countries.constant'
 import { components } from 'react-select'
 import type { ControlProps, OptionProps } from 'react-select'
 import { apiGetSettingsProfile } from '@/services/AccontsService'
-import sleep from '@/utils/sleep'
 import useSWR from 'swr'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, Controller } from 'react-hook-form'
@@ -21,6 +19,12 @@ import { HiOutlineUser } from 'react-icons/hi'
 import { TbPlus } from 'react-icons/tb'
 import type { ZodType } from 'zod'
 import type { GetSettingsProfileResponse } from '../types'
+import { apiGetCountries } from '@/services/auth/countries'
+import { apiUpdateProfile } from '@/services/auth/profile'
+import Notification from '@/components/ui/Notification'
+import { toast } from '@/components/ui/toast'
+import useCurrentSession from '@/utils/hooks/useCurrentSession'
+import { useSession } from 'next-auth/react'
 
 type ProfileSchema = {
     firstName: string
@@ -29,10 +33,10 @@ type ProfileSchema = {
     dialCode: string
     phoneNumber: string
     img: string
-    country: string
-    address: string
-    postcode: string
-    city: string
+    // country: string
+    // address: string
+    // postcode: string
+    // city: string
 }
 
 type CountryOption = {
@@ -43,23 +47,52 @@ type CountryOption = {
 
 const { Control } = components
 
-const validationSchema: ZodType<ProfileSchema> = z.object({
-    firstName: z.string().min(1, { message: 'First name required' }),
-    lastName: z.string().min(1, { message: 'Last name required' }),
-    email: z
-        .string()
-        .min(1, { message: 'Email required' })
-        .email({ message: 'Invalid email' }),
-    dialCode: z.string().min(1, { message: 'Please select your country code' }),
-    phoneNumber: z
-        .string()
-        .min(1, { message: 'Please input your mobile number' }),
-    country: z.string().min(1, { message: 'Please select a country' }),
-    address: z.string().min(1, { message: 'Addrress required' }),
-    postcode: z.string().min(1, { message: 'Postcode required' }),
-    city: z.string().min(1, { message: 'City required' }),
-    img: z.string(),
-})
+const DEFAULT_AVATAR = ''
+
+type CountriesApiResponse = {
+    status: boolean
+    data: Array<{
+        id: number
+        name: string
+        isoCode2: string
+        isoCode3: string
+        phoneCode: string
+        currencyCode: string
+        currencySymbol: string
+        capital: string
+        continent: string
+        isDefault: boolean
+        displayOrder: number
+    }>
+}
+
+const validationSchema: ZodType<ProfileSchema> = z
+    .object({
+        firstName: z.string().min(1, { message: 'First name required' }),
+        lastName: z.string().min(1, { message: 'Last name required' }),
+        email: z
+            .string()
+            .min(1, { message: 'Email required' })
+            .email({ message: 'Invalid email' }),
+        dialCode: z.string(),
+        phoneNumber: z.string(),
+        // country: z.string().min(1, { message: 'Please select a country' }),
+        // address: z.string().min(1, { message: 'Address required' }),
+        // postcode: z.string().min(1, { message: 'Postcode required' }),
+        // city: z.string().min(1, { message: 'City required' }),
+        img: z.string(),
+    })
+    .refine(
+        (data) => {
+            if (!data.dialCode && !data.phoneNumber) return true
+            if (data.dialCode && data.phoneNumber) return true
+            return false
+        },
+        {
+            message: 'Both country code and phone number are required if providing contact information',
+            path: ['phoneNumber'],
+        }
+    )
 
 const CustomSelectOption = (
     props: OptionProps<CountryOption> & { variant: 'country' | 'phone' },
@@ -100,8 +133,13 @@ const CustomControl = ({ children, ...props }: ControlProps<CountryOption>) => {
 }
 
 const SettingsProfile = () => {
+    const [avatarFile, setAvatarFile] = useState<File | null>(null)
+    const [removeLogo, setRemoveLogo] = useState(false)
+    const { setSession } = useCurrentSession()
+    const { update } = useSession()
+
     const { data, mutate } = useSWR(
-        '/api/settings/profile/',
+        '/api/auth/me',
         () => apiGetSettingsProfile<GetSettingsProfileResponse>(),
         {
             revalidateOnFocus: false,
@@ -110,16 +148,27 @@ const SettingsProfile = () => {
         },
     )
 
-    const dialCodeList = useMemo(() => {
-        const newCountryList: Array<CountryOption> = JSON.parse(
-            JSON.stringify(countryList),
-        )
+    const { data: countriesData } = useSWR<CountriesApiResponse>(
+        '/api/auth/countries',
+        () => apiGetCountries<CountriesApiResponse>(),
+        {
+            revalidateOnFocus: false,
+            revalidateIfStale: false,
+            revalidateOnReconnect: false,
+        },
+    )
 
-        return newCountryList.map((country) => {
-            country.label = country.dialCode
-            return country
-        })
-    }, [])
+    // Prepare dial code list for dropdown
+    const dialCodeList = useMemo(() => {
+        if (!countriesData?.data) return []
+
+        return countriesData.data.map((country) => ({
+            ...country,
+            label: country.phoneCode,
+            dialCode: country.phoneCode,
+            value: country.isoCode2,
+        }))
+    }, [countriesData])
 
     const beforeUpload = (files: FileList | null) => {
         let valid: string | boolean = true
@@ -137,6 +186,85 @@ const SettingsProfile = () => {
         return valid
     }
 
+    const onProfileSubmit = async (values: ProfileSchema) => {
+        try {
+            const formData = new FormData()
+            formData.append('first_name', values.firstName)
+            formData.append('last_name', values.lastName)
+            formData.append('email', values.email)
+            formData.append('phone_code', values.dialCode || '')
+            formData.append('phone', values.phoneNumber || '')
+            formData.append('remove_logo', removeLogo ? 'true' : 'false')
+
+            if (avatarFile) {
+                formData.append('avatar', avatarFile)
+            }
+
+            const response = await apiUpdateProfile(formData)
+
+            const isSuccess =
+                typeof response.success === 'boolean'
+                    ? response.success
+                    : Boolean(response.status)
+
+            if (!isSuccess) {
+                throw new Error(response.message || 'Failed to update profile')
+            }
+
+            toast.push(
+                <Notification title="Profile updated" type="success">
+                    Your profile has been updated successfully.
+                </Notification>,
+            )
+
+            const latestProfile = await mutate()
+            const firstName = latestProfile?.firstName || values.firstName
+            const lastName = latestProfile?.lastName || values.lastName
+            const name = `${firstName} ${lastName}`.trim()
+            const email = latestProfile?.email || values.email
+            const avatar =
+                latestProfile?.img !== undefined
+                    ? latestProfile.img
+                    : removeLogo
+                      ? ''
+                      : data?.img || ''
+
+            setSession((prevSession) => ({
+                ...(prevSession || { expires: '', user: {} }),
+                user: {
+                    ...(prevSession?.user || {}),
+                    name,
+                    email,
+                    avatar,
+                    image: avatar,
+                },
+            }))
+
+            await update({
+                user: {
+                    name,
+                    email,
+                    avatar,
+                    image: avatar,
+                },
+            })
+
+            setAvatarFile(null)
+            setRemoveLogo(false)
+        } catch (error) {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : 'Failed to update profile'
+
+            toast.push(
+                <Notification title="Update failed" type="danger">
+                    {message}
+                </Notification>,
+            )
+        }
+    }
+
     const {
         handleSubmit,
         reset,
@@ -144,26 +272,42 @@ const SettingsProfile = () => {
         control,
     } = useForm<ProfileSchema>({
         resolver: zodResolver(validationSchema),
+        defaultValues: {
+            firstName: '',
+            lastName: '',
+            email: '',
+            dialCode: '',
+            phoneNumber: '',
+            img: DEFAULT_AVATAR,
+            // country: '',
+            // address: '',
+            // postcode: '',
+            // city: '',
+        },
     })
 
     useEffect(() => {
         if (data) {
-            reset(data)
+            reset({
+                ...data,
+                dialCode:
+                    data.dialCode !== undefined && data.dialCode !== null
+                        ? String(data.dialCode)
+                        : '',
+                phoneNumber:
+                    data.phoneNumber !== undefined && data.phoneNumber !== null
+                        ? String(data.phoneNumber)
+                        : '',
+                img: data.img || DEFAULT_AVATAR,
+            })
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data])
 
-    const onSubmit = async (values: ProfileSchema) => {
-        await sleep(500)
-        if (data) {
-            mutate({ ...data, ...values }, false)
-        }
-    }
-
     return (
         <>
             <h4 className="mb-8">Personal information</h4>
-            <Form onSubmit={handleSubmit(onSubmit)}>
+            <Form onSubmit={handleSubmit(onProfileSubmit)}>
                 <div className="mb-8">
                     <Controller
                         name="img"
@@ -174,7 +318,7 @@ const SettingsProfile = () => {
                                     size={90}
                                     className="border-4 border-white bg-gray-100 text-gray-300 shadow-lg"
                                     icon={<HiOutlineUser />}
-                                    src={field.value}
+                                    src={field.value || DEFAULT_AVATAR}
                                 />
                                 <div className="flex items-center gap-2">
                                     <Upload
@@ -183,6 +327,8 @@ const SettingsProfile = () => {
                                         beforeUpload={beforeUpload}
                                         onChange={(files) => {
                                             if (files.length > 0) {
+                                                setAvatarFile(files[0])
+                                                setRemoveLogo(false)
                                                 field.onChange(
                                                     URL.createObjectURL(
                                                         files[0],
@@ -204,6 +350,8 @@ const SettingsProfile = () => {
                                         size="sm"
                                         type="button"
                                         onClick={() => {
+                                            setAvatarFile(null)
+                                            setRemoveLogo(true)
                                             field.onChange('')
                                         }}
                                     >
@@ -331,7 +479,7 @@ const SettingsProfile = () => {
                         />
                     </FormItem>
                 </div>
-                <h4 className="mb-6">Address information</h4>
+                {/* <h4 className="mb-6">Address information</h4>
                 <FormItem
                     label="Country"
                     invalid={Boolean(errors.country)}
@@ -420,7 +568,7 @@ const SettingsProfile = () => {
                             )}
                         />
                     </FormItem>
-                </div>
+                </div>  */}
                 <div className="flex justify-end">
                     <Button
                         variant="solid"
