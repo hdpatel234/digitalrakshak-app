@@ -15,6 +15,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, Controller } from 'react-hook-form'
 import { z } from 'zod'
 import type { ZodType } from 'zod'
+import useTranslation from '@/utils/hooks/useTranslation'
 
 type PasswordSchema = {
     currentPassword: string
@@ -68,6 +69,8 @@ const SettingsSecurity = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     const formRef = useRef<HTMLFormElement>(null)
+
+    const t = useTranslation('header')
 
     const {
         getValues,
@@ -140,11 +143,8 @@ const SettingsSecurity = () => {
     return (
         <div>
             <div className="mb-8">
-                <h4>Password</h4>
-                <p>
-                    Remember, your password is your digital key to your account.
-                    Keep it safe, keep it secure!
-                </p>
+                <h4>{t('security.securityText')}</h4>
+                <p>{t('security.securityDesc')}</p>
             </div>
             <Form
                 ref={formRef}
@@ -152,7 +152,7 @@ const SettingsSecurity = () => {
                 onSubmit={handleSubmit(onSubmit)}
             >
                 <FormItem
-                    label="Current password"
+                    label={t('security.currentPassword')}
                     invalid={Boolean(errors.currentPassword)}
                     errorMessage={errors.currentPassword?.message}
                 >
@@ -170,7 +170,7 @@ const SettingsSecurity = () => {
                     />
                 </FormItem>
                 <FormItem
-                    label="New password"
+                    label={t('security.newPassword')}
                     invalid={Boolean(errors.newPassword)}
                     errorMessage={errors.newPassword?.message}
                 >
@@ -188,7 +188,7 @@ const SettingsSecurity = () => {
                     />
                 </FormItem>
                 <FormItem
-                    label="Confirm new password"
+                    label={t('security.confirmPassword')}
                     invalid={Boolean(errors.confirmNewPassword)}
                     errorMessage={errors.confirmNewPassword?.message}
                 >
@@ -207,14 +207,14 @@ const SettingsSecurity = () => {
                 </FormItem>
                 <div className="flex justify-end">
                     <Button variant="solid" type="submit">
-                        Update
+                        {t('security.updateBtn')}
                     </Button>
                 </div>
             </Form>
             <ConfirmDialog
                 isOpen={confirmationOpen}
                 type="warning"
-                title="Update password"
+                title={t('security.confirmTitle')}
                 confirmButtonProps={{
                     loading: isSubmitting,
                     onClick: handlePostSubmit,
@@ -223,7 +223,7 @@ const SettingsSecurity = () => {
                 onRequestClose={() => setConfirmationOpen(false)}
                 onCancel={() => setConfirmationOpen(false)}
             >
-                <p>Are you sure you want to change your password?</p>
+                <p>{t('security.confirmMessage')}</p>
             </ConfirmDialog>
             
             {/* 2 Step Verification */}

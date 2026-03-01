@@ -25,6 +25,7 @@ import Notification from '@/components/ui/Notification'
 import { toast } from '@/components/ui/toast'
 import useCurrentSession from '@/utils/hooks/useCurrentSession'
 import { useSession } from 'next-auth/react'
+import useTranslation from '@/utils/hooks/useTranslation'
 
 type ProfileSchema = {
     firstName: string
@@ -137,6 +138,8 @@ const SettingsProfile = () => {
     const [removeLogo, setRemoveLogo] = useState(false)
     const { setSession } = useCurrentSession()
     const { update } = useSession()
+
+    const t = useTranslation('header')
 
     const { data, mutate } = useSWR(
         '/api/auth/me',
@@ -306,7 +309,7 @@ const SettingsProfile = () => {
 
     return (
         <>
-            <h4 className="mb-8">Personal information</h4>
+            <h4 className="mb-8">{t('profile.profileInfo')}</h4>
             <Form onSubmit={handleSubmit(onProfileSubmit)}>
                 <div className="mb-8">
                     <Controller
@@ -343,7 +346,7 @@ const SettingsProfile = () => {
                                             type="button"
                                             icon={<TbPlus />}
                                         >
-                                            Upload Image
+                                            {t('profile.profileUpdateMenu.uploadImage')}
                                         </Button>
                                     </Upload>
                                     <Button
@@ -355,7 +358,7 @@ const SettingsProfile = () => {
                                             field.onChange('')
                                         }}
                                     >
-                                        Remove
+                                        {t('profile.profileUpdateMenu.removeImage')}
                                     </Button>
                                 </div>
                             </div>
@@ -364,7 +367,7 @@ const SettingsProfile = () => {
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                     <FormItem
-                        label="First name"
+                        label={t('profile.profileUpdateMenu.firstName')}
                         invalid={Boolean(errors.firstName)}
                         errorMessage={errors.firstName?.message}
                     >
@@ -382,7 +385,7 @@ const SettingsProfile = () => {
                         />
                     </FormItem>
                     <FormItem
-                        label="User name"
+                        label={t('profile.profileUpdateMenu.lastName')}
                         invalid={Boolean(errors.lastName)}
                         errorMessage={errors.lastName?.message}
                     >
@@ -401,7 +404,7 @@ const SettingsProfile = () => {
                     </FormItem>
                 </div>
                 <FormItem
-                    label="Email"
+                    label={t('profile.profileUpdateMenu.email')}
                     invalid={Boolean(errors.email)}
                     errorMessage={errors.email?.message}
                 >
@@ -425,7 +428,7 @@ const SettingsProfile = () => {
                             Boolean(errors.dialCode)
                         }
                     >
-                        <label className="form-label mb-2">Phone number</label>
+                        <label className="form-label mb-2">{t('profile.profileUpdateMenu.phoneNumber')}</label>
                         <Controller
                             name="dialCode"
                             control={control}
@@ -575,7 +578,7 @@ const SettingsProfile = () => {
                         type="submit"
                         loading={isSubmitting}
                     >
-                        Save
+                        {t('profile.profileUpdateMenu.saveBtn')}
                     </Button>
                 </div>
             </Form>

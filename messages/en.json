@@ -325,7 +325,6 @@
             "webhooksDesc": "Webhooks"
         }
     },
-
     "header": {
         "profileDropdown": {
             "accountSetting": "Account Setting",
@@ -334,7 +333,6 @@
             "anonymous": "Anonymous",
             "noEmailAvailable": "No email available"
         },
-
         "displaySettings": {
             "displaySettings": "Display Settings",
             "darkMode": "Dark Mode",
@@ -350,7 +348,6 @@
             "saveTitle": "Success",
             "saveSuccessMessage": "Display settings saved successfully."
         },
-
         "layoutOptions": {
             "collapsible": "Collapsible",
             "stacked": "Stacked",
@@ -358,13 +355,38 @@
             "frameless": "Frameless",
             "overlay": "Overlay"
         },
-
         "notifications": {
             "notifications": "Notifications",
             "noNotification": "No notifications!",
             "markAllAsRead": "Mark all as read",
             "noNotificationDesc": "Please Try again later",
             "viewAll": "View All Activity"
+        },
+        "settingsMenu": {
+            "profile": "Profile",
+            "security": "Security"
+        },
+        "profile": {
+            "profileInfo": "Personal information",
+            "profileUpdateMenu": {
+                "uploadImage": "Upload Image",
+                "removeImage": "Remove",
+                "firstName": "First name",
+                "lastName": "Last name",
+                "email": "Email",
+                "phoneNumber": "Phone number",
+                "saveBtn": "Save"
+            }
+        },
+        "security": {
+            "securityText": "Password",
+            "securityDesc": "Remember, your password is your digital key to your account. Keep it safe, keep it secure!",
+            "currentPassword": "Current Password",
+            "newPassword": "New Password",
+            "confirmPassword": "Confirm New Password",
+            "updateBtn": "Update",
+            "confirmTitle": "Update password",
+            "confirmMessage": "Are you sure you want to change your password?"
         }
     }
 }

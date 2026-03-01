@@ -3,23 +3,17 @@
 import Menu from '@/components/ui/Menu'
 import ScrollBar from '@/components/ui/ScrollBar'
 import { useSettingsStore } from '../_store/settingsStore'
-
-import {
-    TbUserSquare,
-    TbLock,
-    TbBell,
-    TbFileDollar,
-    TbRefreshDot,
-} from 'react-icons/tb'
+import { TbUserSquare, TbLock, TbBell, TbFileDollar, TbRefreshDot } from 'react-icons/tb'
 import { useSearchParams } from 'next/navigation'
 import type { View } from '../types'
 import type { ReactNode } from 'react'
+import useTranslation from '@/utils/hooks/useTranslation'
 
 const { MenuItem } = Menu
 
 const menuList: { label: string; value: View; icon: ReactNode }[] = [
-    { label: 'Profile', value: 'profile', icon: <TbUserSquare /> },
-    { label: 'Security', value: 'security', icon: <TbLock /> },
+    { label: 'settingsMenu.profile', value: 'profile', icon: <TbUserSquare /> },
+    { label: 'settingsMenu.security', value: 'security', icon: <TbLock /> },
     // { label: 'Notification', value: 'notification', icon: <TbBell /> },
     // { label: 'Billing', value: 'billing', icon: <TbFileDollar /> },
     // { label: 'Integration', value: 'integration', icon: <TbRefreshDot /> },
@@ -27,6 +21,8 @@ const menuList: { label: string; value: View; icon: ReactNode }[] = [
 
 export const SettingsMenu = ({ onChange }: { onChange?: () => void }) => {
     const searchParams = useSearchParams()
+
+    const t = useTranslation('header')
 
     const { currentView, setCurrentView } = useSettingsStore()
 
@@ -57,7 +53,7 @@ export const SettingsMenu = ({ onChange }: { onChange?: () => void }) => {
                             <span className="text-2xl ltr:mr-2 rtl:ml-2">
                                 {menu.icon}
                             </span>
-                            <span>{menu.label}</span>
+                            <span>{t(menu.label)}</span>
                         </MenuItem>
                     ))}
                 </Menu>
