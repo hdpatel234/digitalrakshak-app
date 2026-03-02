@@ -396,5 +396,129 @@
         "list": {
             "pageTitle": "Candidates"
         }
+    },
+    "invitations": {
+        "list": {
+            "pageTitle": "Invitations"
+        },
+        "search": {
+            "placeholder": "Quick search..."
+        },
+        "status": {
+            "sent": "Sent",
+            "viewed": "Viewed",
+            "expired": "Expired"
+        },
+        "table": {
+            "columns": {
+                "name": "Name",
+                "email": "Email",
+                "address": "Address",
+                "country": "Country",
+                "state": "State",
+                "city": "City",
+                "pinCode": "Pin Code",
+                "status": "Status",
+                "action": "Action"
+            }
+        },
+        "filter": {
+            "button": "Filter",
+            "title": "Filter",
+            "fields": {
+                "invitationStatus": "Invitation Status",
+                "country": "Country",
+                "state": "State",
+                "city": "City"
+            },
+            "placeholders": {
+                "country": "Search by country",
+                "state": "Search by state",
+                "city": "Search by city"
+            }
+        },
+        "actions": {
+            "download": "Download",
+            "addNew": "Add new",
+            "dialogTitle": "Add Invitations",
+            "tabs": {
+                "manual": "Manual Entry",
+                "import": "Import File"
+            },
+            "form": {
+                "firstName": "First Name",
+                "lastName": "Last Name",
+                "email": "Email",
+                "emailPlaceholder": "primary@email.com",
+                "managerEmails": "Manager Emails",
+                "managerEmailsPlaceholder": "a@x.com, b@y.com",
+                "address": "Address",
+                "country": "Country",
+                "state": "State",
+                "city": "City",
+                "pinCode": "Pin Code"
+            },
+            "import": {
+                "openOrDrop": "Open or drag and drop file here",
+                "csvHeaders": "CSV headers: firstName,lastName,email,address,country,state,city,pinCode",
+                "notify": "Notify me when imported"
+            },
+            "validation": {
+                "manualRequired": "First name, last name and at least one email are required.",
+                "chooseFile": "Please choose a file",
+                "csvOnly": "Only .csv file is supported",
+                "importFileRequired": "Please open or drag and drop a CSV file first.",
+                "noValidRecords": "No valid records found in uploaded file."
+            },
+            "toast": {
+                "created": "{count, plural, one {# invitation created.} other {# invitations created.}}",
+                "imported": "{count, plural, one {# invitation imported.} other {# invitations imported.}} {notify, select, Yes {Notifications queued.} other {}}"
+            }
+        },
+        "selected": {
+            "items": "Invitations",
+            "selected": "selected",
+            "message": "Message",
+            "removeTitle": "Remove invitations",
+            "removeConfirm": "Are you sure you want to remove these invitations? This action can't be undone.",
+            "sendMessageTitle": "Send Message",
+            "sendMessageDesc": "Send message to the following invitations",
+            "toast": {
+                "messageSent": "Message sent!"
+            }
+        },
+        "details": {
+            "noInvitationFound": "No invitation found!",
+            "title": "Invitation Details",
+            "fields": {
+                "invitationId": "Invitation ID:",
+                "candidate": "Candidate:",
+                "email": "Email:",
+                "address": "Address:",
+                "country": "Country:",
+                "state": "State:",
+                "city": "City:",
+                "pinCode": "Pin Code:",
+                "status": "Status:",
+                "managerEmails": "Manager Emails:"
+            },
+            "logs": {
+                "title": "Invitation Logs",
+                "noLogs": "No logs available"
+            }
+        },
+        "common": {
+            "view": "View",
+            "reset": "Reset",
+            "apply": "Apply",
+            "cancel": "Cancel",
+            "save": "Save",
+            "create": "Create",
+            "delete": "Delete",
+            "send": "Send",
+            "notAvailable": "-",
+            "yes": "Yes",
+            "no": "No"
+        }
     }
 }
