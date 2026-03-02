@@ -57,7 +57,8 @@
             "invitationAll": "All",
             "invitationSent": "Sent",
             "invitationViewed": "Viewed",
-            "invitationExpired": "Expired"
+            "invitationExpired": "Expired",
+            "invitationCompleted": "Completed"
         },
         "conceptsVerificationStatus": {
             "verificationStatus": "Verification Status",
@@ -325,6 +326,7 @@
             "webhooksDesc": "Webhooks"
         }
     },
+    
     "header": {
         "profileDropdown": {
             "accountSetting": "Account Setting",
@@ -387,6 +389,12 @@
             "updateBtn": "Update",
             "confirmTitle": "Update password",
             "confirmMessage": "Are you sure you want to change your password?"
+        }
+    },
+
+    "candidates": {
+        "list": {
+            "pageTitle": "Candidates"
         }
     }
 }
