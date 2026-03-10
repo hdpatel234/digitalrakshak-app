@@ -49,7 +49,7 @@ const ProductListSelected = () => {
                     <div className="container mx-auto">
                         <div className="flex items-center justify-between">
                             <span>
-                                {selectedProduct.length > 0 && (
+                            {selectedProduct.length > 0 && (
                                     <span className="flex items-center gap-2">
                                         <span className="text-lg text-primary">
                                             <TbChecks />
@@ -57,7 +57,7 @@ const ProductListSelected = () => {
                                         <span className="font-semibold flex items-center gap-1">
                                             <span className="heading-text">
                                                 {selectedProduct.length}{' '}
-                                                Products
+                                                Packages
                                             </span>
                                             <span>selected</span>
                                         </span>
@@ -85,7 +85,7 @@ const ProductListSelected = () => {
             <ConfirmDialog
                 isOpen={deleteConfirmationOpen}
                 type="danger"
-                title="Remove products"
+                title="Remove packages"
                 onClose={handleCancel}
                 onRequestClose={handleCancel}
                 onCancel={handleCancel}
@@ -93,7 +93,7 @@ const ProductListSelected = () => {
             >
                 <p>
                     {' '}
-                    Are you sure you want to remove these products? This action
+                    Are you sure you want to remove these packages? This action
                     can&apos;t be undo.{' '}
                 </p>
             </ConfirmDialog>

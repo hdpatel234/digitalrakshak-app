@@ -35,6 +35,8 @@ const mapService = (item: unknown): Product => {
 
     return {
         id: String(record.id ?? ''),
+        serviceCode: String(record.service_code ?? '-'),
+        category: String(record.service_category_name ?? '-'),
         name: String(record.service_name ?? record.name ?? '-'),
         description: String(record.description ?? '-'),
         price:

@@ -61,6 +61,16 @@ const ProductListTable = ({
     const columns: ColumnDef<Product>[] = useMemo(
         () => [
             {
+                header: 'Service Code',
+                accessorKey: 'serviceCode',
+                cell: (props) => props.row.original.serviceCode || '-',
+            },
+            {
+                header: 'Category',
+                accessorKey: 'category',
+                cell: (props) => props.row.original.category || '-',
+            },
+            {
                 header: 'Name',
                 accessorKey: 'name',
             },
@@ -78,7 +88,7 @@ const ProductListTable = ({
                         <span className="font-bold heading-text">
                             <NumericFormat
                                 fixedDecimalScale
-                                prefix="$"
+                                prefix="₹"
                                 displayType="text"
                                 value={price}
                                 decimalScale={2}
@@ -117,6 +127,8 @@ const ProductListTable = ({
 
     const handleSort = (sort: OnSortParam) => {
         const sortFieldMap: Record<string, string> = {
+            serviceCode: 'service_code',
+            category: 'service_category_name',
             name: 'service_name',
             description: 'description',
             price: 'price',
