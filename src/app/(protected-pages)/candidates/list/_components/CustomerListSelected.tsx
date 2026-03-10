@@ -3,15 +3,11 @@
 import { useState } from 'react'
 import StickyFooter from '@/components/shared/StickyFooter'
 import Button from '@/components/ui/Button'
-import Dialog from '@/components/ui/Dialog'
-import Avatar from '@/components/ui/Avatar'
-import Tooltip from '@/components/ui/Tooltip'
 import Notification from '@/components/ui/Notification'
 import toast from '@/components/ui/toast'
-import RichTextEditor from '@/components/shared/RichTextEditor'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import { useCustomerListStore } from '../_store/customerListStore'
-import { TbChecks } from 'react-icons/tb'
+import { TbChecks, TbSend } from 'react-icons/tb'
 
 const CustomerListSelected = () => {
     const customerList = useCustomerListStore((state) => state.customerList)
@@ -26,8 +22,7 @@ const CustomerListSelected = () => {
     )
 
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
-    const [sendMessageDialogOpen, setSendMessageDialogOpen] = useState(false)
-    const [sendMessageLoading, setSendMessageLoading] = useState(false)
+    const [sendInvitationLoading, setSendInvitationLoading] = useState(false)
 
     const handleDelete = () => {
         setDeleteConfirmationOpen(true)
@@ -48,15 +43,16 @@ const CustomerListSelected = () => {
         setDeleteConfirmationOpen(false)
     }
 
-    const handleSend = () => {
-        setSendMessageLoading(true)
+    const handleSendInvitation = () => {
+        setSendInvitationLoading(true)
         setTimeout(() => {
             toast.push(
-                <Notification type="success">Message sent!</Notification>,
+                <Notification type="success">
+                    Invitation sent successfully!
+                </Notification>,
                 { placement: 'top-center' },
             )
-            setSendMessageLoading(false)
-            setSendMessageDialogOpen(false)
+            setSendInvitationLoading(false)
             setSelectAllCustomer([])
         }, 500)
     }
@@ -80,7 +76,7 @@ const CustomerListSelected = () => {
                                         <span className="font-semibold flex items-center gap-1">
                                             <span className="heading-text">
                                                 {selectedCustomer.length}{' '}
-                                                Customers
+                                                Candidates
                                             </span>
                                             <span>selected</span>
                                         </span>
@@ -92,22 +88,22 @@ const CustomerListSelected = () => {
                                 <Button
                                     size="sm"
                                     className="ltr:mr-3 rtl:ml-3"
+                                    variant="solid"
+                                    icon={<TbSend />}
+                                    loading={sendInvitationLoading}
+                                    onClick={handleSendInvitation}
+                                >
+                                    Send Invitation
+                                </Button>
+                                <Button
+                                    size="sm"
                                     type="button"
                                     customColorClass={() =>
                                         'border-error ring-1 ring-error text-error hover:border-error hover:ring-error hover:text-error'
                                     }
                                     onClick={handleDelete}
                                 >
-                                    Delete
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    variant="solid"
-                                    onClick={() =>
-                                        setSendMessageDialogOpen(true)
-                                    }
-                                >
-                                    Message
+                                    Remove
                                 </Button>
                             </div>
                         </div>
@@ -117,58 +113,17 @@ const CustomerListSelected = () => {
             <ConfirmDialog
                 isOpen={deleteConfirmationOpen}
                 type="danger"
-                title="Remove customers"
+                title="Remove candidates"
                 onClose={handleCancel}
                 onRequestClose={handleCancel}
                 onCancel={handleCancel}
                 onConfirm={handleConfirmDelete}
             >
                 <p>
-                    {' '}
-                    Are you sure you want to remove these customers? This action
-                    can&apos;t be undo.{' '}
+                    Are you sure you want to remove these candidates? This
+                    action can&apos;t be undone.
                 </p>
             </ConfirmDialog>
-            <Dialog
-                isOpen={sendMessageDialogOpen}
-                onRequestClose={() => setSendMessageDialogOpen(false)}
-                onClose={() => setSendMessageDialogOpen(false)}
-            >
-                <h5 className="mb-2">Send Message</h5>
-                <p>Send message to the following customers</p>
-                <Avatar.Group
-                    chained
-                    omittedAvatarTooltip
-                    className="mt-4"
-                    maxCount={4}
-                    omittedAvatarProps={{ size: 30 }}
-                >
-                    {selectedCustomer.map((customer) => (
-                        <Tooltip key={customer.id} title={customer.name}>
-                            <Avatar size={30} src={customer.img} alt="" />
-                        </Tooltip>
-                    ))}
-                </Avatar.Group>
-                <div className="my-4">
-                    <RichTextEditor content={''} />
-                </div>
-                <div className="ltr:justify-end flex items-center gap-2">
-                    <Button
-                        size="sm"
-                        onClick={() => setSendMessageDialogOpen(false)}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        size="sm"
-                        variant="solid"
-                        loading={sendMessageLoading}
-                        onClick={handleSend}
-                    >
-                        Send
-                    </Button>
-                </div>
-            </Dialog>
         </>
     )
 }

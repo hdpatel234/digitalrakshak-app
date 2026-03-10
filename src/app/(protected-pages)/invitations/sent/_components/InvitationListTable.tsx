@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { TbEye, TbUser } from 'react-icons/tb'
 import type { OnSortParam, ColumnDef, Row } from '@/components/shared/DataTable'
 import type { Customer } from '../types'
+import Tooltip from '@/components/ui/Tooltip'
 
 type InvitationListTableProps = {
     customerListTotal: number
@@ -36,6 +37,26 @@ const NameColumn = ({ row }: { row: Customer }) => {
             <span className="ml-2 rtl:mr-2 font-semibold text-gray-900 dark:text-gray-100">
                 {row.name}
             </span>
+        </div>
+    )
+}
+
+const ActionColumn = ({
+    onViewDetail,
+}: {
+    onViewDetail: () => void
+}) => {
+    return (
+        <div className="flex items-center gap-3">
+            <Tooltip title="View">
+                <div
+                    className={`text-xl cursor-pointer select-none font-semibold`}
+                    role="button"
+                    onClick={onViewDetail}
+                >
+                    <TbEye />
+                </div>
+            </Tooltip>
         </div>
     )
 }
@@ -118,16 +139,11 @@ const InvitationListTable = ({
                 header: 'Action',
                 id: 'action',
                 cell: (props) => (
-                    <div
-                        className="group inline-flex items-center gap-2 text-xl cursor-pointer select-none font-semibold"
-                        role="button"
-                        onClick={() => handleViewDetails(props.row.original)}
-                    >
-                        <TbEye />
-                        <span className="text-xs font-medium opacity-0 transition-opacity duration-150 group-hover:opacity-100">
-                            View
-                        </span>
-                    </div>
+                    <ActionColumn
+                        onViewDetail={() =>
+                            handleViewDetails(props.row.original)
+                        }
+                    />
                 ),
             },
         ],

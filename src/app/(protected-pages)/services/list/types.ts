@@ -1,14 +1,8 @@
 export type Product = {
     id: string
     name: string
-    productCode: string
-    img: string
-    category: string
+    description: string
     price: number
-    stock: number
-    status: number
-    sales: number
-    salesPercentage: number
 }
 
 export type Filter = {

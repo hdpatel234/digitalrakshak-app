@@ -9,9 +9,10 @@ import { useCustomerListStore } from '../_store/customerListStore'
 import useAppendQueryParams from '@/utils/hooks/useAppendQueryParams'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { TbPencil, TbEye } from 'react-icons/tb'
+import { TbEye, TbSend } from 'react-icons/tb'
 import type { OnSortParam, ColumnDef, Row } from '@/components/shared/DataTable'
 import type { Customer } from '../types'
+import { HiOutlineUser } from 'react-icons/hi'
 
 type CustomerListTableProps = {
     customerListTotal: number
@@ -24,13 +25,20 @@ const statusColor: Record<string, string> = {
     blocked: 'bg-red-200 dark:bg-red-200 text-gray-900 dark:text-gray-900',
 }
 
+const DEFAULT_AVATAR = ''
+
 const NameColumn = ({ row }: { row: Customer }) => {
     return (
         <div className="flex items-center">
-            <Avatar size={40} shape="circle" src={row.img} />
+            <Avatar
+                size={40}
+                icon={<HiOutlineUser />}
+                shape="circle"
+                src={row.img?.trim() ? row.img : DEFAULT_AVATAR}
+            />
             <Link
                 className={`hover:text-primary ml-2 rtl:mr-2 font-semibold text-gray-900 dark:text-gray-100`}
-                href={`/concepts/customers/customer-details/${row.id}`}
+                href={`/candidates/details/${row.id}`}
             >
                 {row.name}
             </Link>
@@ -39,21 +47,21 @@ const NameColumn = ({ row }: { row: Customer }) => {
 }
 
 const ActionColumn = ({
-    onEdit,
+    onSendInvitation,
     onViewDetail,
 }: {
-    onEdit: () => void
+    onSendInvitation: () => void
     onViewDetail: () => void
 }) => {
     return (
         <div className="flex items-center gap-3">
-            <Tooltip title="Edit">
+            <Tooltip title="Send Invitation">
                 <div
                     className={`text-xl cursor-pointer select-none font-semibold`}
                     role="button"
-                    onClick={onEdit}
+                    onClick={onSendInvitation}
                 >
-                    <TbPencil />
+                    <TbSend />
                 </div>
             </Tooltip>
             <Tooltip title="View">
@@ -92,12 +100,12 @@ const CustomerListTable = ({
 
     const { onAppendQueryParams } = useAppendQueryParams()
 
-    const handleEdit = (customer: Customer) => {
-        router.push(`/candidates/edit/${customer.id}`)
-    }
-
     const handleViewDetails = (customer: Customer) => {
         router.push(`/candidates/details/${customer.id}`)
+    }
+
+    const handleSendInvitation = (customer: Customer) => {
+        router.push(`/candidates/edit/${customer.id}?sendInvite=true`)
     }
 
     const columns: ColumnDef<Customer>[] = useMemo(
@@ -133,18 +141,13 @@ const CustomerListTable = ({
                 },
             },
             {
-                header: 'Spent',
-                accessorKey: 'totalSpending',
-                cell: (props) => {
-                    return <span>${props.row.original.totalSpending}</span>
-                },
-            },
-            {
                 header: '',
                 id: 'action',
                 cell: (props) => (
                     <ActionColumn
-                        onEdit={() => handleEdit(props.row.original)}
+                        onSendInvitation={() =>
+                            handleSendInvitation(props.row.original)
+                        }
                         onViewDetail={() =>
                             handleViewDetails(props.row.original)
                         }
@@ -195,7 +198,7 @@ const CustomerListTable = ({
             columns={columns}
             data={customerList}
             noData={customerList.length === 0}
-            skeletonAvatarColumns={[0]}
+            skeletonAvatarColumns={[1]}
             skeletonAvatarProps={{ width: 28, height: 28 }}
             loading={isInitialLoading}
             pagingData={{

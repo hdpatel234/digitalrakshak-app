@@ -19,7 +19,7 @@ const CustomerListActionTools = () => {
 
     return (
         <div className="flex flex-col md:flex-row gap-3">
-            <CSVLink
+            {/* <CSVLink
                 className="w-full"
                 filename="customerList.csv"
                 data={customerList}
@@ -30,7 +30,7 @@ const CustomerListActionTools = () => {
                 >
                     Download
                 </Button>
-            </CSVLink>
+            </CSVLink> */}
             <Button
                 variant="solid"
                 icon={<TbUserPlus className="text-xl" />}

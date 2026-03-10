@@ -6,9 +6,6 @@ import Container from '@/components/shared/Container'
 import BottomStickyBar from '@/components/template/BottomStickyBar'
 import OverviewSection from './OverviewSection'
 import AddressSection from './AddressSection'
-import TagsSection from './TagsSection'
-import ProfileImageSection from './ProfileImageSection'
-import AccountSection from './AccountSection'
 import isEmpty from 'lodash/isEmpty'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -16,6 +13,7 @@ import { z } from 'zod'
 import type { ZodType } from 'zod'
 import type { CommonProps } from '@/@types/common'
 import type { CustomerFormSchema } from './types'
+import AdditionalInfo from './AdditionalInfo'
 
 type CustomerFormProps = {
     onFormSubmit: (values: CustomerFormSchema) => void
@@ -23,30 +21,71 @@ type CustomerFormProps = {
     newCustomer?: boolean
 } & CommonProps
 
-const validationSchema: ZodType<CustomerFormSchema> = z.object({
-    firstName: z.string().min(1, { message: 'First name required' }),
-    lastName: z.string().min(1, { message: 'Last name required' }),
-    email: z
-        .string()
-        .min(1, { message: 'Email required' })
-        .email({ message: 'Invalid email' }),
-    dialCode: z.string().min(1, { message: 'Please select your country code' }),
-    phoneNumber: z
-        .string()
-        .min(1, { message: 'Please input your mobile number' }),
-    country: z.string().min(1, { message: 'Please select a country' }),
-    address: z.string().min(1, { message: 'Addrress required' }),
-    postcode: z.string().min(1, { message: 'Postcode required' }),
-    city: z.string().min(1, { message: 'City required' }),
-    img: z.string(),
-    tags: z.array(z.object({ value: z.string(), label: z.string() })),
-})
+const validationSchema: ZodType<CustomerFormSchema> = z
+    .object({
+        firstName: z
+            .string()
+            .optional()
+            .refine((value) => !value || /^[A-Za-z\s]+$/.test(value), {
+                message: 'First name can contain letters only',
+            }),
+        lastName: z
+            .string()
+            .optional()
+            .refine((value) => !value || /^[A-Za-z\s]+$/.test(value), {
+                message: 'Last name can contain letters only',
+            }),
+        email: z
+            .string()
+            .min(1, { message: 'Email is required field' })
+            .email({ message: 'Invalid email' }),
+        dialCode: z.string().optional(),
+        phoneNumber: z
+            .string()
+            .optional()
+            .refine((value) => !value || /^\d+$/.test(value), {
+                message: 'Phone number must be numeric',
+            }),
+        country: z.string().optional(),
+        state: z.string().optional(),
+        city: z.string().optional(),
+        address: z.string().optional(),
+        postcode: z
+            .union([
+                z.literal(''),
+                z
+                    .string()
+                    .regex(/^\d+$/, { message: 'Zip code must be numeric' }),
+            ])
+            .optional(),
+        managerEmails: z
+            .array(
+                z
+                    .string()
+                    .trim()
+                    .email({ message: 'Invalid email' })
+                    .or(z.literal('')),
+            )
+            .optional(),
+        img: z.string(),
+        tags: z.array(z.object({ value: z.string(), label: z.string() })),
+    })
+    .refine(
+        (data) => {
+            if (!data.dialCode && !data.phoneNumber) return true
+            if (data.dialCode && data.phoneNumber) return true
+            return false
+        },
+        {
+            message: 'Both country code and phone number are required if providing contact information',
+            path: ['phoneNumber'],
+        },
+    )
 
 const CustomerForm = (props: CustomerFormProps) => {
     const {
         onFormSubmit,
         defaultValues = {},
-        newCustomer = false,
         children,
     } = props
 
@@ -55,11 +94,13 @@ const CustomerForm = (props: CustomerFormProps) => {
         reset,
         formState: { errors },
         control,
+        setValue,
     } = useForm<CustomerFormSchema>({
         defaultValues: {
             ...{
                 banAccount: false,
                 accountVerified: true,
+                managerEmails: [''],
             },
             ...defaultValues,
         },
@@ -86,18 +127,21 @@ const CustomerForm = (props: CustomerFormProps) => {
             <Container>
                 <div className="flex flex-col md:flex-row gap-4">
                     <div className="gap-4 flex flex-col flex-auto">
-                        <OverviewSection control={control} errors={errors} />
-                        <AddressSection control={control} errors={errors} />
-                    </div>
-                    <div className="md:w-[370px] gap-4 flex flex-col">
-                        <ProfileImageSection
+                        <OverviewSection
                             control={control}
                             errors={errors}
+                            setValue={setValue}
                         />
-                        <TagsSection control={control} errors={errors} />
-                        {!newCustomer && (
-                            <AccountSection control={control} errors={errors} />
-                        )}
+                        <AddressSection
+                            control={control}
+                            errors={errors}
+                            setValue={setValue}
+                        />
+                        <AdditionalInfo
+                            control={control}
+                            errors={errors}
+                            setValue={setValue}
+                        />
                     </div>
                 </div>
             </Container>

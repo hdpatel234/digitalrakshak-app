@@ -7,7 +7,6 @@ type PersonalInfo = {
     address: string
     postcode: string
     city: string
-    state: string
     country: string
     facebook: string
     twitter: string
@@ -40,18 +39,11 @@ type Subscription = {
     amount: number
 }
 
-export type GetCustomersListResponse = {
-    list: Customer[]
-    total: number
-}
-
-export type Filter = {
-    status: string
-}
-
-export type StatusOption = {
-    key: string
-    name: string
+export type InvitationActivityLog = {
+    id: string
+    event: string
+    description: string
+    timestamp: string
 }
 
 export type Customer = {
@@ -69,4 +61,5 @@ export type Customer = {
     paymentMethod: PaymentMethod[]
     subscription: Subscription[]
     totalSpending: number
+    logs?: InvitationActivityLog[]
 }

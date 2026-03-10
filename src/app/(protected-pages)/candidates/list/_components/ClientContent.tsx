@@ -7,9 +7,24 @@ import CustomerListActionTools from './CustomerListActionTools'
 import CustomersListTableTools from './CustomersListTableTools'
 import CustomerListSelected from './CustomerListSelected'
 import useTranslation from '@/utils/hooks/useTranslation'
+import type { StatusOption } from '../types'
 
-function ClientContent({ data, params }: any) {
+type ClientContentProps = {
+    data: {
+        total: number
+        statusList?: StatusOption[]
+    }
+    params: {
+        pageIndex?: string | string[]
+        pageSize?: string | string[]
+        status?: string | string[]
+    }
+}
+
+function ClientContent({ data, params }: ClientContentProps) {
     const t = useTranslation('candidates')
+    const selectedStatus =
+        typeof params.status === 'string' ? params.status : ''
 
     return (
         <>
@@ -21,7 +36,10 @@ function ClientContent({ data, params }: any) {
                             <CustomerListActionTools />
                         </div>
 
-                        <CustomersListTableTools />
+                        <CustomersListTableTools
+                            statusOptions={data.statusList || []}
+                            selectedStatus={selectedStatus}
+                        />
 
                         <CustomerListTable
                             customerListTotal={data.total}

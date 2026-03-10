@@ -7,11 +7,12 @@ import Select, { Option as DefaultOption } from '@/components/ui/Select'
 import Avatar from '@/components/ui/Avatar'
 import { FormItem } from '@/components/ui/Form'
 import NumericInput from '@/components/shared/NumericInput'
-import { countryList } from '@/constants/countries.constant'
 import { Controller } from 'react-hook-form'
 import { components } from 'react-select'
-import type { FormSectionBaseProps } from './types'
+import type { FormSectionBaseProps, CountriesApiResponse } from './types'
 import type { ControlProps, OptionProps } from 'react-select'
+import useSWR from 'swr'
+import { apiGetCountries } from '@/services/auth/countries'
 
 type OverviewSectionProps = FormSectionBaseProps
 
@@ -59,16 +60,27 @@ const CustomControl = ({ children, ...props }: ControlProps<CountryOption>) => {
 }
 
 const OverviewSection = ({ control, errors }: OverviewSectionProps) => {
-    const dialCodeList = useMemo(() => {
-        const newCountryList: Array<CountryOption> = JSON.parse(
-            JSON.stringify(countryList),
-        )
+    const { data: countriesData } = useSWR<CountriesApiResponse>(
+        '/api/auth/countries',
+        () => apiGetCountries<CountriesApiResponse>(),
+        {
+            revalidateOnFocus: false,
+            revalidateIfStale: false,
+            revalidateOnReconnect: false,
+        },
+    )
 
-        return newCountryList.map((country) => {
-            country.label = country.dialCode
-            return country
-        })
-    }, [])
+    // Prepare dial code list for dropdown
+    const dialCodeList = useMemo(() => {
+        if (!countriesData?.data) return []
+
+        return countriesData.data.map((country) => ({
+            ...country,
+            label: country.phoneCode,
+            dialCode: country.phoneCode,
+            value: country.isoCode2,
+        }))
+    }, [countriesData])
 
     return (
         <Card>
@@ -93,7 +105,7 @@ const OverviewSection = ({ control, errors }: OverviewSectionProps) => {
                     />
                 </FormItem>
                 <FormItem
-                    label="User Name"
+                    label="Last Name"
                     invalid={Boolean(errors.lastName)}
                     errorMessage={errors.lastName?.message}
                 >

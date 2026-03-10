@@ -14,24 +14,12 @@ const conceptsRoute: Routes = {
     '/candidates/create': {
         key: 'concepts.candidates.candidateCreate',
         authority: [ADMIN, USER],
-        meta: {
-            header: {
-                title: 'Create candidate',
-                description: 'Create a new candidate',
-                contained: true,
-            },
-        }
+        meta: {}
     },
     '/candidates/import': {
         key: 'concepts.candidates.candidateImport',
         authority: [ADMIN, USER],
-        meta: {
-            header: {
-                title: 'Import candidates',
-                description: 'Import candidates in bulk using a CSV file',
-                contained: true,
-            },
-        }
+        meta: {}
     },
 
     '/candidates/edit/[slug]': {
@@ -83,6 +71,15 @@ const conceptsRoute: Routes = {
         meta: {
             pageContainerType: 'contained',
         }
+    },
+
+    '/invitations/details/[slug]': {
+        key: 'concepts.invitations.invitationsDetails',
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'contained',
+        },
+        dynamicRoute: true
     },
 
     // Verification Status
