@@ -17,6 +17,7 @@ const apiAuthPrefix = `${appConfig.apiPrefix}/auth`
 
 export default auth((req) => {
     const { nextUrl } = req
+    const { pathname } = nextUrl
     const accessTokenExpiresAt = Number(
         (req.auth as Record<string, unknown> | null)?.accessTokenExpiresAt || 0,
     )
@@ -28,10 +29,13 @@ export default auth((req) => {
         accessTokenExpiresAt > 0 && Date.now() >= accessTokenExpiresAt
     const isSignedIn = !!req.auth && !hasRefreshError && !isTokenExpired
 
-    const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix)
-    const isLogoutRoute = nextUrl.pathname === '/logout'
-    const isPublicRoute = publicRoutes.includes(nextUrl.pathname) || isLogoutRoute
-    const isAuthRoute = authRoutes.includes(nextUrl.pathname)
+    const isApiAuthRoute = pathname.startsWith(apiAuthPrefix)
+    const isLogoutRoute = pathname === '/logout'
+    const isPublicInvitationRoute =
+        pathname === '/invitation' || pathname.startsWith('/invitation/')
+    const isPublicRoute =
+        publicRoutes.includes(pathname) || isLogoutRoute || isPublicInvitationRoute
+    const isAuthRoute = authRoutes.includes(pathname)
 
     /** Skip auth middleware for api routes */
     if (isApiAuthRoute) return
