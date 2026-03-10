@@ -3,7 +3,6 @@ import AdaptiveCard from '@/components/shared/AdaptiveCard'
 import ProductListProvider from './_components/ProductListProvider'
 import ProducListTableTools from './_components/ProducListTableTools'
 import ProductListTable from './_components/ProductListTable'
-import ProductListSelected from './_components/ProductListSelected'
 import type { PageProps } from '@/@types/common'
 import { headers } from 'next/headers'
 import type { Product } from './types'
@@ -162,7 +161,6 @@ export default async function Page({ searchParams }: PageProps) {
                     </div>
                 </AdaptiveCard>
             </Container>
-            <ProductListSelected />
         </ProductListProvider>
     )
 }

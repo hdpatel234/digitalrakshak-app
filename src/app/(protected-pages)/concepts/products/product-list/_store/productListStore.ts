@@ -12,7 +12,7 @@ export type ProductsListState = {
     initialLoading: boolean
     productList: Product[]
     filterData: Filter
-    selectedProduct: Partial<Product>[]
+    selectedProduct: Product[]
 }
 
 type ProductsListAction = {

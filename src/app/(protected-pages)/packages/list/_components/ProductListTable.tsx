@@ -7,7 +7,7 @@ import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import { useProductListStore } from '../_store/productListStore'
 import useAppendQueryParams from '@/utils/hooks/useAppendQueryParams'
 import { useRouter } from 'next/navigation'
-import { TbEye, TbPencil, TbTrash } from 'react-icons/tb'
+import { TbEye, TbPencil, TbSend, TbTrash } from 'react-icons/tb'
 import { NumericFormat } from 'react-number-format'
 import type { OnSortParam, ColumnDef, Row } from '@/components/shared/DataTable'
 import type { Product } from '../types'
@@ -59,6 +59,10 @@ const ProductListTable = ({
         router.push(`/packages/edit/${product.id}`)
     }
 
+    const handleSendInvite = (product: Product) => {
+        router.push(`/candidates/list?packageId=${product.id}`)
+    }
+
     const handleDelete = (product: Product) => {
         if (!canManagePackage(product)) {
             return
@@ -78,8 +82,8 @@ const ProductListTable = ({
             (product) => product.id !== toDeleteId,
         )
         const newSelectedProduct = selectedProduct.filter(
-            (product) => product.id !== toDeleteId,
-        )
+            (product) => product.id !== toDeleteId
+        ).map((product) => ({ ...product }));
 
         setProductList(newProductList)
         setSelectAllProduct(newSelectedProduct)
@@ -131,15 +135,26 @@ const ProductListTable = ({
                     return (
                         <div className="flex items-center gap-3">
                             {showViewOnly ? (
-                                <Tooltip title="View">
-                                    <div
-                                        className="text-xl cursor-pointer select-none font-semibold"
-                                        role="button"
-                                        onClick={() => handleView(row)}
-                                    >
-                                        <TbEye />
-                                    </div>
-                                </Tooltip>
+                                <>
+                                    <Tooltip title="View">
+                                        <div
+                                            className="text-xl cursor-pointer select-none font-semibold"
+                                            role="button"
+                                            onClick={() => handleView(row)}
+                                        >
+                                            <TbEye />
+                                        </div>
+                                    </Tooltip>
+                                    <Tooltip title="Send Invite">
+                                        <div
+                                            className="text-xl cursor-pointer select-none font-semibold"
+                                            role="button"
+                                            onClick={() => handleSendInvite(row)}
+                                        >
+                                            <TbSend />
+                                        </div>
+                                    </Tooltip>
+                                </>
                             ) : (
                                 <>
                                     <Tooltip title="Edit">
@@ -158,6 +173,15 @@ const ProductListTable = ({
                                             onClick={() => handleDelete(row)}
                                         >
                                             <TbTrash />
+                                        </div>
+                                    </Tooltip>
+                                    <Tooltip title="Send Invite">
+                                        <div
+                                            className="text-xl cursor-pointer select-none font-semibold"
+                                            role="button"
+                                            onClick={() => handleSendInvite(row)}
+                                        >
+                                            <TbSend />
                                         </div>
                                     </Tooltip>
                                 </>
@@ -215,7 +239,7 @@ const ProductListTable = ({
     return (
         <>
             <DataTable
-                selectable
+                // selectable
                 columns={columns}
                 data={productList}
                 noData={productList.length === 0}
