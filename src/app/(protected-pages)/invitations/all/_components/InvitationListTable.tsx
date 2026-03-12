@@ -1,209 +1,349 @@
 'use client'
 
-import { useMemo } from 'react'
-import Avatar from '@/components/ui/Avatar'
-import Tag from '@/components/ui/Tag'
+import { useState } from 'react'
 import DataTable from '@/components/shared/DataTable'
-import { useInvitationListStore } from '../_store/invitationListStore'
+import Tag from '@/components/ui/Tag'
+import Tooltip from '@/components/ui/Tooltip'
+import Notification from '@/components/ui/Notification'
+import toast from '@/components/ui/toast'
 import useAppendQueryParams from '@/utils/hooks/useAppendQueryParams'
 import { useRouter } from 'next/navigation'
-import { TbEye, TbUser } from 'react-icons/tb'
-import useTranslation from '@/utils/hooks/useTranslation'
+import { TbEye, TbRefresh, TbTrash } from 'react-icons/tb'
+import { useInvitationListStore } from '../_store/invitationListStore'
 import type { OnSortParam, ColumnDef, Row } from '@/components/shared/DataTable'
-import type { Customer } from '../types'
-import Tooltip from '@/components/ui/Tooltip'
+import type { Invitation, InvitationPackage } from '../types'
 
 type InvitationListTableProps = {
-    customerListTotal: number
     pageIndex?: number
     pageSize?: number
 }
 
 const statusColor: Record<string, string> = {
-    sent: 'bg-blue-200 dark:bg-blue-200 text-gray-900 dark:text-gray-900',
-    viewed: 'bg-emerald-200 dark:bg-emerald-200 text-gray-900 dark:text-gray-900',
-    expired: 'bg-amber-200 dark:bg-amber-200 text-gray-900 dark:text-gray-900',
+    pending: 'bg-amber-100 text-amber-700',
+    sent: 'bg-sky-100 text-sky-700',
+    viewed: 'bg-emerald-100 text-emerald-700',
+    completed: 'bg-indigo-100 text-indigo-700',
+    expired: 'bg-red-100 text-red-700',
 }
 
-const NameColumn = ({ row }: { row: Customer }) => {
-    return (
-        <div className="flex items-center">
-            <Avatar
-                size={40}
-                shape="circle"
-                src={row.img}
-                icon={<TbUser />}
-                alt={row.name}
-            />
-            <span className="ml-2 rtl:mr-2 font-semibold text-gray-900 dark:text-gray-100">
-                {row.name}
-            </span>
-        </div>
-    )
+const formatDateTime = (value?: string | null) => {
+    if (!value) {
+        return '-'
+    }
+
+    const date = new Date(value.replace(' ', 'T'))
+    if (Number.isNaN(date.getTime())) {
+        return value
+    }
+
+    return date.toLocaleString()
 }
 
-const ActionColumn = ({
-    onViewDetail,
-}: {
-    onViewDetail: () => void
-}) => {
+const getPackageList = (invitation: Invitation): InvitationPackage[] => {
+    if (Array.isArray(invitation.packages) && invitation.packages.length > 0) {
+        return invitation.packages
+    }
+
+    if (invitation.package) {
+        return [invitation.package]
+    }
+
+    if (
+        Array.isArray(invitation.form_data?.package_ids) &&
+        invitation.form_data.package_ids.length > 0
+    ) {
+        return invitation.form_data.package_ids.map((id) => ({
+            id,
+            name: `Package #${id}`,
+        }))
+    }
+
+    return []
+}
+
+const PackageCell = ({ invitation }: { invitation: Invitation }) => {
+    const packages = getPackageList(invitation)
+
+    if (packages.length === 0) {
+        return <span>-</span>
+    }
+
+    const [firstPackage, ...otherPackages] = packages
+
     return (
-        <div className="flex items-center gap-3">
-            <Tooltip title="View">
-                <div
-                    className={`text-xl cursor-pointer select-none font-semibold`}
-                    role="button"
-                    onClick={onViewDetail}
-                >
-                    <TbEye />
-                </div>
-            </Tooltip>
+        <div className="flex items-center gap-2">
+            <span>{firstPackage.name}</span>
+            {otherPackages.length > 0 && (
+                <Tooltip title={otherPackages.map((pkg) => pkg.name).join(', ')}>
+                    <span className="cursor-pointer text-primary font-semibold">
+                        +{otherPackages.length}
+                    </span>
+                </Tooltip>
+            )}
         </div>
     )
 }
 
 const InvitationListTable = ({
-    customerListTotal,
     pageIndex = 1,
     pageSize = 10,
 }: InvitationListTableProps) => {
-    const t = useTranslation('invitations')
     const router = useRouter()
-    const customerList = useInvitationListStore((state) => state.customerList)
-    const selectedCustomer = useInvitationListStore(
-        (state) => state.selectedCustomer,
+    const [loadingActionId, setLoadingActionId] = useState<number | null>(null)
+    const invitationList = useInvitationListStore((state) => state.invitationList)
+    const isInitialLoading = useInvitationListStore((state) => state.initialLoading)
+    const pagination = useInvitationListStore((state) => state.pagination)
+    const selectedInvitations = useInvitationListStore(
+        (state) => state.selectedInvitations,
     )
-    const isInitialLoading = useInvitationListStore(
-        (state) => state.initialLoading,
+    const setSelectedInvitation = useInvitationListStore(
+        (state) => state.setSelectedInvitation,
     )
-    const setSelectedCustomer = useInvitationListStore(
-        (state) => state.setSelectedCustomer,
+    const setSelectAllInvitations = useInvitationListStore(
+        (state) => state.setSelectAllInvitations,
     )
-    const setSelectAllCustomer = useInvitationListStore(
-        (state) => state.setSelectAllCustomer,
-    )
-
     const { onAppendQueryParams } = useAppendQueryParams()
 
-    const handleViewDetails = (invitation: Customer) => {
+    const reloadData = () => {
+        router.refresh()
+    }
+
+    const handleViewDetails = (invitation: Invitation) => {
         router.push(`/invitations/details/${invitation.id}`)
     }
 
-    const columns: ColumnDef<Customer>[] = useMemo(
-        () => [
-            {
-                header: t('table.columns.name'),
-                accessorKey: 'name',
-                cell: (props) => {
-                    const row = props.row.original
-                    return <NameColumn row={row} />
+    const handleResend = async (invitation: Invitation) => {
+        setLoadingActionId(invitation.id)
+        try {
+            const response = await fetch(
+                `/api/client/invitations/${invitation.id}/resend`,
+                {
+                    method: 'POST',
                 },
+            )
+            const payload = (await response.json()) as {
+                status?: boolean
+                message?: string
+            }
+
+            if (!response.ok || !payload.status) {
+                throw new Error(payload.message || 'Failed to resend invitation')
+            }
+
+            toast.push(
+                <Notification type="success">
+                    {payload.message || 'Invitation resent successfully'}
+                </Notification>,
+                { placement: 'top-center' },
+            )
+            reloadData()
+        } catch (error) {
+            const errorMessage =
+                error instanceof Error ? error.message : 'Failed to resend invitation'
+            toast.push(
+                <Notification type="danger">{errorMessage}</Notification>,
+                { placement: 'top-center' },
+            )
+        } finally {
+            setLoadingActionId(null)
+        }
+    }
+
+    const handleDelete = async (invitation: Invitation) => {
+        const confirmed = window.confirm(
+            `Delete invitation #${invitation.id}? This action cannot be undone.`,
+        )
+        if (!confirmed) {
+            return
+        }
+
+        setLoadingActionId(invitation.id)
+        try {
+            const response = await fetch(`/api/client/invitations/${invitation.id}`, {
+                method: 'DELETE',
+            })
+            const payload = (await response.json()) as {
+                status?: boolean
+                message?: string
+            }
+
+            if (!response.ok || !payload.status) {
+                throw new Error(payload.message || 'Failed to delete invitation')
+            }
+
+            toast.push(
+                <Notification type="success">
+                    {payload.message || 'Invitation deleted successfully'}
+                </Notification>,
+                { placement: 'top-center' },
+            )
+            reloadData()
+        } catch (error) {
+            const errorMessage =
+                error instanceof Error ? error.message : 'Failed to delete invitation'
+            toast.push(
+                <Notification type="danger">{errorMessage}</Notification>,
+                { placement: 'top-center' },
+            )
+        } finally {
+            setLoadingActionId(null)
+        }
+    }
+
+    const columns: ColumnDef<Invitation>[] = [
+            {
+                header: 'Candidate',
+                accessorKey: 'candidate.name',
+                cell: (props) => props.row.original.candidate?.name || '-',
             },
             {
-                header: t('table.columns.email'),
-                accessorKey: 'email',
+                header: 'Email',
+                accessorKey: 'candidate.email',
+                cell: (props) => props.row.original.candidate?.email || '-',
             },
             {
-                header: t('table.columns.address'),
-                accessorKey: 'personalInfo.address',
+                header: 'Phone',
+                accessorKey: 'candidate.phone',
+                cell: (props) => props.row.original.candidate?.phone || '-',
             },
             {
-                header: t('table.columns.country'),
-                accessorKey: 'personalInfo.country',
+                header: 'Packages',
+                id: 'packages',
+                cell: (props) => <PackageCell invitation={props.row.original} />,
+            },
+            // {
+            //     header: 'Type',
+            //     accessorKey: 'invitation_type',
+            //     cell: (props) => (
+            //         <span className="uppercase">
+            //             {props.row.original.invitation_type || '-'}
+            //         </span>
+            //     ),
+            // },
+            {
+                header: 'Invited At',
+                accessorKey: 'invited_at',
+                cell: (props) => formatDateTime(props.row.original.invited_at),
             },
             {
-                header: t('table.columns.state'),
-                accessorKey: 'personalInfo.state',
+                header: 'Expires At',
+                accessorKey: 'expires_at',
+                cell: (props) => formatDateTime(props.row.original.expires_at),
             },
             {
-                header: t('table.columns.city'),
-                accessorKey: 'personalInfo.city',
-            },
-            {
-                header: t('table.columns.pinCode'),
-                accessorKey: 'personalInfo.pinCode',
-            },
-            {
-                header: t('table.columns.status'),
+                header: 'Status',
                 accessorKey: 'status',
                 cell: (props) => {
-                    const row = props.row.original
+                    const status = String(props.row.original.status || '').toLowerCase()
                     return (
-                        <div className="flex items-center">
-                            <Tag className={statusColor[row.status]}>
-                                <span className="capitalize">
-                                    {t(`status.${row.status}`)}
-                                </span>
-                            </Tag>
-                        </div>
+                        <Tag className={statusColor[status] || 'bg-gray-100 text-gray-700'}>
+                            <span className="capitalize">{status || '-'}</span>
+                        </Tag>
                     )
                 },
             },
             {
-                header: t('table.columns.action'),
+                header: 'Action',
                 id: 'action',
-                cell: (props) => (
-                    <ActionColumn
-                        onViewDetail={() =>
-                            handleViewDetails(props.row.original)
-                        }
-                    />
-                ),
+                cell: (props) => {
+                    const invitation = props.row.original
+                    const isLoading = loadingActionId === invitation.id
+                    return (
+                        <div className="flex items-center gap-2">
+                            <Tooltip title="Resend">
+                                <div
+                                    className={`text-xl select-none font-semibold cursor-pointer ${
+                                        isLoading ? 'opacity-50 pointer-events-none' : ''
+                                    }`}
+                                    role="button"
+                                    onClick={() => handleResend(invitation)}
+                                >
+                                    <TbRefresh
+                                        className={isLoading ? 'animate-spin' : ''}
+                                    />
+                                </div>
+                            </Tooltip>
+                            <Tooltip title="View">
+                                <div
+                                    className="text-xl cursor-pointer select-none font-semibold"
+                                    role="button"
+                                    onClick={() => handleViewDetails(invitation)}
+                                >
+                                    <TbEye />
+                                </div>
+                            </Tooltip>
+                            <Tooltip title="Delete">
+                                <div
+                                    className={`text-xl cursor-pointer select-none font-semibold text-error ${
+                                        isLoading ? 'opacity-50 pointer-events-none' : ''
+                                    }`}
+                                    role="button"
+                                    onClick={() => handleDelete(invitation)}
+                                >
+                                    <TbTrash />
+                                </div>
+                            </Tooltip>
+                        </div>
+                    )
+                },
             },
-        ],
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [],
-    )
+        ]
 
     const handlePaginationChange = (page: number) => {
         onAppendQueryParams({
-            pageIndex: String(page),
+            page: String(page),
         })
     }
 
     const handleSelectChange = (value: number) => {
         onAppendQueryParams({
-            pageSize: String(value),
-            pageIndex: '1',
+            per_page: String(value),
+            page: '1',
         })
     }
 
     const handleSort = (sort: OnSortParam) => {
+        const sortMap: Record<string, string> = {
+            'candidate.name': 'candidate.name',
+            invited_at: 'candidate_invitations.invited_at',
+            expires_at: 'candidate_invitations.expires_at',
+            invitation_type: 'candidate_invitations.invitation_type',
+            status: 'candidate_invitations.status',
+        }
+
         onAppendQueryParams({
-            order: sort.order,
-            sortKey: sort.key,
+            sort_by: sortMap[sort.key] || 'candidate_invitations.created_at',
+            sort_direction: sort.order,
+            page: '1',
         })
     }
 
-    const handleRowSelect = (checked: boolean, row: Customer) => {
-        setSelectedCustomer(checked, row)
+    const handleRowSelect = (checked: boolean, row: Invitation) => {
+        setSelectedInvitation(checked, row)
     }
 
-    const handleAllRowSelect = (checked: boolean, rows: Row<Customer>[]) => {
+    const handleAllRowSelect = (checked: boolean, rows: Row<Invitation>[]) => {
         if (checked) {
-            const originalRows = rows.map((row) => row.original)
-            setSelectAllCustomer(originalRows)
-        } else {
-            setSelectAllCustomer([])
+            setSelectAllInvitations(rows.map((row) => row.original))
+            return
         }
+        setSelectAllInvitations([])
     }
 
     return (
         <DataTable
-            // selectable
+            selectable
             columns={columns}
-            data={customerList}
-            noData={customerList.length === 0}
-            skeletonAvatarColumns={[0]}
-            skeletonAvatarProps={{ width: 28, height: 28 }}
+            data={invitationList}
+            noData={invitationList.length === 0}
             loading={isInitialLoading}
             pagingData={{
-                total: customerListTotal,
-                pageIndex,
-                pageSize,
+                total: pagination.total || 0,
+                pageIndex: pagination.current_page || pageIndex,
+                pageSize: pagination.per_page || pageSize,
             }}
             checkboxChecked={(row) =>
-                selectedCustomer.some((selected) => selected.id === row.id)
+                selectedInvitations.some((selected) => selected.id === row.id)
             }
             onPaginationChange={handlePaginationChange}
             onSelectChange={handleSelectChange}
@@ -215,4 +355,3 @@ const InvitationListTable = ({
 }
 
 export default InvitationListTable
-

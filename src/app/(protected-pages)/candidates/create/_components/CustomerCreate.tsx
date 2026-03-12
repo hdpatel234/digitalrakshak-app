@@ -10,6 +10,7 @@ import { TbTrash, TbPlus, TbSend } from 'react-icons/tb'
 import { useRouter } from 'next/navigation'
 import type { CustomerFormSchema } from '@/components/view/CustomerForm'
 import { apiCreateCandidate } from '@/services/client/candidates'
+import type { AxiosError } from 'axios'
 
 const initialFormValues: CustomerFormSchema = {
     firstName: '',
@@ -66,10 +67,25 @@ const CustomerEdit = () => {
             // Remount form to clear all values after successful create.
             setFormKey((prev) => prev + 1)
         } catch (error) {
+            const axiosError = error as AxiosError<{
+                message?: string
+                error?: string
+                errors?: Record<string, string[]>
+            }>
+            const validationErrors = axiosError?.response?.data?.errors
+            const firstValidationMessage = validationErrors
+                ? Object.values(validationErrors).find(
+                      (messages) => Array.isArray(messages) && messages.length,
+                  )?.[0]
+                : ''
+
             const message =
-                error instanceof Error
+                firstValidationMessage ||
+                axiosError?.response?.data?.message ||
+                axiosError?.response?.data?.error ||
+                (error instanceof Error
                     ? error.message
-                    : 'Failed to create candidate'
+                    : 'Failed to create candidate')
 
             toast.push(
                 <Notification type="danger">{message}</Notification>,

@@ -3,20 +3,18 @@
 import Container from '@/components/shared/Container'
 import AdaptiveCard from '@/components/shared/AdaptiveCard'
 import InvitationListTable from './InvitationListTable'
-import InvitationListActionTools from './InvitationListActionTools'
 import InvitationListTableTools from './InvitationListTableTools'
-import InvitationListSelected from './InvitationListSelected'
+import InvitationListBulkActions from './InvitationListBulkActions'
 import useTranslation from '@/utils/hooks/useTranslation'
 
 type ClientContentProps = {
-    data: {
-        total: number
-    }
     params: Record<string, string | string[] | undefined>
 }
 
-function ClientContent({ data, params }: ClientContentProps) {
+function ClientContent({ params }: ClientContentProps) {
     const t = useTranslation('invitations')
+    const page = Number.parseInt(String(params.page || ''), 10)
+    const perPage = Number.parseInt(String(params.per_page || ''), 10)
 
     return (
         <>
@@ -25,21 +23,18 @@ function ClientContent({ data, params }: ClientContentProps) {
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                             <h3>{t('list.pageTitle')}</h3>
-                            <InvitationListActionTools />
                         </div>
 
                         <InvitationListTableTools />
 
                         <InvitationListTable
-                            customerListTotal={data.total}
-                            pageIndex={parseInt(params.pageIndex as string) || 1}
-                            pageSize={parseInt(params.pageSize as string) || 10}
+                            pageIndex={Number.isNaN(page) ? 1 : page}
+                            pageSize={Number.isNaN(perPage) ? 10 : perPage}
                         />
                     </div>
                 </AdaptiveCard>
             </Container>
-
-            <InvitationListSelected />
+            <InvitationListBulkActions />
         </>
     )
 }

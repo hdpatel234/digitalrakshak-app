@@ -7,6 +7,7 @@ import Tooltip from '@/components/ui/Tooltip'
 import Button from '@/components/ui/Button'
 import Checkbox from '@/components/ui/Checkbox'
 import Dialog from '@/components/ui/Dialog'
+import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import Notification from '@/components/ui/Notification'
 import toast from '@/components/ui/toast'
 import DataTable from '@/components/shared/DataTable'
@@ -14,7 +15,7 @@ import { useCustomerListStore } from '../_store/customerListStore'
 import useAppendQueryParams from '@/utils/hooks/useAppendQueryParams'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { TbEye, TbSend } from 'react-icons/tb'
+import { TbEye, TbSend, TbTrash } from 'react-icons/tb'
 import type { OnSortParam, ColumnDef, Row } from '@/components/shared/DataTable'
 import type { Customer } from '../types'
 import { HiOutlineUser } from 'react-icons/hi'
@@ -105,10 +106,12 @@ const NameColumn = ({ row }: { row: Customer }) => {
 const ActionColumn = ({
     onSendInvitation,
     onViewDetail,
+    onDelete,
     canSendInvitation,
 }: {
     onSendInvitation: () => void
     onViewDetail: () => void
+    onDelete: () => void
     canSendInvitation: boolean
 }) => {
     return (
@@ -133,6 +136,15 @@ const ActionColumn = ({
                     <TbEye />
                 </div>
             </Tooltip>
+            <Tooltip title="Remove">
+                <div
+                    className={`text-xl cursor-pointer select-none font-semibold text-error`}
+                    role="button"
+                    onClick={onDelete}
+                >
+                    <TbTrash />
+                </div>
+            </Tooltip>
         </div>
     )
 }
@@ -151,8 +163,13 @@ const CustomerListTable = ({
     const [selectedPackageIds, setSelectedPackageIds] = useState<string[]>([])
     const [isPackageLoading, setIsPackageLoading] = useState(false)
     const [isInviteSubmitting, setIsInviteSubmitting] = useState(false)
+    const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
+    const [candidateToDelete, setCandidateToDelete] = useState<Customer | null>(
+        null,
+    )
 
     const customerList = useCustomerListStore((state) => state.customerList)
+    const setCustomerList = useCustomerListStore((state) => state.setCustomerList)
     const selectedCustomer = useCustomerListStore(
         (state) => state.selectedCustomer,
     )
@@ -170,6 +187,37 @@ const CustomerListTable = ({
 
     const handleViewDetails = (customer: Customer) => {
         router.push(`/candidates/details/${customer.id}`)
+    }
+
+    const handleOpenDeleteConfirmation = (customer: Customer) => {
+        setCandidateToDelete(customer)
+        setDeleteConfirmationOpen(true)
+    }
+
+    const handleCloseDeleteConfirmation = () => {
+        setDeleteConfirmationOpen(false)
+        setCandidateToDelete(null)
+    }
+
+    const handleConfirmDelete = () => {
+        if (!candidateToDelete?.id) {
+            handleCloseDeleteConfirmation()
+            return
+        }
+
+        const updatedCustomerList = customerList.filter(
+            (customer) => customer.id !== candidateToDelete.id,
+        )
+
+        setCustomerList(updatedCustomerList)
+        setSelectedCustomer(false, candidateToDelete)
+        handleCloseDeleteConfirmation()
+        toast.push(
+            <Notification type="success">
+                Candidate removed successfully.
+            </Notification>,
+            { placement: 'top-center' },
+        )
     }
 
     const closeInviteModal = () => {
@@ -393,6 +441,9 @@ const CustomerListTable = ({
                         onViewDetail={() =>
                             handleViewDetails(props.row.original)
                         }
+                        onDelete={() =>
+                            handleOpenDeleteConfirmation(props.row.original)
+                        }
                         canSendInvitation={
                             String(props.row.original.status || '')
                                 .trim()
@@ -533,6 +584,21 @@ const CustomerListTable = ({
                     </Button>
                 </div>
             </Dialog>
+
+            <ConfirmDialog
+                isOpen={deleteConfirmationOpen}
+                type="danger"
+                title="Remove candidate"
+                onClose={handleCloseDeleteConfirmation}
+                onRequestClose={handleCloseDeleteConfirmation}
+                onCancel={handleCloseDeleteConfirmation}
+                onConfirm={handleConfirmDelete}
+            >
+                <p>
+                    Are you sure you want to remove this candidate? This action
+                    can&apos;t be undone.
+                </p>
+            </ConfirmDialog>
         </>
     )
 }

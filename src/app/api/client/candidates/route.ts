@@ -10,6 +10,7 @@ type UpstreamCandidateResponse = {
     data?: unknown
     status_code?: number
     error?: string
+    errors?: Record<string, string[]>
 }
 
 const resolveSuccess = (payload: UpstreamCandidateResponse) => {
@@ -37,6 +38,25 @@ const buildAuthHeaders = (tokenType: string, accessToken: string) => ({
     Accept: 'application/json',
     Authorization: `${tokenType} ${accessToken}`,
 })
+
+const compactPayload = (payload: Record<string, unknown>) =>
+    Object.fromEntries(
+        Object.entries(payload).filter(([, value]) => {
+            if (value === null || value === undefined) {
+                return false
+            }
+
+            if (typeof value === 'string') {
+                return value.trim().length > 0
+            }
+
+            if (Array.isArray(value)) {
+                return value.length > 0
+            }
+
+            return true
+        }),
+    )
 
 export async function GET(request: NextRequest) {
     try {
@@ -122,10 +142,38 @@ export async function POST(request: NextRequest) {
             cfConnectingIp ||
             ''
 
-        const requestPayload = {
-            ...body,
+        const managerEmails = Array.isArray(body.managerEmails)
+            ? body.managerEmails
+                  .map((email) => String(email || '').trim())
+                  .filter((email) => email.length > 0)
+            : []
+
+        const tags = Array.isArray(body.tags)
+            ? body.tags
+                  .map((tag) =>
+                      typeof tag?.value === 'string'
+                          ? tag.value.trim()
+                          : String(tag?.value || '').trim(),
+                  )
+                  .filter((tag) => tag.length > 0)
+            : []
+
+        const requestPayload = compactPayload({
+            first_name: String(body.firstName || '').trim(),
+            last_name: String(body.lastName || '').trim(),
+            email: String(body.email || '').trim(),
+            phone_code: String(body.dialCode || '').trim(),
+            phone_number: String(body.phoneNumber || '').trim(),
+            country_id: String(body.country || '').trim(),
+            state_id: String(body.state || '').trim(),
+            city_id: String(body.city || '').trim(),
+            address: String(body.address || '').trim(),
+            postcode: String(body.postcode || '').trim(),
+            manager_emails: managerEmails,
+            tags,
+            send_invite: Boolean(body.send_invite),
             ...(ipAddress ? { ip_address: ipAddress } : {}),
-        }
+        })
 
         const payload = (await apiClient.request(
             'post',
@@ -146,6 +194,7 @@ export async function POST(request: NextRequest) {
                     message: payload.message || 'Failed to create candidate',
                     ...(payload.data ? { data: payload.data } : {}),
                     ...(payload.error ? { error: payload.error } : {}),
+                    ...(payload.errors ? { errors: payload.errors } : {}),
                 },
                 { status: payload.status_code || 400 },
             )
@@ -162,19 +211,28 @@ export async function POST(request: NextRequest) {
     } catch (error: unknown) {
         const responseError = error as {
             response?: {
-                data?: { message?: string }
+                data?: {
+                    message?: string
+                    error?: string
+                    errors?: Record<string, string[]>
+                }
                 status?: number
             }
             message?: string
         }
 
+        const backendData = responseError?.response?.data
+
         return NextResponse.json(
             {
                 status: false,
                 message:
-                    responseError?.response?.data?.message ||
+                    backendData?.message ||
+                    backendData?.error ||
                     responseError?.message ||
                     'Failed to create candidate',
+                ...(backendData?.errors ? { errors: backendData.errors } : {}),
+                ...(backendData ? { details: backendData } : {}),
             },
             { status: responseError?.response?.status || 500 },
         )

@@ -1,46 +1,74 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Button from '@/components/ui/Button'
 import Dialog from '@/components/ui/Dialog'
-import Checkbox from '@/components/ui/Checkbox'
 import Input from '@/components/ui/Input'
+import Select from '@/components/ui/Select'
 import { Form, FormItem } from '@/components/ui/Form'
 import { useInvitationListStore } from '../_store/invitationListStore'
 import useAppendQueryParams from '@/utils/hooks/useAppendQueryParams'
 import { TbFilter } from 'react-icons/tb'
-import { useForm, Controller } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import useTranslation from '@/utils/hooks/useTranslation'
-import type { ZodType } from 'zod'
 
-type FormSchema = {
-    invitationStatus: Array<string>
-    country: string
-    state: string
-    city: string
+type Option = {
+    value: string
+    label: string
 }
 
-const invitationStatusList = ['sent', 'viewed', 'expired']
+type LocalFilterState = {
+    status: string
+    invitation_type: string
+    date_from: string
+    date_to: string
+}
 
-const validationSchema: ZodType<FormSchema> = z.object({
-    invitationStatus: z.array(z.string()),
-    country: z.string(),
-    state: z.string(),
-    city: z.string(),
-})
+const statusOptions: Option[] = [
+    { value: '', label: 'All Statuses' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'sent', label: 'Sent' },
+    { value: 'viewed', label: 'Viewed' },
+    { value: 'completed', label: 'Completed' },
+    { value: 'expired', label: 'Expired' },
+]
+
+const invitationTypeOptions: Option[] = [
+    { value: '', label: 'All Types' },
+    { value: 'email', label: 'Email' },
+    { value: 'sms', label: 'SMS' },
+    { value: 'whatsapp', label: 'WhatsApp' },
+]
 
 const InvitationListTableFilter = () => {
-    const t = useTranslation('invitations')
     const [dialogIsOpen, setIsOpen] = useState(false)
-
     const filterData = useInvitationListStore((state) => state.filterData)
-    const setFilterData = useInvitationListStore((state) => state.setFilterData)
-
     const { onAppendQueryParams } = useAppendQueryParams()
 
+    const [localFilters, setLocalFilters] = useState<LocalFilterState>({
+        status: filterData.status,
+        invitation_type: filterData.invitation_type,
+        date_from: filterData.date_from,
+        date_to: filterData.date_to,
+    })
+
+    const statusValue = useMemo(
+        () => statusOptions.find((option) => option.value === localFilters.status),
+        [localFilters.status],
+    )
+    const invitationTypeValue = useMemo(
+        () =>
+            invitationTypeOptions.find(
+                (option) => option.value === localFilters.invitation_type,
+            ),
+        [localFilters.invitation_type],
+    )
+
     const openDialog = () => {
+        setLocalFilters({
+            status: filterData.status,
+            invitation_type: filterData.invitation_type,
+            date_from: filterData.date_from,
+            date_to: filterData.date_to,
+        })
         setIsOpen(true)
     }
 
@@ -48,107 +76,100 @@ const InvitationListTableFilter = () => {
         setIsOpen(false)
     }
 
-    const { handleSubmit, reset, control } = useForm<FormSchema>({
-        defaultValues: filterData,
-        resolver: zodResolver(validationSchema),
-    })
-
-    const onSubmit = (values: FormSchema) => {
+    const onApply = () => {
         onAppendQueryParams({
-            status: values.invitationStatus.join(','),
-            country: values.country,
-            state: values.state,
-            city: values.city,
+            status: localFilters.status,
+            invitation_type: localFilters.invitation_type,
+            date_from: localFilters.date_from,
+            date_to: localFilters.date_to,
+            page: '1',
         })
+        setIsOpen(false)
+    }
 
-        setFilterData(values)
+    const onReset = () => {
+        setLocalFilters({
+            status: '',
+            invitation_type: '',
+            date_from: '',
+            date_to: '',
+        })
+        onAppendQueryParams({
+            status: '',
+            invitation_type: '',
+            date_from: '',
+            date_to: '',
+            page: '1',
+        })
         setIsOpen(false)
     }
 
     return (
         <>
-            <Button icon={<TbFilter />} onClick={() => openDialog()}>
-                {t('filter.button')}
+            <Button icon={<TbFilter />} onClick={openDialog}>
+                Filter
             </Button>
             <Dialog
                 isOpen={dialogIsOpen}
                 onClose={onDialogClose}
                 onRequestClose={onDialogClose}
             >
-                <h4 className="mb-4">{t('filter.title')}</h4>
-                <Form onSubmit={handleSubmit(onSubmit)}>
-                    <FormItem label={t('filter.fields.invitationStatus')}>
-                        <Controller
-                            name="invitationStatus"
-                            control={control}
-                            render={({ field }) => (
-                                <Checkbox.Group
-                                    vertical
-                                    className="flex mt-4"
-                                    {...field}
-                                >
-                                    {invitationStatusList.map((status) => (
-                                        <Checkbox
-                                            key={status}
-                                            name={field.name}
-                                            value={status}
-                                            className="justify-between flex-row-reverse heading-text capitalize"
-                                        >
-                                            {t(`status.${status}`)}
-                                        </Checkbox>
-                                    ))}
-                                </Checkbox.Group>
-                            )}
+                <h4 className="mb-4">Filter Invitations</h4>
+                <Form>
+                    <FormItem label="Status">
+                        <Select<Option, false>
+                            value={statusValue || statusOptions[0]}
+                            options={statusOptions}
+                            onChange={(option) =>
+                                setLocalFilters((prev) => ({
+                                    ...prev,
+                                    status: option?.value || '',
+                                }))
+                            }
                         />
                     </FormItem>
-                    <FormItem label={t('filter.fields.country')}>
-                        <Controller
-                            name="country"
-                            control={control}
-                            render={({ field }) => (
-                                <Input
-                                    type="text"
-                                    autoComplete="off"
-                                    placeholder={t('filter.placeholders.country')}
-                                    {...field}
-                                />
-                            )}
+                    <FormItem label="Invitation Type">
+                        <Select<Option, false>
+                            value={invitationTypeValue || invitationTypeOptions[0]}
+                            options={invitationTypeOptions}
+                            onChange={(option) =>
+                                setLocalFilters((prev) => ({
+                                    ...prev,
+                                    invitation_type: option?.value || '',
+                                }))
+                            }
                         />
                     </FormItem>
-                    <FormItem label={t('filter.fields.state')}>
-                        <Controller
-                            name="state"
-                            control={control}
-                            render={({ field }) => (
-                                <Input
-                                    type="text"
-                                    autoComplete="off"
-                                    placeholder={t('filter.placeholders.state')}
-                                    {...field}
-                                />
-                            )}
+                    <FormItem label="Date From">
+                        <Input
+                            type="date"
+                            value={localFilters.date_from}
+                            onChange={(event) =>
+                                setLocalFilters((prev) => ({
+                                    ...prev,
+                                    date_from: event.target.value,
+                                }))
+                            }
                         />
                     </FormItem>
-                    <FormItem label={t('filter.fields.city')}>
-                        <Controller
-                            name="city"
-                            control={control}
-                            render={({ field }) => (
-                                <Input
-                                    type="text"
-                                    autoComplete="off"
-                                    placeholder={t('filter.placeholders.city')}
-                                    {...field}
-                                />
-                            )}
+                    <FormItem label="Date To">
+                        <Input
+                            type="date"
+                            value={localFilters.date_to}
+                            onChange={(event) =>
+                                setLocalFilters((prev) => ({
+                                    ...prev,
+                                    date_to: event.target.value,
+                                }))
+                            }
                         />
                     </FormItem>
-                    <div className="flex justify-end items-center gap-2 mt-4">
-                        <Button type="button" onClick={() => reset()}>
-                            {t('common.reset')}
+                    <div className="mt-4 flex items-center justify-end gap-2">
+                        <Button type="button" onClick={onReset}>
+                            Reset
                         </Button>
-                        <Button type="submit" variant="solid">
-                            {t('common.apply')}
+                        <Button type="button" variant="solid" onClick={onApply}>
+                            Apply
                         </Button>
                     </div>
                 </Form>
@@ -158,4 +179,3 @@ const InvitationListTableFilter = () => {
 }
 
 export default InvitationListTableFilter
-

@@ -40,7 +40,7 @@ export default auth((req) => {
     /** Skip auth middleware for api routes */
     if (isApiAuthRoute) return
 
-    if ((hasRefreshError || isTokenExpired) && !isLogoutRoute) {
+    if ((hasRefreshError || isTokenExpired) && !isPublicRoute) {
         const logoutUrl = new URL('/logout', nextUrl.origin)
         logoutUrl.searchParams.set('callbackUrl', appConfig.unAuthenticatedEntryPath)
         return Response.redirect(logoutUrl)

@@ -31,7 +31,7 @@ type ImportResult = {
 const { THead, TBody, Tr, Th, Td } = Table
 
 const PAGE_SIZE = 5
-const HISTORY_REFRESH_INTERVAL = 5 * 60 * 1000
+const HISTORY_REFRESH_INTERVAL = 10 * 1000
 
 const statusColor: Record<string, string> = {
     success: 'bg-emerald-200 dark:bg-emerald-200 text-gray-900 dark:text-gray-900',
