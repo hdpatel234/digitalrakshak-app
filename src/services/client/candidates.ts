@@ -9,6 +9,8 @@ export type CreateCandidateResponse = {
 
 export type CreateCandidatePayload = CustomerFormSchema & {
     send_invite?: boolean
+    is_invite?: boolean
+    package_ids?: number[]
 }
 
 export async function apiCreateCandidate(data: CreateCandidatePayload) {
@@ -18,3 +20,4 @@ export async function apiCreateCandidate(data: CreateCandidatePayload) {
         data,
     })
 }
+

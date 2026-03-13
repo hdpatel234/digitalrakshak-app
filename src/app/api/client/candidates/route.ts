@@ -158,6 +158,12 @@ export async function POST(request: NextRequest) {
                   .filter((tag) => tag.length > 0)
             : []
 
+        const inviteFlag = Boolean(body.is_invite ?? body.send_invite)
+        const packageIds = Array.isArray(body.package_ids)
+            ? body.package_ids
+                  .map((id) => Number.parseInt(String(id), 10))
+                  .filter((id) => Number.isInteger(id) && id > 0)
+            : []
         const requestPayload = compactPayload({
             first_name: String(body.firstName || '').trim(),
             last_name: String(body.lastName || '').trim(),
@@ -171,7 +177,9 @@ export async function POST(request: NextRequest) {
             postcode: String(body.postcode || '').trim(),
             manager_emails: managerEmails,
             tags,
-            send_invite: Boolean(body.send_invite),
+            send_invite: inviteFlag,
+            is_invite: inviteFlag,
+            ...(packageIds.length > 0 ? { package_ids: packageIds } : {}),
             ...(ipAddress ? { ip_address: ipAddress } : {}),
         })
 
@@ -238,3 +246,4 @@ export async function POST(request: NextRequest) {
         )
     }
 }
+
