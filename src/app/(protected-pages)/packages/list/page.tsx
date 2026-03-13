@@ -38,6 +38,7 @@ const mapPackage = (item: unknown): Product => {
         type: String(record.type ?? '-'),
         name: String(record.package_name ?? record.name ?? '-'),
         description: String(record.description ?? '-'),
+        availableCandidates: toNumber(record.available_candidates, 0),
         price:
             Number.parseFloat(
                 String(

@@ -17,7 +17,7 @@ type CountryData = {
     flag_image: string | null
     latitude: number | null
     longitude: number | null
-    timezones: any | null
+    timezones: unknown | null
     postal_code_format: string | null
     postal_code_regex: string | null
     is_active: number
@@ -42,26 +42,19 @@ export async function GET() {
         const session = await auth()
         const accessToken = session?.accessToken
         const tokenType = session?.tokenType || 'Bearer'
-
-        if (!accessToken) {
-            return NextResponse.json(
-                {
-                    status: false,
-                    message: 'Unauthorized',
-                },
-                { status: 401 },
-            )
-        }
+        const endpoint = accessToken
+            ? '/auth/countries'
+            : '/auth/public/countries'
 
         const response = (await apiClient.request<CountryData[]>(
             'get',
-            '/auth/countries',
+            endpoint,
             {},
             false,
             {
-                headers: {
-                    Authorization: `${tokenType} ${accessToken}`,
-                },
+                headers: accessToken
+                    ? { Authorization: `${tokenType} ${accessToken}` }
+                    : {},
             },
         )) as CountriesResponse
 

@@ -121,14 +121,10 @@ const conceptsRoute: Routes = {
         }
     },
     '/packages/create': {
-        key: 'concepts.packages.packagesList',
+        key: 'concepts.packages.packagesCreate',
         authority: [ADMIN, USER],
         meta: {
-            header: {
-                title: 'Create package',
-                description: 'Create a new package',
-                contained: true,
-            },
+            pageContainerType: 'contained',
         }
     },
     '/packages/edit/[slug]': {
@@ -185,7 +181,7 @@ const conceptsRoute: Routes = {
         }
     },
     '/orders/create': {
-        key: 'concepts.orders.ordersList',
+        key: 'concepts.orders.ordersCreate',
         authority: [ADMIN, USER],
         meta: {
             header: {

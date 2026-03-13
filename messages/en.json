@@ -104,6 +104,7 @@
         "conceptsOrders": {
             "orders": "Orders",
             "orderList": "List",
+            "ordersCreate": "Create",
             "orderEdit": "Edit",
             "orderDetails": "Details",
             "orderCreate": "Create",

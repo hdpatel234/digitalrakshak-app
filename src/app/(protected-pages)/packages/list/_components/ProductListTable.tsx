@@ -7,7 +7,7 @@ import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import { useProductListStore } from '../_store/productListStore'
 import useAppendQueryParams from '@/utils/hooks/useAppendQueryParams'
 import { useRouter } from 'next/navigation'
-import { TbEye, TbPencil, TbSend, TbTrash } from 'react-icons/tb'
+import { TbEye, TbPencil, TbShoppingCartPlus, TbTrash, TbUsers } from 'react-icons/tb'
 import { NumericFormat } from 'react-number-format'
 import type { OnSortParam, ColumnDef, Row } from '@/components/shared/DataTable'
 import type { Product } from '../types'
@@ -59,8 +59,8 @@ const ProductListTable = ({
         router.push(`/packages/edit/${product.id}`)
     }
 
-    const handleSendInvite = (product: Product) => {
-        router.push(`/candidates/list?packageId=${product.id}`)
+    const handleCreateOrder = (product: Product) => {
+        router.push(`/orders/create?packageId=${product.id}`)
     }
 
     const handleDelete = (product: Product) => {
@@ -107,6 +107,30 @@ const ProductListTable = ({
                 cell: (props) => props.row.original.description || '-',
             },
             {
+                header: 'Available Candidates',
+                accessorKey: 'avilable_candidates',
+                cell: (props) => {
+                    const count = Number(props.row.original.availableCandidates || 0)
+                    const hasCandidates = count > 0
+
+                    return (
+                        <div
+                            className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 border ${
+                                hasCandidates
+                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-500/20 dark:border-emerald-500/40 dark:text-emerald-200'
+                                    : 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-500/20 dark:border-amber-500/40 dark:text-amber-200'
+                            }`}
+                        >
+                            <TbUsers className="text-base" />
+                            <span className="font-semibold">{count}</span>
+                            <span className="text-xs font-medium">
+                                {hasCandidates}
+                            </span>
+                        </div>
+                    )
+                },
+            },
+            {
                 header: 'Price',
                 accessorKey: 'price',
                 cell: (props) => {
@@ -145,13 +169,13 @@ const ProductListTable = ({
                                             <TbEye />
                                         </div>
                                     </Tooltip>
-                                    <Tooltip title="Send Invite">
+                                    <Tooltip title="Create Order">
                                         <div
                                             className="text-xl cursor-pointer select-none font-semibold"
                                             role="button"
-                                            onClick={() => handleSendInvite(row)}
+                                            onClick={() => handleCreateOrder(row)}
                                         >
-                                            <TbSend />
+                                            <TbShoppingCartPlus />
                                         </div>
                                     </Tooltip>
                                 </>
@@ -175,13 +199,13 @@ const ProductListTable = ({
                                             <TbTrash />
                                         </div>
                                     </Tooltip>
-                                    <Tooltip title="Send Invite">
+                                    <Tooltip title="Create Order">
                                         <div
                                             className="text-xl cursor-pointer select-none font-semibold"
                                             role="button"
-                                            onClick={() => handleSendInvite(row)}
+                                            onClick={() => handleCreateOrder(row)}
                                         >
-                                            <TbSend />
+                                            <TbShoppingCartPlus />
                                         </div>
                                     </Tooltip>
                                 </>
@@ -214,6 +238,7 @@ const ProductListTable = ({
             type: 'type',
             name: 'package_name',
             description: 'description',
+            availableCandidates: 'available_candidates',
             price: 'total_amount',
         }
 

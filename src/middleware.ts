@@ -30,6 +30,9 @@ export default auth((req) => {
     const isSignedIn = !!req.auth && !hasRefreshError && !isTokenExpired
 
     const isApiAuthRoute = pathname.startsWith(apiAuthPrefix)
+    const isPublicInvitationApiRoute = pathname.startsWith(
+        '/api/client/invitations/by-token/',
+    )
     const isLogoutRoute = pathname === '/logout'
     const isPublicInvitationRoute =
         pathname === '/invitation' || pathname.startsWith('/invitation/')
@@ -38,7 +41,7 @@ export default auth((req) => {
     const isAuthRoute = authRoutes.includes(pathname)
 
     /** Skip auth middleware for api routes */
-    if (isApiAuthRoute) return
+    if (isApiAuthRoute || isPublicInvitationApiRoute) return
 
     if ((hasRefreshError || isTokenExpired) && !isPublicRoute) {
         const logoutUrl = new URL('/logout', nextUrl.origin)

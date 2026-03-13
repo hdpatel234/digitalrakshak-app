@@ -4,6 +4,7 @@ export type Product = {
     type: string
     name: string
     description: string
+    availableCandidates: number
     price: number
 }
 

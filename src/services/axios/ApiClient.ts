@@ -221,9 +221,14 @@ class ApiClient {
         ...customConfig,
       };
 
+      const defaultHeaders: Record<string, string> = {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      };
       const customHeaders = (customConfig.headers || {}) as Record<string, string>;
       const authHeaders = withAuth ? this.getAuthHeaders() : {};
       config.headers = {
+        ...defaultHeaders,
         ...authHeaders,
         ...customHeaders,
       };

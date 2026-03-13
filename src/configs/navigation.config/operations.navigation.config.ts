@@ -120,8 +120,8 @@ const operationsNavigationConfig: NavigationTree[] = [
 
             // Orders
             {
-                key: 'concepts.orders.ordersList',
-                path: '/orders/list',
+                key: 'concepts.orders',
+                path: '',
                 title: 'Orders',
                 translateKey: 'nav.conceptsOrders.orders',
                 icon: 'orders',
@@ -129,11 +129,21 @@ const operationsNavigationConfig: NavigationTree[] = [
                 authority: [ADMIN, USER],
                 subMenu: [
                     {
-                        key: 'concepts.orders.orderList',
+                        key: 'concepts.orders.ordersList',
                         path: '/orders/list',
                         title: 'Simple',
                         translateKey: 'nav.conceptsOrders.orderList',
                         icon: 'orderList',
+                        type: NAV_ITEM_TYPE_ITEM,
+                        authority: [ADMIN, USER],
+                        subMenu: [],
+                    },
+                    {
+                        key: 'concepts.orders.ordersCreate',
+                        path: '/orders/create',
+                        title: 'Simple',
+                        translateKey: 'nav.conceptsOrders.orderCreate',
+                        icon: 'orderCreate',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
                         subMenu: [],
@@ -152,7 +162,7 @@ const operationsNavigationConfig: NavigationTree[] = [
                 authority: [ADMIN, USER],
                 subMenu: [
                     {
-                        key: 'concepts.packages.packageList',
+                        key: 'concepts.packages.packagesList',
                         path: `/packages/list`,
                         title: 'Simple',
                         translateKey: 'nav.conceptsProducts.productList',
@@ -162,7 +172,7 @@ const operationsNavigationConfig: NavigationTree[] = [
                         subMenu: [],
                     },
                     {
-                        key: 'concepts.packages.packageCreate',
+                        key: 'concepts.packages.packagesCreate',
                         path: `/packages/create`,
                         title: 'Create',
                         translateKey: 'nav.conceptsProducts.productCreate',

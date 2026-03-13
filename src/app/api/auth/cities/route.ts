@@ -33,26 +33,17 @@ export async function GET(request: Request) {
         const session = await auth()
         const accessToken = session?.accessToken
         const tokenType = session?.tokenType || 'Bearer'
-
-        if (!accessToken) {
-            return NextResponse.json(
-                {
-                    status: false,
-                    message: 'Unauthorized',
-                },
-                { status: 401 },
-            )
-        }
+        const endpoint = accessToken ? '/auth/cities' : '/auth/public/cities'
 
         const response = (await apiClient.request<RawCityData[]>(
             'get',
-            '/auth/cities',
+            endpoint,
             { state_id: stateId },
             false,
             {
-                headers: {
-                    Authorization: `${tokenType} ${accessToken}`,
-                },
+                headers: accessToken
+                    ? { Authorization: `${tokenType} ${accessToken}` }
+                    : {},
             },
         )) as CitiesResponse
 
