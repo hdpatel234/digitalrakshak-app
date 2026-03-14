@@ -7,28 +7,22 @@ import { TbPackage, TbUserSquare, TbMapPin, TbCreditCard } from 'react-icons/tb'
 
 const navigationList = [
     {
-        label: 'Select products',
-        description: 'Add product to purchase list.',
+        label: 'Select package',
+        description: 'Add package to your order.',
         link: 'selectProducts',
         icon: <TbPackage />,
     },
     {
-        label: 'Customer details',
+        label: 'Candidate details',
         description:
-            'Enter customer information like name, email & phone number.',
+            'Select the candidate that you are ordering for.',
         link: 'customerDetails',
         icon: <TbUserSquare />,
     },
     {
-        label: 'Address Information',
-        description: 'Provide shipping address details.',
-        link: 'addressInformation',
-        icon: <TbMapPin />,
-    },
-    {
         label: 'Payment',
         description:
-            'Enter payment method and details to complete the transaction.',
+            'Enter payment method and details to complete the order.',
         link: 'payment',
         icon: <TbCreditCard />,
     },

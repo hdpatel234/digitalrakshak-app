@@ -1,15 +1,21 @@
 'use client'
-
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import Tag from '@/components/ui/Tag'
 import Tooltip from '@/components/ui/Tooltip'
 import DataTable from '@/components/shared/DataTable'
-import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import { useOrderListStore } from '../_store/orderListStore'
 import useAppendQueryParams from '@/utils/hooks/useAppendQueryParams'
-import sleep from '@/utils/sleep'
 import { useRouter } from 'next/navigation'
-import { TbTrash, TbEye } from 'react-icons/tb'
+import {
+    TbEye,
+    TbCreditCard,
+    TbBrandPaypal,
+    TbCash,
+    TbBuildingBank,
+    TbWallet,
+    TbDeviceMobile,
+    TbQrcode,
+} from 'react-icons/tb'
 import dayjs from 'dayjs'
 import { NumericFormat } from 'react-number-format'
 import type { OnSortParam, ColumnDef } from '@/components/shared/DataTable'
@@ -51,7 +57,7 @@ const OrderColumn = ({ row }: { row: Order }) => {
 
     return (
         <span
-            className="cursor-pointer font-bold heading-text hover:text-primary"
+            className="cursor-pointer font-bold heading-text hover:text-primary text-center block"
             onClick={onView}
         >
             #{row.id}
@@ -59,32 +65,27 @@ const OrderColumn = ({ row }: { row: Order }) => {
     )
 }
 
-const ActionColumn = ({
-    row,
-    onDelete,
-}: {
-    row: Order
-    onDelete: () => void
-}) => {
+const ActionColumn = ({ row }: { row: Order }) => {
     const router = useRouter()
 
     const onView = () => {
         router.push(`/orders/details/${row.id}`)
     }
 
+    const onMakePayment = () => {
+        router.push(`/orders/details/${row.id}?action=payment`)
+    }
+
     return (
-        <div className="flex justify-end text-lg gap-1">
+        <div className="flex justify-center text-lg gap-1">
             <Tooltip wrapperClass="flex" title="View">
-                <span className={`cursor-pointer p-2`} onClick={onView}>
+                <span className="cursor-pointer p-2" onClick={onView}>
                     <TbEye />
                 </span>
             </Tooltip>
-            <Tooltip wrapperClass="flex" title="Delete">
-                <span
-                    className="cursor-pointer p-2 hover:text-red-500"
-                    onClick={onDelete}
-                >
-                    <TbTrash />
+            <Tooltip wrapperClass="flex" title="Make payment">
+                <span className="cursor-pointer p-2" onClick={onMakePayment}>
+                    <TbCreditCard />
                 </span>
             </Tooltip>
         </div>
@@ -98,33 +99,38 @@ const PaymentMethodImage = ({
     paymentMehod: string
     className: string
 }) => {
-    switch (paymentMehod) {
-        case 'visa':
-            return (
-                <img
-                    className={className}
-                    src="/img/others/img-8.png"
-                    alt={paymentMehod}
-                />
-            )
-        case 'master':
-            return (
-                <img
-                    className={className}
-                    src="/img/others/img-9.png"
-                    alt={paymentMehod}
-                />
-            )
+    const normalized = paymentMehod
+        .toLowerCase()
+        .replace(/_/g, '-')
+        .replace(/\s+/g, '-')
+        .trim()
+
+    switch (normalized) {
+        case 'credit-card':
+        case 'debit-card':
+        case 'card':
+            return <TbCreditCard className={className} />
         case 'paypal':
-            return (
-                <img
-                    className={className}
-                    src="/img/others/img-10.png"
-                    alt={paymentMehod}
-                />
-            )
+            return <TbBrandPaypal className={className} />
+        case 'cash':
+            return <TbCash className={className} />
+        case 'bank':
+        case 'bank-transfer':
+        case 'net-banking':
+        case 'netbanking':
+            return <TbBuildingBank className={className} />
+        case 'wallet':
+        case 'mobile-wallet':
+            return <TbWallet className={className} />
+        case 'upi':
+        case 'qrcode':
+        case 'qr-code':
+            return <TbQrcode className={className} />
+        case 'mobile':
+        case 'mobile-payment':
+            return <TbDeviceMobile className={className} />
         default:
-            return <></>
+            return <TbCreditCard className={className} />
     }
 }
 
@@ -134,70 +140,29 @@ const OrderListTable = ({
     pageSize = 10,
 }: OrderListTableProps) => {
     const orderList = useOrderListStore((state) => state.orderList)
-    const setOrderList = useOrderListStore((state) => state.setOrderList)
     const initialLoading = useOrderListStore((state) => state.initialLoading)
 
     const { onAppendQueryParams } = useAppendQueryParams()
 
-    const [deleting, setDeleting] = useState(false)
-
-    const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
-
-    const [orderToDelete, setOrderToDelete] = useState('')
-
     const columns: ColumnDef<Order>[] = useMemo(
         () => [
             {
-                header: 'Order',
+                header: <span className="block text-center">Order</span>,
                 accessorKey: 'id',
                 cell: (props) => <OrderColumn row={props.row.original} />,
             },
             {
-                header: 'Date',
-                accessorKey: 'date',
-                cell: (props) => {
-                    const row = props.row.original
-                    return (
-                        <span className="font-semibold">
-                            {dayjs.unix(row.date).format('DD/MM/YYYY')}
-                        </span>
-                    )
-                },
-            },
-            {
-                header: 'Customer',
-                accessorKey: 'customer',
-                cell: (props) => {
-                    const row = props.row.original
-                    return <span className="font-semibold">{row.customer}</span>
-                },
-            },
-            {
-                header: 'Status',
-                accessorKey: 'status',
-                cell: (props) => {
-                    const { status } = props.row.original
-                    return (
-                        <Tag className={orderStatusColor[status].bgClass}>
-                            <span
-                                className={`capitalize font-semibold ${orderStatusColor[status].textClass}`}
-                            >
-                                {orderStatusColor[status].label}
-                            </span>
-                        </Tag>
-                    )
-                },
-            },
-            {
-                header: 'Payment Method',
+                header: (
+                    <span className="block text-center">Payment Method</span>
+                ),
                 accessorKey: 'paymentMehod',
                 cell: (props) => {
                     const { paymentMehod, paymentIdendifier } =
                         props.row.original
                     return (
-                        <span className="flex items-center gap-2">
+                        <span className="flex items-center justify-center gap-2">
                             <PaymentMethodImage
-                                className="max-h-[20px]"
+                                className="text-xl"
                                 paymentMehod={paymentMehod}
                             />
                             <span className="font-semibold">
@@ -208,13 +173,13 @@ const OrderListTable = ({
                 },
             },
             {
-                header: 'Total',
+                header: <span className="block text-center">Total</span>,
                 accessorKey: 'totalAmount',
                 cell: (props) => {
                     const { totalAmount } = props.row.original
                     return (
                         <NumericFormat
-                            className="heading-text font-bold"
+                            className="heading-text font-bold text-center block"
                             displayType="text"
                             value={(
                                 Math.round(totalAmount * 100) / 100
@@ -226,27 +191,43 @@ const OrderListTable = ({
                 },
             },
             {
-                header: '',
+                header: <span className="block text-center">Status</span>,
+                accessorKey: 'status',
+                cell: (props) => {
+                    const { status } = props.row.original
+                    return (
+                        <div className="flex justify-center">
+                            <Tag className={orderStatusColor[status].bgClass}>
+                                <span
+                                    className={`capitalize font-semibold ${orderStatusColor[status].textClass}`}
+                                >
+                                    {orderStatusColor[status].label}
+                                </span>
+                            </Tag>
+                        </div>
+                    )
+                },
+            },
+            {
+                header: <span className="block text-center">Date</span>,
+                accessorKey: 'date',
+                cell: (props) => {
+                    const row = props.row.original
+                    return (
+                        <span className="font-semibold text-center block">
+                            {dayjs.unix(row.date).format('DD/MM/YYYY')}
+                        </span>
+                    )
+                },
+            },
+            {
+                header: <span className="block text-center">Actions</span>,
                 id: 'action',
-                cell: (props) => (
-                    <ActionColumn
-                        row={props.row.original}
-                        onDelete={() => handleDelete(props.row.original.id)}
-                    />
-                ),
+                cell: (props) => <ActionColumn row={props.row.original} />,
             },
         ],
         [],
     )
-
-    const handleDelete = (id: string) => {
-        setOrderToDelete(id)
-        setDeleteConfirmationOpen(true)
-    }
-
-    const handleCancel = () => {
-        setDeleteConfirmationOpen(false)
-    }
 
     const handlePaginationChange = (page: number) => {
         onAppendQueryParams({
@@ -268,17 +249,6 @@ const OrderListTable = ({
         })
     }
 
-    const handleDeleteConfirm = async () => {
-        setDeleting(true)
-        await sleep(800)
-        const newOrderList = orderList.filter(
-            (order) => order.id !== orderToDelete,
-        )
-        setOrderList(newOrderList)
-        setDeleting(false)
-        setDeleteConfirmationOpen(false)
-    }
-
     return (
         <>
             <DataTable
@@ -297,22 +267,6 @@ const OrderListTable = ({
                 onSelectChange={handleSelectChange}
                 onSort={handleSort}
             />
-            <ConfirmDialog
-                isOpen={deleteConfirmationOpen}
-                type="danger"
-                title="Remove articles"
-                onClose={handleCancel}
-                onRequestClose={handleCancel}
-                onCancel={handleCancel}
-                onConfirm={handleDeleteConfirm}
-                confirmButtonProps={{ loading: deleting }}
-            >
-                <p>
-                    {' '}
-                    Are you sure you want to remove these articles? This action
-                    can&apos;t be undo.{' '}
-                </p>
-            </ConfirmDialog>
         </>
     )
 }

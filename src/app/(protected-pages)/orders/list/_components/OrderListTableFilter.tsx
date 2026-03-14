@@ -33,12 +33,42 @@ type Option = {
 
 const { Control } = components
 
-const statusOption: Option[] = [
+const defaultStatusOptions: Option[] = [
+    { value: 'all', label: 'All', className: 'bg-gray-400' },
     { value: 'paid', label: 'Paid', className: 'bg-emerald-500' },
     { value: 'failed', label: 'Failed', className: 'bg-red-500' },
     { value: 'pending', label: 'Pending', className: 'bg-amber-500' },
-    { value: 'all', label: 'All', className: 'bg-gray-400' },
 ]
+
+const statusClassMap: Record<string, string> = {
+    draft: 'bg-gray-400',
+    pending: 'bg-amber-500',
+    confirmed: 'bg-blue-500',
+    processing: 'bg-indigo-500',
+    completed: 'bg-emerald-500',
+    cancelled: 'bg-red-500',
+}
+
+const mapStatusOptions = (options: Array<{ key: string; name: string }>) => {
+    if (!options.length) {
+        return defaultStatusOptions
+    }
+
+    const normalized = options.map((option) => {
+        const value = option.key.trim()
+        return {
+            value,
+            label: option.name.trim() || value,
+            className:
+                statusClassMap[value.toLowerCase()] || 'bg-gray-400',
+        }
+    })
+
+    return [
+        { value: 'all', label: 'All', className: 'bg-gray-400' },
+        ...normalized,
+    ]
+}
 
 const paymentMethodList = [
     'Credit card',
@@ -85,6 +115,12 @@ const OrderListTableFilter = () => {
 
     const filterData = useOrderListStore((state) => state.filterData)
     const setFilterData = useOrderListStore((state) => state.setFilterData)
+    const statusOptions = useOrderListStore((state) => state.statusOptions)
+    const paymentMethodOptions = useOrderListStore(
+        (state) => state.paymentMethodOptions,
+    )
+
+    const resolvedStatusOptions = mapStatusOptions(statusOptions)
 
     const { onAppendQueryParams } = useAppendQueryParams()
 
@@ -99,7 +135,7 @@ const OrderListTableFilter = () => {
             minDate: values.date.toString(),
             maxDate: values.date.toString(),
             status: values.status,
-            paymentMethod: values.paymentMethod.toString(),
+            payment_method_id: values.paymentMethod.toString(),
         })
         setFilterIsOpen(false)
     }
@@ -142,9 +178,9 @@ const OrderListTableFilter = () => {
                                 render={({ field }) => (
                                     <Select<Option>
                                         instanceId="status"
-                                        options={statusOption}
+                                        options={resolvedStatusOptions}
                                         {...field}
-                                        value={statusOption.filter(
+                                        value={resolvedStatusOptions.filter(
                                             (option) =>
                                                 option.value === field.value,
                                         )}
@@ -170,18 +206,26 @@ const OrderListTableFilter = () => {
                                             className="flex"
                                             {...field}
                                         >
-                                            {paymentMethodList.map(
-                                                (type, index) => (
+                                            {(paymentMethodOptions.length
+                                                ? paymentMethodOptions
+                                                : paymentMethodList.map(
+                                                      (type, index) => ({
+                                                          id: String(
+                                                              type + index,
+                                                          ),
+                                                          name: type,
+                                                      }),
+                                                  )
+                                            ).map((method) => (
                                                     <Checkbox
-                                                        key={type + index}
+                                                        key={method.id}
                                                         name={field.name}
-                                                        value={type}
+                                                        value={method.id}
                                                         className="justify-between flex-row-reverse heading-text"
                                                     >
-                                                        {type}
+                                                        {method.name}
                                                     </Checkbox>
-                                                ),
-                                            )}
+                                                ))}
                                         </Checkbox.Group>
                                     )}
                                 />
@@ -189,7 +233,7 @@ const OrderListTableFilter = () => {
                         </FormItem>
                     </div>
                     <Button variant="solid" type="submit">
-                        Query
+                        Filter
                     </Button>
                 </Form>
             </Drawer>

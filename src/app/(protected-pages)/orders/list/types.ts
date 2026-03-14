@@ -15,3 +15,14 @@ export type Filter = {
     status: string
     paymentMethod: string[]
 }
+
+export type StatusOption = {
+    key: string
+    name: string
+}
+
+export type PaymentMethodOption = {
+    id: string
+    name: string
+    code: string
+}

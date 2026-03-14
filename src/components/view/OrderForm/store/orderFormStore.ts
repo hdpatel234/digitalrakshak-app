@@ -1,22 +1,50 @@
 import { create } from 'zustand'
-import type { ProductOption, Products, SelectedProduct } from '../types'
+import type {
+    Candidate,
+    ProductOption,
+    Products,
+    SelectedProduct,
+} from '../types'
 
 export type OrderFormState = {
     productList: Products
     productOption: ProductOption[]
     selectedProduct: SelectedProduct[]
+    candidateList: Candidate[]
+    selectedCandidates: Candidate[]
+    paymentMethodId: string
+    paymentProviderId: string
+    validationErrors: {
+        package: string
+        candidates: string
+        paymentProvider: string
+    }
 }
 
 type OrderFormAction = {
     setProductList: (payload: Products) => void
     setProductOption: (payload: ProductOption[]) => void
     setSelectedProduct: (payload: SelectedProduct[]) => void
+    setCandidateList: (payload: Candidate[]) => void
+    setSelectedCandidates: (payload: Candidate[]) => void
+    setPaymentMethodId: (payload: string) => void
+    setPaymentProviderId: (payload: string) => void
+    setValidationErrors: (payload: OrderFormState['validationErrors']) => void
 }
 
 const initialState: OrderFormState = {
     productList: [],
     productOption: [],
     selectedProduct: [],
+    candidateList: [],
+    selectedCandidates: [],
+    paymentMethodId: '',
+    paymentProviderId: '',
+    validationErrors: {
+        package: '',
+        candidates: '',
+        paymentProvider: '',
+    },
 }
 
 export const useOrderFormStore = create<OrderFormState & OrderFormAction>(
@@ -26,5 +54,14 @@ export const useOrderFormStore = create<OrderFormState & OrderFormAction>(
         setProductList: (payload) => set(() => ({ productList: payload })),
         setSelectedProduct: (payload) =>
             set(() => ({ selectedProduct: payload })),
+        setCandidateList: (payload) => set(() => ({ candidateList: payload })),
+        setSelectedCandidates: (payload) =>
+            set(() => ({ selectedCandidates: payload })),
+        setPaymentMethodId: (payload) =>
+            set(() => ({ paymentMethodId: payload })),
+        setPaymentProviderId: (payload) =>
+            set(() => ({ paymentProviderId: payload })),
+        setValidationErrors: (payload) =>
+            set(() => ({ validationErrors: payload })),
     }),
 )

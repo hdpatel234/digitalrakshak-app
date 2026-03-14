@@ -25,6 +25,21 @@ export type ProductOption = {
 
 export type SelectedProduct = Product & { quantity: number }
 
+export type Candidate = {
+    id: string
+    invitationId: string
+    firstName: string
+    lastName: string
+    email: string
+    phone: string
+    completedAt: string
+}
+
+export type CandidateOption = {
+    value: string
+    label: string
+}
+
 export type CustomerDetailsFields = {
     firstName: string
     lastName: string

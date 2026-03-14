@@ -1,32 +1,136 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Dialog from '@/components/ui/Dialog'
 import Checkbox from '@/components/ui/Checkbox'
-import Avatar from '@/components/ui/Avatar'
-import Table from '@/components/ui/Table'
 import ScrollBar from '@/components/ui/ScrollBar'
 import AutoComplete from '@/components/shared/AutoComplete'
-import useResponsive from '@/utils/hooks/useResponsive'
+import { FormItem } from '@/components/ui/Form'
 import { useOrderFormStore } from '../store/orderFormStore'
 import classNames from '@/utils/classNames'
-import { NumericFormat } from 'react-number-format'
-import { TbSearch, TbMinus, TbPlus } from 'react-icons/tb'
+import Notification from '@/components/ui/Notification'
+import toast from '@/components/ui/toast'
+import { TbSearch } from 'react-icons/tb'
 import type { Product, ProductOption, SelectedProduct } from '../types'
 
-const { Tr, Th, Td, THead, TBody } = Table
+type ApiResponsePayload = {
+    status?: boolean
+    success?: boolean
+    message?: string
+    data?: unknown
+}
 
 const ProductSelectSection = () => {
-    const { productOption, productList, selectedProduct, setSelectedProduct } =
-        useOrderFormStore()
+    const {
+        productOption,
+        productList,
+        selectedProduct,
+        setSelectedProduct,
+        setProductList,
+        setProductOption,
+        validationErrors,
+    } = useOrderFormStore()
 
     const [inputValue, setInputValue] = useState('')
-
+    const [isLoading, setIsLoading] = useState(false)
     const [productsDialogOpen, setProductsDialogOpen] = useState(false)
 
-    const { smaller } = useResponsive()
+    const mapApiSuccess = (payload: ApiResponsePayload) =>
+        payload.status === true || payload.success === true
+
+    const mapPackageToProduct = (item: unknown): Product | null => {
+        const record =
+            item && typeof item === 'object'
+                ? (item as Record<string, unknown>)
+                : {}
+
+        const id = String(record.id ?? '').trim()
+        const name = String(record.package_name ?? record.name ?? '').trim()
+        const packageCode = String(record.package_code ?? '').trim()
+        const rawPrice =
+            record.total_price ?? record.final_price ?? record.price ?? 0
+        const price = Number.parseFloat(String(rawPrice))
+        const availableCandidates = Number.parseInt(
+            String(record.available_candidates ?? 0),
+            10,
+        )
+
+        if (!id || !name) {
+            return null
+        }
+
+        return {
+            id,
+            name,
+            productCode: packageCode || '-',
+            img: '',
+            price: Number.isFinite(price) ? price : 0,
+            stock: Number.isInteger(availableCandidates)
+                ? availableCandidates
+                : 0,
+        }
+    }
+
+    const fetchPackages = useCallback(async () => {
+        setIsLoading(true)
+        try {
+            const response = await fetch('/api/client/packages?page=1&limit=200', {
+                method: 'GET',
+                cache: 'no-store',
+            })
+            const payload = ((await response.json()) as ApiResponsePayload) || {}
+
+            if (!response.ok || !mapApiSuccess(payload)) {
+                toast.push(
+                    <Notification type="danger">
+                        {payload.message || 'Failed to fetch packages.'}
+                    </Notification>,
+                    { placement: 'top-center' },
+                )
+                setProductList([])
+                setProductOption([])
+                return
+            }
+
+            const dataRecord =
+                payload.data && typeof payload.data === 'object'
+                    ? (payload.data as Record<string, unknown>)
+                    : {}
+            const rawList = Array.isArray(dataRecord.list) ? dataRecord.list : []
+
+            const packageList = rawList
+                .map(mapPackageToProduct)
+                .filter((item): item is Product => item !== null)
+
+            const options: ProductOption[] = packageList.map((pkg) => ({
+                label:
+                    pkg.productCode && pkg.productCode !== '-'
+                        ? `${pkg.name} (${pkg.productCode})`
+                        : pkg.name,
+                value: pkg.id,
+                img: '',
+                quantity: pkg.stock,
+            }))
+
+            setProductList(packageList)
+            setProductOption(options)
+        } catch {
+            toast.push(
+                <Notification type="danger">Failed to fetch packages.</Notification>,
+                { placement: 'top-center' },
+            )
+            setProductList([])
+            setProductOption([])
+        } finally {
+            setIsLoading(false)
+        }
+    }, [setProductList, setProductOption])
+
+    useEffect(() => {
+        fetchPackages()
+    }, [fetchPackages])
 
     const handleOptionSelect = (option: ProductOption) => {
         const selected = productList.find(
@@ -34,187 +138,83 @@ const ProductSelectSection = () => {
         )
 
         if (selected) {
-            if (selectedProduct.some((product) => product.id === selected.id)) {
-                return
-            } else {
-                selectedProduct.push({ ...selected, quantity: 1 })
-                setSelectedProduct(selectedProduct)
-            }
+            setSelectedProduct([{ ...selected, quantity: 1 }])
+            setInputValue('')
         }
     }
 
-    const handleProductIncremental = (productToIncrease: SelectedProduct) => {
-        setSelectedProduct(
-            selectedProduct.map((product) => {
-                if (product.id === productToIncrease.id) {
-                    product.quantity = product.quantity + 1
-                }
-                return product
-            }),
-        )
-    }
-
-    const handleProductDecremental = (productToDecrease: SelectedProduct) => {
-        const targeted = productToDecrease
-
-        targeted.quantity = targeted.quantity - 1
-        if (targeted.quantity === 0) {
-            setSelectedProduct(
-                selectedProduct.filter((product) => product.id !== targeted.id),
-            )
-        } else {
-            setSelectedProduct(
-                selectedProduct.map((product) => {
-                    if (product.id === targeted.id) {
-                        product = targeted
-                    }
-                    return product
-                }),
-            )
-        }
-    }
-
-    const handleProductChecked = (checked: boolean, selected: Product) => {
+    const handlePackageChecked = (checked: boolean, selected: Product) => {
         if (checked) {
-            selectedProduct.push({ ...selected, quantity: 1 })
-            setSelectedProduct(selectedProduct)
-        } else {
-            setSelectedProduct(
-                selectedProduct.filter((product) => product.id !== selected.id),
-            )
+            setSelectedProduct([{ ...selected, quantity: 1 }])
+            return
         }
+        setSelectedProduct([])
     }
 
-    const total = useMemo(() => {
-        return selectedProduct.reduce((accumulator, product) => {
-            return accumulator + product.price * product.quantity
-        }, 0)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedProduct, selectedProduct.length])
+    const selectedPackage = selectedProduct[0] as SelectedProduct | undefined
 
     return (
         <>
             <Card id="selectProducts">
-                <h4 className="mb-6">Select products</h4>
-                <div className="flex items-center gap-2">
-                    <AutoComplete<ProductOption>
-                        data={productOption}
-                        optionKey={(product) => product.label}
-                        value={inputValue}
-                        renderOption={(option) => (
-                            <div className="flex items-center gap-2">
-                                <Avatar shape="round" src={option.img} />
+                <h4 className="mb-6">Select package</h4>
+                <FormItem
+                    label="Package"
+                    invalid={Boolean(validationErrors.package)}
+                    errorMessage={validationErrors.package}
+                >
+                    <div className="flex items-center gap-2">
+                        <AutoComplete<ProductOption>
+                            data={productOption}
+                            optionKey={(product) => product.label}
+                            value={inputValue}
+                            renderOption={(option) => (
                                 <span>{option.label}</span>
+                            )}
+                            suffix={<TbSearch className="text-lg" />}
+                            placeholder="Search package"
+                            onInputChange={setInputValue}
+                            onOptionSelected={handleOptionSelect}
+                        />
+                        <Button
+                            type="button"
+                            variant="solid"
+                            onClick={() => setProductsDialogOpen(true)}
+                        >
+                            Browse Packages
+                        </Button>
+                    </div>
+                </FormItem>
+                <div className="mt-4">
+                    {isLoading && (
+                        <p className="text-sm text-gray-500">
+                            Loading packages...
+                        </p>
+                    )}
+                    {!isLoading && !selectedPackage && (
+                        <p className="text-sm text-gray-500">
+                            No package selected yet.
+                        </p>
+                    )}
+                    {!isLoading && selectedPackage && (
+                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                            <div className="flex items-center justify-between gap-3">
+                                <p className="font-semibold">{selectedPackage.name}</p>
+                                <Button
+                                    type="button"
+                                    size="xs"
+                                    onClick={() => setSelectedProduct([])}
+                                >
+                                    Remove
+                                </Button>
                             </div>
-                        )}
-                        suffix={<TbSearch className="text-lg" />}
-                        placeholder="Search product"
-                        onInputChange={setInputValue}
-                        onOptionSelected={handleOptionSelect}
-                    />
-                    <Button
-                        type="button"
-                        variant="solid"
-                        onClick={() => setProductsDialogOpen(true)}
-                    >
-                        Browse products
-                    </Button>
-                </div>
-                <Table compact={smaller.sm} className="mt-6">
-                    <THead>
-                        <Tr>
-                            <Th className="w-[70%]">Product</Th>
-                            <Th>Price</Th>
-                            <Th>Quantity</Th>
-                        </Tr>
-                    </THead>
-                    <TBody>
-                        {selectedProduct.length > 0 ? (
-                            selectedProduct.map((product) => (
-                                <Tr key={product.id}>
-                                    <Td>
-                                        <div className="flex items-center gap-2">
-                                            <Avatar
-                                                shape="round"
-                                                src={product.img}
-                                            />
-                                            <div>
-                                                <div className="heading-text font-bold">
-                                                    {product.name}
-                                                </div>
-                                                <div>
-                                                    ID: {product.productCode}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Td>
-                                    <Td>
-                                        <div className="heading-text font-bold">
-                                            <NumericFormat
-                                                fixedDecimalScale
-                                                prefix="$"
-                                                displayType="text"
-                                                value={
-                                                    product.price *
-                                                    product.quantity
-                                                }
-                                                decimalScale={2}
-                                                thousandSeparator={true}
-                                            />
-                                        </div>
-                                    </Td>
-                                    <Td>
-                                        <div className="flex items-center">
-                                            <Button
-                                                type="button"
-                                                icon={<TbMinus />}
-                                                size="xs"
-                                                onClick={() =>
-                                                    handleProductDecremental(
-                                                        product,
-                                                    )
-                                                }
-                                            />
-                                            <div className="w-10 text-center">
-                                                <span>{product.quantity}</span>
-                                            </div>
-                                            <Button
-                                                type="button"
-                                                icon={<TbPlus />}
-                                                size="xs"
-                                                onClick={() =>
-                                                    handleProductIncremental(
-                                                        product,
-                                                    )
-                                                }
-                                            />
-                                        </div>
-                                    </Td>
-                                </Tr>
-                            ))
-                        ) : (
-                            <Tr>
-                                <Td className="text-center" colSpan={3}>
-                                    No product selected!
-                                </Td>
-                            </Tr>
-                        )}
-                    </TBody>
-                </Table>
-                <div className="mt-8 flex justify-end">
-                    <span className="text-base flex items-center gap-2">
-                        <span className="font-semibold">Total: </span>
-                        <span className="text-lg font-bold heading-text">
-                            <NumericFormat
-                                fixedDecimalScale
-                                prefix="$"
-                                displayType="text"
-                                value={total}
-                                decimalScale={2}
-                                thousandSeparator={true}
-                            />
-                        </span>
-                    </span>
+                            <p className="text-xs text-gray-500 mt-1">
+                                Code: {selectedPackage.productCode}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                                Available candidates: {selectedPackage.stock}
+                            </p>
+                        </div>
+                    )}
                 </div>
             </Card>
             <Dialog
@@ -223,53 +223,42 @@ const ProductSelectSection = () => {
                 onRequestClose={() => setProductsDialogOpen(false)}
             >
                 <div className="text-center mb-6">
-                    <h4 className="mb-1">All products</h4>
-                    <p>Add products to this order.</p>
+                    <h4 className="mb-1">All packages</h4>
+                    <p>Select one package for this order.</p>
                 </div>
                 <div className="mt-4">
                     <div className="mb-6">
                         <ScrollBar
                             className={classNames('overflow-y-auto h-80')}
                         >
-                            {productList.map((product) => (
+                            {productList.map((pkg) => (
                                 <div
-                                    key={product.id}
+                                    key={pkg.id}
                                     className="py-3 pr-5 rounded-lg flex items-center justify-between"
                                 >
                                     <div className="flex items-center gap-2">
                                         <div className="px-1">
                                             <Checkbox
-                                                checked={selectedProduct.some(
-                                                    (selected) =>
-                                                        selected.id ===
-                                                        product.id,
-                                                )}
+                                                checked={selectedPackage?.id === pkg.id}
                                                 onChange={(value) =>
-                                                    handleProductChecked(
+                                                    handlePackageChecked(
                                                         value,
-                                                        product,
+                                                        pkg,
                                                     )
                                                 }
                                             />
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <Avatar
-                                                size="lg"
-                                                shape="round"
-                                                src={product.img}
-                                            />
-                                            <div>
-                                                <p className="heading-text font-bold">
-                                                    {product.name}
-                                                </p>
-                                                <p>ID: {product.productCode}</p>
-                                            </div>
+                                        <div>
+                                            <p className="heading-text font-bold">
+                                                {pkg.name}
+                                            </p>
+                                            <p>ID: {pkg.productCode}</p>
                                         </div>
                                     </div>
                                     <div>
-                                        Qty:{' '}
+                                        Available Candidates:{' '}
                                         <span className="heading-text font-bold">
-                                            {product.stock}
+                                            {pkg.stock}
                                         </span>
                                     </div>
                                 </div>

@@ -6,27 +6,17 @@ import Affix from '@/components/shared/Affix'
 import Card from '@/components/ui/Card'
 import Container from '@/components/shared/Container'
 import BottomStickyBar from '@/components/template/BottomStickyBar'
-import { apiGetProductList } from '@/services/ProductService'
 import ProductSelectSection from './components/ProductSelectSection'
 import CustomerDetailSection from './components/CustomerDetailSection'
-import BillingAddressSection from './components/BillingAddressSection'
 import PaymentMethodSection from './components/PaymentMethodSection'
 import Navigator from './components/Navigator'
 import { useOrderFormStore } from './store/orderFormStore'
 import useLayoutGap from '@/utils/hooks/useLayoutGap'
-import useSWR from 'swr'
 import isEmpty from 'lodash/isEmpty'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import type { ZodType } from 'zod'
 import type { ReactNode } from 'react'
-import type {
-    GetProductListResponse,
-    OrderFormSchema,
-    SelectedProduct,
-} from './types'
-import type { TableQueries, CommonProps } from '@/@types/common'
+import type { OrderFormSchema, SelectedProduct } from './types'
+import type { CommonProps } from '@/@types/common'
 
 type OrderFormProps = {
     children: ReactNode
@@ -34,126 +24,26 @@ type OrderFormProps = {
     defaultValues?: OrderFormSchema
     defaultProducts?: SelectedProduct[]
     newOrder?: boolean
+    showValidation?: boolean
 } & CommonProps
 
-const baseValidationSchema = z.object({
-    firstName: z.string().min(1, { message: 'First name required' }),
-    lastName: z.string().min(1, { message: 'Last name required' }),
-    email: z
-        .string()
-        .min(1, { message: 'Email required' })
-        .email({ message: 'Invalid email' }),
-    dialCode: z.string().min(1, { message: 'Please select your country code' }),
-    phoneNumber: z
-        .string()
-        .min(1, { message: 'Please input your mobile number' }),
-    country: z.string().min(1, { message: 'Please select a country' }),
-    address: z.string().min(1, { message: 'Addrress required' }),
-    postcode: z.string().min(1, { message: 'Postcode required' }),
-    city: z.string().min(1, { message: 'City required' }),
-})
-
-const validationSchema: ZodType<OrderFormSchema> = z.discriminatedUnion(
-    'paymentMethod',
-    [
-        z
-            .object({
-                paymentMethod: z.literal('creditOrDebitCard'),
-                cardHolderName: z
-                    .string()
-                    .min(1, { message: 'Card holder name required' }),
-                ccNumber: z
-                    .string()
-                    .min(1, 'Credit card number required')
-                    .refine(
-                        (value) =>
-                            /^(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/.test(
-                                value,
-                            ),
-                        'Invalid credit card number',
-                    ),
-                cardExpiry: z
-                    .string()
-                    .min(1, { message: 'Card holder name required' })
-                    .refine(
-                        (value) =>
-                            /^(0[1-9]|1[0-2])\/?([0-9]{4}|[0-9]{2})$/.test(
-                                value,
-                            ),
-                        'Invalid Date',
-                    ),
-                code: z
-                    .string()
-                    .min(1, { message: 'Code required' })
-                    .refine((value) => /^[0-9]{3}$/.test(value), 'Invalid CVV'),
-            })
-            .merge(baseValidationSchema),
-        z
-            .object({
-                paymentMethod: z.literal('paypal'),
-                paypalEmail: z
-                    .string()
-                    .min(1, { message: 'Email required' })
-                    .email({ message: 'Invalid email' }),
-            })
-            .merge(baseValidationSchema),
-        z
-            .object({
-                paymentMethod: z.literal('bankTransfer'),
-                bankName: z.string().min(1, { message: 'Bank name required' }),
-                accountNumber: z
-                    .string()
-                    .min(1, { message: 'Account number required' }),
-                accountHolderName: z
-                    .string()
-                    .min(1, { message: 'Account holder name required' }),
-                IBAN: z.string().min(1, { message: 'IBAN required' }),
-            })
-            .merge(baseValidationSchema),
-        z
-            .object({
-                paymentMethod: z.literal(''),
-            })
-            .merge(baseValidationSchema),
-    ],
-)
-
 const OrderForm = (props: OrderFormProps) => {
-    const { onFormSubmit, children, defaultValues, defaultProducts } = props
+    const {
+        onFormSubmit,
+        children,
+        defaultValues,
+        defaultProducts,
+        showValidation = false,
+    } = props
 
-    const { setProductOption, setProductList, setSelectedProduct } =
-        useOrderFormStore()
+    const {
+        setSelectedProduct,
+        selectedProduct,
+        selectedCandidates,
+        paymentProviderId,
+    } = useOrderFormStore()
 
     const { getTopGapValue } = useLayoutGap()
-
-    useSWR(
-        [
-            '/api/products',
-            {
-                pageIndex: '1',
-                pageSize: '10',
-                query: '',
-            },
-        ],
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        ([_, params]) =>
-            apiGetProductList<GetProductListResponse, TableQueries>(params),
-        {
-            revalidateOnFocus: false,
-            onSuccess: (resp) => {
-                const list = resp.list.map(
-                    ({ id: value, name: label, img, stock: quantity }) => ({
-                        label,
-                        value,
-                        img,
-                        quantity,
-                    }),
-                )
-                setProductList(resp.list)
-                setProductOption(list)
-            },
-        },
-    )
 
     useEffect(() => {
         if (defaultProducts) {
@@ -175,18 +65,14 @@ const OrderForm = (props: OrderFormProps) => {
     const {
         handleSubmit,
         reset,
-        watch,
         formState: { errors },
         control,
     } = useForm<OrderFormSchema>({
         defaultValues: {
-            paymentMethod: 'creditOrDebitCard',
+            paymentMethod: '',
             ...(defaultValues ? defaultValues : {}),
         },
-        resolver: zodResolver(validationSchema),
     })
-
-    const selectedPaymentMethod = watch('paymentMethod', '')
 
     return (
         <div className="flex">
@@ -211,17 +97,70 @@ const OrderForm = (props: OrderFormProps) => {
                                     control={control}
                                     errors={errors}
                                 />
-                                <BillingAddressSection
-                                    control={control}
-                                    errors={errors}
-                                />
                                 <PaymentMethodSection
                                     control={control}
                                     errors={errors}
-                                    selectedPaymentMethod={
-                                        selectedPaymentMethod
-                                    }
                                 />
+                                <Card>
+                                    <h4 className="mb-4">Order Summary</h4>
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className="text-gray-600 dark:text-gray-300">
+                                            Package Amount
+                                        </span>
+                                        <span className="font-semibold">
+                                            ₹{''}
+                                            {(
+                                                selectedProduct[0]?.price || 0
+                                            ).toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm mt-2">
+                                        <span className="text-gray-600 dark:text-gray-300">
+                                            Candidates
+                                        </span>
+                                        <span className="font-semibold">
+                                            {selectedCandidates.length}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-base mt-4">
+                                        <span className="font-semibold">
+                                            Total (incl. GST)
+                                        </span>
+                                        <span className="font-bold heading-text">
+                                            ₹{''}
+                                            {(
+                                                (selectedProduct[0]?.price ||
+                                                    0) *
+                                                selectedCandidates.length
+                                            ).toFixed(2)}
+                                        </span>
+                                    </div>
+                                    {showValidation && (
+                                        <div className="mt-4 rounded-lg border border-error bg-error-subtle px-3 py-2 text-sm text-error">
+                                            {!selectedProduct[0] && (
+                                                <div>
+                                                    Please select a package.
+                                                </div>
+                                            )}
+                                            {selectedProduct[0] &&
+                                                selectedCandidates.length ===
+                                                    0 && (
+                                                    <div>
+                                                        Please select at least
+                                                        one candidate.
+                                                    </div>
+                                                )}
+                                            {selectedProduct[0] &&
+                                                selectedCandidates.length > 0 &&
+                                                !paymentProviderId && (
+                                                    <div>
+                                                        Please select a payment
+                                                        provider.
+                                                    </div>
+                                                )}
+                                        </div>
+                                    )}
+                                </Card>
                             </div>
                         </div>
                     </div>
