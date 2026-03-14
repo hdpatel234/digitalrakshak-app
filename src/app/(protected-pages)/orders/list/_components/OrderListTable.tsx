@@ -6,6 +6,9 @@ import DataTable from '@/components/shared/DataTable'
 import { useOrderListStore } from '../_store/orderListStore'
 import useAppendQueryParams from '@/utils/hooks/useAppendQueryParams'
 import { useRouter } from 'next/navigation'
+import Notification from '@/components/ui/Notification'
+import toast from '@/components/ui/toast'
+import { startOrderPaymentFlow } from '@/utils/payments/orderPaymentFlow'
 import {
     TbEye,
     TbCreditCard,
@@ -15,6 +18,7 @@ import {
     TbWallet,
     TbDeviceMobile,
     TbQrcode,
+    TbPencil,
 } from 'react-icons/tb'
 import dayjs from 'dayjs'
 import { NumericFormat } from 'react-number-format'
@@ -46,6 +50,11 @@ const orderStatusColor: Record<
         textClass: 'text-warning',
     },
     2: { label: 'Failed', bgClass: 'bg-error-subtle', textClass: 'text-error' },
+    3: {
+        label: 'Draft',
+        bgClass: 'bg-gray-100 dark:bg-gray-700',
+        textClass: 'text-gray-600 dark:text-gray-200',
+    },
 }
 
 const OrderColumn = ({ row }: { row: Order }) => {
@@ -60,20 +69,58 @@ const OrderColumn = ({ row }: { row: Order }) => {
             className="cursor-pointer font-bold heading-text hover:text-primary text-center block"
             onClick={onView}
         >
-            #{row.id}
+            #{row.displayId}
         </span>
     )
 }
 
 const ActionColumn = ({ row }: { row: Order }) => {
     const router = useRouter()
+    const isDraft = row.status === 3
+    const isPending = row.status === 1
 
     const onView = () => {
         router.push(`/orders/details/${row.id}`)
     }
 
+    const onEdit = () => {
+        router.push(`/orders/edit/${row.id}`)
+    }
+
     const onMakePayment = () => {
-        router.push(`/orders/details/${row.id}?action=payment`)
+        void (async () => {
+            const handled = await startOrderPaymentFlow({
+                orderId: row.id,
+                fetchOrderDetails: true,
+                onInitError: (message) => {
+                    toast.push(
+                        <Notification type="danger">{message}</Notification>,
+                        { placement: 'top-center' },
+                    )
+                },
+                onVerificationSuccess: (message) => {
+                    toast.push(
+                        <Notification type="success">{message}</Notification>,
+                        { placement: 'top-center' },
+                    )
+                    router.push('/orders/list')
+                },
+                onVerificationError: (message) => {
+                    toast.push(
+                        <Notification type="danger">{message}</Notification>,
+                        { placement: 'top-center' },
+                    )
+                    router.push('/orders/list')
+                },
+                onDismiss: () => {
+                    router.push('/orders/list')
+                },
+            })
+
+            if (!handled) {
+                router.push(`/orders/details/${row.id}?action=payment`)
+            }
+        })()
     }
 
     return (
@@ -83,11 +130,23 @@ const ActionColumn = ({ row }: { row: Order }) => {
                     <TbEye />
                 </span>
             </Tooltip>
-            <Tooltip wrapperClass="flex" title="Make payment">
-                <span className="cursor-pointer p-2" onClick={onMakePayment}>
-                    <TbCreditCard />
-                </span>
-            </Tooltip>
+            {isDraft && (
+                <Tooltip wrapperClass="flex" title="Edit">
+                    <span className="cursor-pointer p-2" onClick={onEdit}>
+                        <TbPencil />
+                    </span>
+                </Tooltip>
+            )}
+            {isPending && (
+                <Tooltip wrapperClass="flex" title="Make payment">
+                    <span
+                        className="cursor-pointer p-2"
+                        onClick={onMakePayment}
+                    >
+                        <TbCreditCard />
+                    </span>
+                </Tooltip>
+            )}
         </div>
     )
 }

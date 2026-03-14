@@ -1,11 +1,14 @@
 export type Order = {
     id: string
+    displayId: string
     date: number
     customer: string
     status: number
     paymentMehod: string
     paymentIdendifier: string
     totalAmount: number
+    totalAmountInPaise: number
+    paymentProviderName: string
 }
 
 export type Orders = Order[]

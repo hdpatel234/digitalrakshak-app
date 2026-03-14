@@ -57,6 +57,10 @@ const resolveStatusCode = (value: string) => {
         return 1
     }
 
+    if (normalized === 'draft') {
+        return 3
+    }
+
     if (
         normalized === 'paid' ||
         normalized === 'completed' ||
@@ -78,7 +82,10 @@ const mapOrder = (item: unknown, index: number): Order => {
             ? (item as Record<string, unknown>)
             : {}
 
-    const id = String(record.order_number ?? index + 1)
+    const id = String(
+        record.id ?? record.order_id ?? record.orderId ?? '',
+    ).trim()
+    const displayId = String(record.order_number ?? id ?? index + 1)
     const customerName =
         String(record.client_name ?? record.clientName ?? '').trim() ||
         String(record.customer ?? '').trim()
@@ -88,6 +95,13 @@ const mapOrder = (item: unknown, index: number): Order => {
         record.payment_method_name ?? record.paymentMethod ?? '',
     ).trim()
     const paymentMethod = paymentMethodRaw.toLowerCase()
+
+    const paymentProviderName = String(
+        record.payment_provider_name ??
+            record.payment_provider ??
+            record.gateway_name ??
+            '',
+    ).trim()
 
     const paymentIdentifier =
         String(
@@ -102,7 +116,8 @@ const mapOrder = (item: unknown, index: number): Order => {
     )
 
     return {
-        id,
+        id: id || displayId,
+        displayId: displayId || id || '-',
         date: parseDateToUnix(
             record.order_date ?? record.orderDate ?? record.created_at,
         ),
@@ -114,6 +129,13 @@ const mapOrder = (item: unknown, index: number): Order => {
             record.total_amount ?? record.totalAmount ?? record.subtotal,
             0,
         ),
+        totalAmountInPaise: toNumber(
+            record.total_amount_in_paise ??
+                record.totalAmountInPaise ??
+                record.amount_in_paise,
+            0,
+        ),
+        paymentProviderName,
     }
 }
 

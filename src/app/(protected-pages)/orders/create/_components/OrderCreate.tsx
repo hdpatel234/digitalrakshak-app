@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { TbTrash } from 'react-icons/tb'
 import { useOrderFormStore } from '@/components/view/OrderForm/store/orderFormStore'
 import type { OrderFormSchema } from '@/components/view/OrderForm'
+import { startOrderPaymentFlow } from '@/utils/payments/orderPaymentFlow'
 
 type ApiResponsePayload = {
     status?: boolean
@@ -70,6 +71,27 @@ const OrderCreate = () => {
 
     const mapApiSuccess = (payload: ApiResponsePayload) =>
         payload.status === true || payload.success === true
+
+    const getCreateOrderInfo = (data: unknown) => {
+        const record =
+            data && typeof data === 'object'
+                ? (data as Record<string, unknown>)
+                : {}
+        return {
+            orderId: String(
+                record.order_id ?? record.orderId ?? record.id ?? '',
+            ).trim(),
+            providerName: String(
+                record.payment_provider_name ??
+                    record.payment_provider ??
+                    record.gateway_name ??
+                    '',
+            ).trim(),
+            totalAmount: Number(record.total_amount ?? 0) || 0,
+            totalAmountInPaise:
+                Number(record.total_amount_in_paise ?? 0) || 0,
+        }
+    }
 
     const validateSelections = () => {
         const errors = {
@@ -141,7 +163,78 @@ const OrderCreate = () => {
                 </Notification>,
                 { placement: 'top-center' },
             )
-            router.push('/orders/list')
+            if (saveDraft) {
+                router.push('/orders/list')
+                return
+            }
+
+            const createInfo = getCreateOrderInfo(payload.data)
+
+            if (!createInfo.orderId) {
+                toast.push(
+                    <Notification type="info">
+                        Order created. Please complete payment from the order
+                        list.
+                    </Notification>,
+                    { placement: 'top-center' },
+                )
+                router.push('/orders/list')
+                return
+            }
+
+            const initBody: Record<string, unknown> = {}
+            if (createInfo.providerName) {
+                initBody.payment_provider_name = createInfo.providerName
+            }
+            if (createInfo.totalAmount) {
+                initBody.total_amount = createInfo.totalAmount
+            }
+            if (createInfo.totalAmountInPaise) {
+                initBody.total_amount_in_paise = createInfo.totalAmountInPaise
+            }
+
+            const paymentHandled = await startOrderPaymentFlow({
+                orderId: createInfo.orderId,
+                initBody,
+                onInitError: (message) => {
+                    toast.push(
+                        <Notification type="danger">{message}</Notification>,
+                        { placement: 'top-center' },
+                    )
+                    router.push(
+                        `/orders/details/${createInfo.orderId}?action=payment`,
+                    )
+                },
+                onVerificationSuccess: (message) => {
+                    toast.push(
+                        <Notification type="success">{message}</Notification>,
+                        { placement: 'top-center' },
+                    )
+                    router.push('/orders/list')
+                },
+                onVerificationError: (message) => {
+                    toast.push(
+                        <Notification type="danger">{message}</Notification>,
+                        { placement: 'top-center' },
+                    )
+                    router.push('/orders/list')
+                },
+                onDismiss: () => {
+                    router.push('/orders/list')
+                },
+            })
+
+            if (paymentHandled) {
+                return
+            }
+
+            toast.push(
+                <Notification type="info">
+                    Order created. Please complete payment from the order list.
+                </Notification>,
+                { placement: 'top-center' },
+            )
+            router.push(`/orders/details/${createInfo.orderId}?action=payment`)
         } catch {
             toast.push(
                 <Notification type="danger">
