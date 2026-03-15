@@ -56,7 +56,6 @@ class ApiClient {
 
     const headers: Record<string, string> = {
       'Accept': 'application/json',
-      'Content-Type': 'application/json',
     };
 
     if (token) {
@@ -214,6 +213,8 @@ class ApiClient {
     const url = endpoint; // baseURL is already set in axios instance
 
     try {
+      const isFormData =
+        typeof FormData !== 'undefined' && data instanceof FormData;
       // Prepare request config
       const config: AxiosRequestConfig = {
         method: method as Method,
@@ -223,7 +224,7 @@ class ApiClient {
 
       const defaultHeaders: Record<string, string> = {
         Accept: 'application/json',
-        'Content-Type': 'application/json',
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       };
       const customHeaders = (customConfig.headers || {}) as Record<string, string>;
       const authHeaders = withAuth ? this.getAuthHeaders() : {};

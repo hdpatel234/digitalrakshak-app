@@ -32,6 +32,7 @@ const { THead, TBody, Tr, Th, Td } = Table
 
 const PAGE_SIZE = 5
 const HISTORY_REFRESH_INTERVAL = 10 * 1000
+const MAX_IMPORT_SIZE = 10 * 1024 * 1024
 
 const statusColor: Record<string, string> = {
     success: 'bg-emerald-200 dark:bg-emerald-200 text-gray-900 dark:text-gray-900',
@@ -122,6 +123,10 @@ const CandidateImportContent = () => {
 
         if (!isValidFile) {
             return 'Only CSV or XLSX files are allowed.'
+        }
+
+        if (file.size > MAX_IMPORT_SIZE) {
+            return 'File size must be 10 MB or less.'
         }
 
         return true
@@ -366,7 +371,11 @@ const CandidateImportContent = () => {
                             setImportResult(null)
                         }}
                         beforeUpload={(files) => validateImportFile(files?.[0])}
-                        tip={<div className="text-xs text-gray-500">Allowed file types: .csv, .xlsx</div>}
+                        tip={
+                            <div className="text-xs text-gray-500">
+                                Allowed file types: .csv, .xlsx. Max size: 10 MB.
+                            </div>
+                        }
                     />
 
                     {importResult?.status === 'failed' && (

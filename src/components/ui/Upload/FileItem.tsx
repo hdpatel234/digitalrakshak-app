@@ -2,8 +2,23 @@ import { VscFilePdf, VscFileZip, VscFile } from 'react-icons/vsc'
 import classNames from '../utils/classNames'
 import type { CommonProps } from '../@types/common'
 
-const BYTE = 1000
-const getKB = (bytes: number) => Math.round(bytes / BYTE)
+const formatBytes = (bytes: number) => {
+    if (!Number.isFinite(bytes) || bytes <= 0) {
+        return '0 B'
+    }
+
+    const units = ['B', 'KB', 'MB', 'GB']
+    let value = bytes
+    let unitIndex = 0
+
+    while (value >= 1024 && unitIndex < units.length - 1) {
+        value /= 1024
+        unitIndex += 1
+    }
+
+    const precision = value >= 10 || unitIndex === 0 ? 0 : 1
+    return `${value.toFixed(precision)} ${units[unitIndex]}`
+}
 
 const FileIcon = ({ children }: CommonProps) => {
     return <span className="text-3xl heading-text">{children}</span>
@@ -61,7 +76,7 @@ const FileItem = (props: FileItemProps) => {
                     <h6 className="upload-file-name text-sm font-bold">
                         {name}
                     </h6>
-                    <span className="upload-file-size">{getKB(size)} kb</span>
+                    <span className="upload-file-size">{formatBytes(size)}</span>
                 </div>
             </div>
             {children}

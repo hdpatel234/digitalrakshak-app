@@ -7,7 +7,7 @@ import CloseButton from '../CloseButton'
 import Notification from '../Notification/Notification'
 import toast from '../toast/toast'
 import type { CommonProps } from '../@types/common'
-import type { ReactNode, ChangeEvent, MouseEvent, Ref } from 'react'
+import type { ReactNode, ChangeEvent, MouseEvent, Ref, DragEvent } from 'react'
 
 export interface UploadProps extends CommonProps {
     accept?: string
@@ -99,8 +99,7 @@ const Upload = (props: UploadProps) => {
         return filesToArray({ ...file })
     }
 
-    const onNewFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
-        const { files: newFiles } = e.target
+    const handleNewFiles = (newFiles: FileList | null) => {
         let result: boolean | string = true
 
         if (beforeUpload) {
@@ -122,6 +121,11 @@ const Upload = (props: UploadProps) => {
             setFiles(updatedFiles)
             onChange?.(updatedFiles, files)
         }
+    }
+
+    const onNewFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
+        const { files: newFiles } = e.target
+        handleNewFiles(newFiles)
     }
 
     const removeFile = (fileIndex: number) => {
@@ -159,17 +163,28 @@ const Upload = (props: UploadProps) => {
         }
     }, [draggable])
 
-    const handleDragOver = useCallback(() => {
+    const handleDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
+        event.preventDefault()
         if (draggable && !disabled) {
             setDragOver(true)
         }
     }, [draggable, disabled])
 
-    const handleDrop = useCallback(() => {
-        if (draggable) {
+    const handleDrop = useCallback(
+        (event: DragEvent<HTMLDivElement>) => {
+            event.preventDefault()
+            if (!draggable || disabled) {
+                return
+            }
+
             setDragOver(false)
-        }
-    }, [draggable])
+            const droppedFiles = event.dataTransfer?.files || null
+            if (droppedFiles && droppedFiles.length > 0) {
+                handleNewFiles(droppedFiles)
+            }
+        },
+        [draggable, disabled, handleNewFiles],
+    )
 
     const draggableProp = {
         onDragLeave: handleDragLeave,
