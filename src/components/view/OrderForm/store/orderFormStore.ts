@@ -14,6 +14,7 @@ export type OrderFormState = {
     selectedCandidates: Candidate[]
     paymentMethodId: string
     paymentProviderId: string
+    prefillPaymentProviderId: string
     validationErrors: {
         package: string
         candidates: string
@@ -29,6 +30,7 @@ type OrderFormAction = {
     setSelectedCandidates: (payload: Candidate[]) => void
     setPaymentMethodId: (payload: string) => void
     setPaymentProviderId: (payload: string) => void
+    setPrefillPaymentProviderId: (payload: string) => void
     setValidationErrors: (payload: OrderFormState['validationErrors']) => void
 }
 
@@ -40,6 +42,7 @@ const initialState: OrderFormState = {
     selectedCandidates: [],
     paymentMethodId: '',
     paymentProviderId: '',
+    prefillPaymentProviderId: '',
     validationErrors: {
         package: '',
         candidates: '',
@@ -61,6 +64,8 @@ export const useOrderFormStore = create<OrderFormState & OrderFormAction>(
             set(() => ({ paymentMethodId: payload })),
         setPaymentProviderId: (payload) =>
             set(() => ({ paymentProviderId: payload })),
+        setPrefillPaymentProviderId: (payload) =>
+            set(() => ({ prefillPaymentProviderId: payload })),
         setValidationErrors: (payload) =>
             set(() => ({ validationErrors: payload })),
     }),

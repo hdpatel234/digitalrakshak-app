@@ -49,8 +49,8 @@ const conceptsRoute: Routes = {
         }
     },
 
-    '/invitations/sent': {
-        key: 'concepts.invitations.invitationsSent',
+    '/invitations/completed': {
+        key: 'concepts.invitations.invitationsCompleted',
         authority: [ADMIN, USER],
         meta: {
             pageContainerType: 'contained',

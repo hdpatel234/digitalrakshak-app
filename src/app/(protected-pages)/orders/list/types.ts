@@ -3,9 +3,10 @@ export type Order = {
     displayId: string
     date: number
     customer: string
-    status: number
-    paymentMehod: string
-    paymentIdendifier: string
+    status: string
+    paymentGatewayName: string
+    paymentId: string
+    paymentStatus: string
     totalAmount: number
     totalAmountInPaise: number
     paymentProviderName: string

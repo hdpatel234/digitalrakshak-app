@@ -3,16 +3,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
-import Dialog from '@/components/ui/Dialog'
-import Checkbox from '@/components/ui/Checkbox'
-import ScrollBar from '@/components/ui/ScrollBar'
-import AutoComplete from '@/components/shared/AutoComplete'
+import Select from '@/components/ui/Select'
 import { FormItem } from '@/components/ui/Form'
 import { useOrderFormStore } from '../store/orderFormStore'
-import classNames from '@/utils/classNames'
 import Notification from '@/components/ui/Notification'
 import toast from '@/components/ui/toast'
-import { TbSearch } from 'react-icons/tb'
 import type { Product, ProductOption, SelectedProduct } from '../types'
 
 type ApiResponsePayload = {
@@ -33,9 +28,7 @@ const ProductSelectSection = () => {
         validationErrors,
     } = useOrderFormStore()
 
-    const [inputValue, setInputValue] = useState('')
     const [isLoading, setIsLoading] = useState(false)
-    const [productsDialogOpen, setProductsDialogOpen] = useState(false)
 
     const mapApiSuccess = (payload: ApiResponsePayload) =>
         payload.status === true || payload.success === true
@@ -132,26 +125,25 @@ const ProductSelectSection = () => {
         fetchPackages()
     }, [fetchPackages])
 
-    const handleOptionSelect = (option: ProductOption) => {
+    const handleOptionSelect = (option: ProductOption | null) => {
+        if (!option) {
+            setSelectedProduct([])
+            return
+        }
+
         const selected = productList.find(
             (product) => product.id === option.value,
         )
 
         if (selected) {
             setSelectedProduct([{ ...selected, quantity: 1 }])
-            setInputValue('')
         }
-    }
-
-    const handlePackageChecked = (checked: boolean, selected: Product) => {
-        if (checked) {
-            setSelectedProduct([{ ...selected, quantity: 1 }])
-            return
-        }
-        setSelectedProduct([])
     }
 
     const selectedPackage = selectedProduct[0] as SelectedProduct | undefined
+    const selectedOption =
+        productOption.find((option) => option.value === selectedPackage?.id) ||
+        null
 
     return (
         <>
@@ -162,27 +154,15 @@ const ProductSelectSection = () => {
                     invalid={Boolean(validationErrors.package)}
                     errorMessage={validationErrors.package}
                 >
-                    <div className="flex items-center gap-2">
-                        <AutoComplete<ProductOption>
-                            data={productOption}
-                            optionKey={(product) => product.label}
-                            value={inputValue}
-                            renderOption={(option) => (
-                                <span>{option.label}</span>
-                            )}
-                            suffix={<TbSearch className="text-lg" />}
-                            placeholder="Search package"
-                            onInputChange={setInputValue}
-                            onOptionSelected={handleOptionSelect}
-                        />
-                        <Button
-                            type="button"
-                            variant="solid"
-                            onClick={() => setProductsDialogOpen(true)}
-                        >
-                            Browse Packages
-                        </Button>
-                    </div>
+                    <Select<ProductOption>
+                        instanceId="package-select"
+                        options={productOption}
+                        isLoading={isLoading}
+                        isSearchable
+                        value={selectedOption}
+                        placeholder="Select package"
+                        onChange={handleOptionSelect}
+                    />
                 </FormItem>
                 <div className="mt-4">
                     {isLoading && (
@@ -217,64 +197,6 @@ const ProductSelectSection = () => {
                     )}
                 </div>
             </Card>
-            <Dialog
-                isOpen={productsDialogOpen}
-                onClose={() => setProductsDialogOpen(false)}
-                onRequestClose={() => setProductsDialogOpen(false)}
-            >
-                <div className="text-center mb-6">
-                    <h4 className="mb-1">All packages</h4>
-                    <p>Select one package for this order.</p>
-                </div>
-                <div className="mt-4">
-                    <div className="mb-6">
-                        <ScrollBar
-                            className={classNames('overflow-y-auto h-80')}
-                        >
-                            {productList.map((pkg) => (
-                                <div
-                                    key={pkg.id}
-                                    className="py-3 pr-5 rounded-lg flex items-center justify-between"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <div className="px-1">
-                                            <Checkbox
-                                                checked={selectedPackage?.id === pkg.id}
-                                                onChange={(value) =>
-                                                    handlePackageChecked(
-                                                        value,
-                                                        pkg,
-                                                    )
-                                                }
-                                            />
-                                        </div>
-                                        <div>
-                                            <p className="heading-text font-bold">
-                                                {pkg.name}
-                                            </p>
-                                            <p>ID: {pkg.productCode}</p>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        Available Candidates:{' '}
-                                        <span className="heading-text font-bold">
-                                            {pkg.stock}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
-                        </ScrollBar>
-                    </div>
-                </div>
-                <Button
-                    block
-                    type="button"
-                    variant="solid"
-                    onClick={() => setProductsDialogOpen(false)}
-                >
-                    Done
-                </Button>
-            </Dialog>
         </>
     )
 }

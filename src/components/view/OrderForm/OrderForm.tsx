@@ -25,6 +25,7 @@ type OrderFormProps = {
     defaultProducts?: SelectedProduct[]
     newOrder?: boolean
     showValidation?: boolean
+    footerStickyMode?: 'fixed' | 'sticky'
 } & CommonProps
 
 const OrderForm = (props: OrderFormProps) => {
@@ -34,6 +35,7 @@ const OrderForm = (props: OrderFormProps) => {
         defaultValues,
         defaultProducts,
         showValidation = false,
+        footerStickyMode,
     } = props
 
     const {
@@ -165,7 +167,9 @@ const OrderForm = (props: OrderFormProps) => {
                         </div>
                     </div>
                 </Container>
-                <BottomStickyBar>{children}</BottomStickyBar>
+                <BottomStickyBar forceFixed={footerStickyMode === 'fixed'}>
+                    {children}
+                </BottomStickyBar>
             </Form>
         </div>
     )

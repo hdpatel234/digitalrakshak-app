@@ -9,7 +9,8 @@ const InvitationListTableTools = () => {
 
     const handleInputChange = (query: string) => {
         onAppendQueryParams({
-            query,
+            search: query,
+            page: '1',
         })
     }
 

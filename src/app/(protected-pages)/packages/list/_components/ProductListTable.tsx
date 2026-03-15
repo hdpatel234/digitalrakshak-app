@@ -264,7 +264,6 @@ const ProductListTable = ({
     return (
         <>
             <DataTable
-                // selectable
                 columns={columns}
                 data={productList}
                 noData={productList.length === 0}
@@ -274,9 +273,6 @@ const ProductListTable = ({
                     pageIndex,
                     pageSize,
                 }}
-                checkboxChecked={(row) =>
-                    selectedProduct.some((selected) => selected.id === row.id)
-                }
                 onPaginationChange={handlePaginationChange}
                 onSelectChange={handleSelectChange}
                 onSort={handleSort}

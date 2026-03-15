@@ -1,12 +1,12 @@
 'use client'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Button from '@/components/ui/Button'
 import Notification from '@/components/ui/Notification'
 import toast from '@/components/ui/toast'
 import Container from '@/components/shared/Container'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import OrderForm from '@/components/view/OrderForm'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { TbTrash } from 'react-icons/tb'
 import { useOrderFormStore } from '@/components/view/OrderForm/store/orderFormStore'
 import type { OrderFormSchema } from '@/components/view/OrderForm'
@@ -19,6 +19,9 @@ type ApiResponsePayload = {
     data?: unknown
 }
 
+const mapApiSuccess = (payload: ApiResponsePayload) =>
+    payload.status === true || payload.success === true
+
 const OrderCreate = () => {
     const router = useRouter()
 
@@ -30,8 +33,11 @@ const OrderCreate = () => {
     const {
         selectedProduct,
         selectedCandidates,
+        productList,
+        candidateList,
         paymentMethodId,
         paymentProviderId,
+        setPrefillPaymentProviderId,
         setSelectedProduct,
         setCandidateList,
         setSelectedCandidates,
@@ -48,6 +54,16 @@ const OrderCreate = () => {
         () => selectedCandidates.map((candidate) => candidate.id),
         [selectedCandidates],
     )
+
+    const searchParams = useSearchParams()
+    const editOrderId = String(
+        searchParams?.get('orderId') || searchParams?.get('id') || '',
+    ).trim()
+    const isEditMode = Boolean(editOrderId)
+    const hasFetchedEditDetails = useRef(false)
+    const [prefillPackageId, setPrefillPackageId] = useState('')
+    const [prefillCandidateIds, setPrefillCandidateIds] = useState<string[]>([])
+    const [isPrefillLoading, setIsPrefillLoading] = useState(false)
 
     useEffect(() => {
         setSelectedProduct([])
@@ -69,8 +85,35 @@ const OrderCreate = () => {
         setValidationErrors,
     ])
 
-    const mapApiSuccess = (payload: ApiResponsePayload) =>
-        payload.status === true || payload.success === true
+    useEffect(() => {
+        if (!prefillPackageId) {
+            return
+        }
+
+        const selected = productList.find(
+            (product) => product.id === prefillPackageId,
+        )
+
+        if (selected) {
+            setSelectedProduct([{ ...selected, quantity: 1 }])
+            setPrefillPackageId('')
+        }
+    }, [prefillPackageId, productList, setSelectedProduct])
+
+    useEffect(() => {
+        if (prefillCandidateIds.length === 0 || candidateList.length === 0) {
+            return
+        }
+
+        const selected = candidateList.filter((candidate) =>
+            prefillCandidateIds.includes(candidate.id),
+        )
+
+        if (selected.length > 0) {
+            setSelectedCandidates(selected)
+            setPrefillCandidateIds([])
+        }
+    }, [candidateList, prefillCandidateIds, setSelectedCandidates])
 
     const getCreateOrderInfo = (data: unknown) => {
         const record =
@@ -93,7 +136,156 @@ const OrderCreate = () => {
         }
     }
 
-    const validateSelections = () => {
+    const fetchOrderDetails = useCallback(async (orderId: string) => {
+        if (!orderId) {
+            return
+        }
+
+        setIsPrefillLoading(true)
+        try {
+            const response = await fetch(`/api/client/orders/${orderId}`, {
+                method: 'GET',
+                cache: 'no-store',
+            })
+            const payload = ((await response.json()) as ApiResponsePayload) || {}
+
+            if (!response.ok || !mapApiSuccess(payload)) {
+                toast.push(
+                    <Notification type="danger">
+                        {payload.message || 'Failed to fetch order details.'}
+                    </Notification>,
+                    { placement: 'top-center' },
+                )
+                return
+            }
+
+            const dataRecord =
+                payload.data && typeof payload.data === 'object'
+                    ? (payload.data as Record<string, unknown>)
+                    : {}
+            const orderRecord =
+                dataRecord.order && typeof dataRecord.order === 'object'
+                    ? (dataRecord.order as Record<string, unknown>)
+                    : dataRecord
+            const paymentGateway =
+                dataRecord.payment_gateway &&
+                typeof dataRecord.payment_gateway === 'object'
+                    ? (dataRecord.payment_gateway as Record<string, unknown>)
+                    : {}
+            const gateway =
+                paymentGateway.gateway &&
+                typeof paymentGateway.gateway === 'object'
+                    ? (paymentGateway.gateway as Record<string, unknown>)
+                    : {}
+
+            const packageId = String(
+                orderRecord.package_id ?? orderRecord.packageId ?? '',
+            ).trim()
+            const paymentMethod = String(
+                orderRecord.payment_method_id ??
+                    orderRecord.payment_method ??
+                    '',
+            ).trim()
+            const paymentProvider = String(
+                orderRecord.payment_provider_id ??
+                    orderRecord.payment_provider ??
+                    paymentGateway.gateway_id ??
+                    paymentGateway.gateway_config_id ??
+                    '',
+            ).trim()
+
+            const candidateIds: string[] = []
+            const rawCandidateIds = orderRecord.candidate_ids
+            if (Array.isArray(rawCandidateIds)) {
+                rawCandidateIds.forEach((value) => {
+                    const id = String(value ?? '').trim()
+                    if (id) {
+                        candidateIds.push(id)
+                    }
+                })
+            }
+
+            const rawCandidates = Array.isArray(orderRecord.candidates)
+                ? orderRecord.candidates
+                : Array.isArray(dataRecord.candidates)
+                  ? dataRecord.candidates
+                  : []
+
+            rawCandidates.forEach((item) => {
+                if (!item || typeof item !== 'object') {
+                    return
+                }
+                const candidateRecord = item as Record<string, unknown>
+                const nestedCandidate =
+                    candidateRecord.candidate &&
+                    typeof candidateRecord.candidate === 'object'
+                        ? (candidateRecord.candidate as Record<string, unknown>)
+                        : {}
+                const id = String(
+                    candidateRecord.candidate_id ??
+                        nestedCandidate.id ??
+                        candidateRecord.id ??
+                        candidateRecord.invitation_id ??
+                        '',
+                ).trim()
+                if (id && !candidateIds.includes(id)) {
+                    candidateIds.push(id)
+                }
+            })
+
+            if (paymentMethod) {
+            setPaymentMethodId(paymentMethod)
+            }
+            if (paymentProvider) {
+                setPrefillPaymentProviderId(paymentProvider)
+            }
+
+            if (packageId) {
+                const selected = productList.find(
+                    (product) => product.id === packageId,
+                )
+                if (selected) {
+                    setSelectedProduct([{ ...selected, quantity: 1 }])
+                } else {
+                    setPrefillPackageId(packageId)
+                }
+            }
+
+            if (candidateIds.length > 0) {
+                setPrefillCandidateIds(candidateIds)
+            }
+
+        } catch {
+            toast.push(
+                <Notification type="danger">
+                    Failed to fetch order details.
+                </Notification>,
+                { placement: 'top-center' },
+            )
+        } finally {
+            setIsPrefillLoading(false)
+        }
+    }, [
+        mapApiSuccess,
+        paymentProviderId,
+        productList,
+        setPaymentMethodId,
+        setPaymentProviderId,
+        setSelectedProduct,
+    ])
+
+    useEffect(() => {
+        if (!isEditMode) {
+            return
+        }
+        if (hasFetchedEditDetails.current) {
+            return
+        }
+        hasFetchedEditDetails.current = true
+        fetchOrderDetails(editOrderId)
+    }, [editOrderId, fetchOrderDetails, isEditMode])
+
+    const validateSelections = (saveDraft: boolean) => {
         const errors = {
             package: '',
             candidates: '',
@@ -103,11 +295,11 @@ const OrderCreate = () => {
             errors.package = 'Please select a package.'
         }
 
-        if (selectedCandidateIds.length === 0) {
+        if (!saveDraft && selectedCandidateIds.length === 0) {
             errors.candidates = 'Please select at least one candidate.'
         }
 
-        if (!paymentProviderId) {
+        if (!saveDraft && !paymentProviderId) {
             errors.paymentProvider = 'Please select a payment provider.'
         }
 
@@ -116,7 +308,7 @@ const OrderCreate = () => {
     }
 
     const submitOrder = async (saveDraft: boolean) => {
-        if (!validateSelections()) {
+        if (!validateSelections(saveDraft)) {
             return
         }
 
@@ -132,6 +324,7 @@ const OrderCreate = () => {
                 candidate_ids: selectedCandidateIds,
                 payment_method_id: paymentMethodId,
                 payment_provider_id: paymentProviderId,
+                ...(isEditMode ? { id: editOrderId } : {}),
                 ...(saveDraft ? { save_draft: true } : {}),
             }
 
@@ -272,7 +465,10 @@ const OrderCreate = () => {
 
     return (
         <>
-            <OrderForm onFormSubmit={handleFormSubmit}>
+            <OrderForm
+                onFormSubmit={handleFormSubmit}
+                footerStickyMode="fixed"
+            >
                 <Container>
                     <div className="flex items-center justify-between px-8">
                         <span></span>

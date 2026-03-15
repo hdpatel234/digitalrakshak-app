@@ -370,9 +370,14 @@ export const startOrderPaymentFlow = async ({
                 transaction_uuid: String(
                     paymentContext.rawData.transaction_uuid ?? '',
                 ).trim(),
-                razorpay_payment_id: paymentId,
-                razorpay_order_id: completedOrderId,
-                razorpay_signature: signature,
+                payment_id: paymentId,
+                order_id: completedOrderId,
+                signature,
+                gateway_data: {
+                    razorpay_payment_id: paymentId,
+                    razorpay_order_id: completedOrderId,
+                    razorpay_signature: signature,
+                },
             }
 
             const completionResult = await completeOrderPayment(

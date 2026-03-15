@@ -12,12 +12,6 @@ import { startOrderPaymentFlow } from '@/utils/payments/orderPaymentFlow'
 import {
     TbEye,
     TbCreditCard,
-    TbBrandPaypal,
-    TbCash,
-    TbBuildingBank,
-    TbWallet,
-    TbDeviceMobile,
-    TbQrcode,
     TbPencil,
 } from 'react-icons/tb'
 import dayjs from 'dayjs'
@@ -32,26 +26,37 @@ type OrderListTableProps = {
 }
 
 const orderStatusColor: Record<
-    number,
+    string,
     {
-        label: string
         bgClass: string
         textClass: string
     }
 > = {
-    0: {
-        label: 'Paid',
-        bgClass: 'bg-success-subtle',
-        textClass: 'text-success',
+    draft: {
+        bgClass: 'bg-gray-100 dark:bg-gray-700',
+        textClass: 'text-gray-600 dark:text-gray-200',
     },
-    1: {
-        label: 'Pending',
+    pending: {
         bgClass: 'bg-warning-subtle',
         textClass: 'text-warning',
     },
-    2: { label: 'Failed', bgClass: 'bg-error-subtle', textClass: 'text-error' },
-    3: {
-        label: 'Draft',
+    confirmed: {
+        bgClass: 'bg-blue-100 dark:bg-blue-900/30',
+        textClass: 'text-blue-700 dark:text-blue-200',
+    },
+    processing: {
+        bgClass: 'bg-indigo-100 dark:bg-indigo-900/30',
+        textClass: 'text-indigo-700 dark:text-indigo-200',
+    },
+    completed: {
+        bgClass: 'bg-success-subtle',
+        textClass: 'text-success',
+    },
+    cancelled: {
+        bgClass: 'bg-error-subtle',
+        textClass: 'text-error',
+    },
+    default: {
         bgClass: 'bg-gray-100 dark:bg-gray-700',
         textClass: 'text-gray-600 dark:text-gray-200',
     },
@@ -66,7 +71,7 @@ const OrderColumn = ({ row }: { row: Order }) => {
 
     return (
         <span
-            className="cursor-pointer font-bold heading-text hover:text-primary text-center block"
+            className="cursor-pointer font-bold heading-text hover:text-primary block"
             onClick={onView}
         >
             #{row.displayId}
@@ -76,15 +81,16 @@ const OrderColumn = ({ row }: { row: Order }) => {
 
 const ActionColumn = ({ row }: { row: Order }) => {
     const router = useRouter()
-    const isDraft = row.status === 3
-    const isPending = row.status === 1
+    const statusKey = row.status
+    const isDraft = statusKey === 'draft'
+    const isPending = statusKey === 'pending'
 
     const onView = () => {
         router.push(`/orders/details/${row.id}`)
     }
 
     const onEdit = () => {
-        router.push(`/orders/edit/${row.id}`)
+        router.push(`/orders/create?orderId=${row.id}`)
     }
 
     const onMakePayment = () => {
@@ -151,48 +157,6 @@ const ActionColumn = ({ row }: { row: Order }) => {
     )
 }
 
-const PaymentMethodImage = ({
-    paymentMehod,
-    className,
-}: {
-    paymentMehod: string
-    className: string
-}) => {
-    const normalized = paymentMehod
-        .toLowerCase()
-        .replace(/_/g, '-')
-        .replace(/\s+/g, '-')
-        .trim()
-
-    switch (normalized) {
-        case 'credit-card':
-        case 'debit-card':
-        case 'card':
-            return <TbCreditCard className={className} />
-        case 'paypal':
-            return <TbBrandPaypal className={className} />
-        case 'cash':
-            return <TbCash className={className} />
-        case 'bank':
-        case 'bank-transfer':
-        case 'net-banking':
-        case 'netbanking':
-            return <TbBuildingBank className={className} />
-        case 'wallet':
-        case 'mobile-wallet':
-            return <TbWallet className={className} />
-        case 'upi':
-        case 'qrcode':
-        case 'qr-code':
-            return <TbQrcode className={className} />
-        case 'mobile':
-        case 'mobile-payment':
-            return <TbDeviceMobile className={className} />
-        default:
-            return <TbCreditCard className={className} />
-    }
-}
-
 const OrderListTable = ({
     orderListTotal,
     pageIndex = 1,
@@ -200,67 +164,79 @@ const OrderListTable = ({
 }: OrderListTableProps) => {
     const orderList = useOrderListStore((state) => state.orderList)
     const initialLoading = useOrderListStore((state) => state.initialLoading)
+    const statusOptions = useOrderListStore((state) => state.statusOptions)
 
     const { onAppendQueryParams } = useAppendQueryParams()
+
+    const statusLabelMap = useMemo(() => {
+        const entries = statusOptions.map((option) => [
+            option.key.toLowerCase(),
+            option.name,
+        ])
+        return new Map(entries)
+    }, [statusOptions])
 
     const columns: ColumnDef<Order>[] = useMemo(
         () => [
             {
-                header: <span className="block text-center">Order</span>,
+                header: 'Order',
                 accessorKey: 'id',
                 cell: (props) => <OrderColumn row={props.row.original} />,
             },
             {
-                header: (
-                    <span className="block text-center">Payment Method</span>
-                ),
-                accessorKey: 'paymentMehod',
+                header: 'Payment',
+                accessorKey: 'paymentId',
                 cell: (props) => {
-                    const { paymentMehod, paymentIdendifier } =
+                    const { paymentGatewayName, paymentId, paymentStatus } =
                         props.row.original
-                    return (
-                        <span className="flex items-center justify-center gap-2">
-                            <PaymentMethodImage
-                                className="text-xl"
-                                paymentMehod={paymentMehod}
-                            />
-                            <span className="font-semibold">
-                                {paymentIdendifier}
-                            </span>
-                        </span>
-                    )
+                    const isPending =
+                        paymentStatus.trim().toLowerCase() === 'pending'
+                    if (isPending || !paymentId || paymentId === '-') {
+                        return <span className="font-semibold">-</span>
+                    }
+                    const label = paymentGatewayName
+                        ? `${paymentGatewayName} (${paymentId})`
+                        : paymentId
+                    return <span className="font-semibold">{label}</span>
                 },
             },
             {
-                header: <span className="block text-center">Total</span>,
+                header: 'Total',
                 accessorKey: 'totalAmount',
                 cell: (props) => {
                     const { totalAmount } = props.row.original
                     return (
                         <NumericFormat
-                            className="heading-text font-bold text-center block"
+                            className="heading-text font-bold block"
                             displayType="text"
                             value={(
                                 Math.round(totalAmount * 100) / 100
                             ).toFixed(2)}
-                            prefix={'$'}
+                            prefix={'₹'}
                             thousandSeparator={true}
                         />
                     )
                 },
             },
             {
-                header: <span className="block text-center">Status</span>,
+                header: 'Status',
                 accessorKey: 'status',
                 cell: (props) => {
                     const { status } = props.row.original
+                    const normalized = status.trim().toLowerCase()
+                    const label =
+                        statusLabelMap.get(normalized) ||
+                        (normalized ? normalized : '-')
+                    const style =
+                        orderStatusColor[normalized] ||
+                        orderStatusColor.default
                     return (
-                        <div className="flex justify-center">
-                            <Tag className={orderStatusColor[status].bgClass}>
+                        <div className="">
+                            <Tag className={style.bgClass}>
                                 <span
-                                    className={`capitalize font-semibold ${orderStatusColor[status].textClass}`}
+                                    className={`capitalize font-semibold ${style.textClass}`}
                                 >
-                                    {orderStatusColor[status].label}
+                                    {label}
                                 </span>
                             </Tag>
                         </div>
@@ -268,12 +244,12 @@ const OrderListTable = ({
                 },
             },
             {
-                header: <span className="block text-center">Date</span>,
+                header: 'Date',
                 accessorKey: 'date',
                 cell: (props) => {
                     const row = props.row.original
                     return (
-                        <span className="font-semibold text-center block">
+                        <span className="font-semibold block">
                             {dayjs.unix(row.date).format('DD/MM/YYYY')}
                         </span>
                     )

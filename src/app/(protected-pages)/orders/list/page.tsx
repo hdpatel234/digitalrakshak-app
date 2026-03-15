@@ -51,31 +51,6 @@ const parseDateToUnix = (value: unknown) => {
     return Math.floor(Date.now() / 1000)
 }
 
-const resolveStatusCode = (value: string) => {
-    const normalized = value.trim().toLowerCase()
-    if (!normalized) {
-        return 1
-    }
-
-    if (normalized === 'draft') {
-        return 3
-    }
-
-    if (
-        normalized === 'paid' ||
-        normalized === 'completed' ||
-        normalized === 'success'
-    ) {
-        return 0
-    }
-
-    if (normalized === 'failed' || normalized === 'cancelled') {
-        return 2
-    }
-
-    return 1
-}
-
 const mapOrder = (item: unknown, index: number): Order => {
     const record =
         item && typeof item === 'object'
@@ -91,10 +66,23 @@ const mapOrder = (item: unknown, index: number): Order => {
         String(record.customer ?? '').trim()
     const clientId = String(record.client_id ?? record.clientId ?? '').trim()
 
-    const paymentMethodRaw = String(
-        record.payment_method_name ?? record.paymentMethod ?? '',
+    const paymentGateway =
+        record.payment_gateway && typeof record.payment_gateway === 'object'
+            ? (record.payment_gateway as Record<string, unknown>)
+            : {}
+    const gateway =
+        paymentGateway.gateway && typeof paymentGateway.gateway === 'object'
+            ? (paymentGateway.gateway as Record<string, unknown>)
+            : {}
+    const paymentGatewayName = String(
+        gateway.gateway_name ??
+            paymentGateway.config_name ??
+            record.payment_gateway_name ??
+            record.payment_provider_name ??
+            record.payment_provider ??
+            record.gateway_name ??
+            '',
     ).trim()
-    const paymentMethod = paymentMethodRaw.toLowerCase()
 
     const paymentProviderName = String(
         record.payment_provider_name ??
@@ -103,16 +91,19 @@ const mapOrder = (item: unknown, index: number): Order => {
             '',
     ).trim()
 
-    const paymentIdentifier =
+    const paymentId =
         String(
-            record.payment_reference ??
+            record.payment_id ??
+                record.payment_reference ??
                 record.paymentReference ??
-                paymentMethodRaw ??
+                record.transaction_id ??
+                record.transactionId ??
                 '',
         ).trim() || '-'
 
-    const statusValue = String(
-        record.payment_status ?? record.paymentStatus ?? record.status ?? '',
+    const statusValue = String(record.status ?? record.order_status ?? '')
+    const paymentStatusValue = String(
+        record.payment_status ?? record.paymentStatus ?? '',
     )
 
     return {
@@ -122,9 +113,10 @@ const mapOrder = (item: unknown, index: number): Order => {
             record.order_date ?? record.orderDate ?? record.created_at,
         ),
         customer: customerName || (clientId ? `Client ${clientId}` : '-'),
-        status: resolveStatusCode(statusValue),
-        paymentMehod: paymentMethod,
-        paymentIdendifier: paymentIdentifier,
+        status: statusValue.trim().toLowerCase() || 'pending',
+        paymentGatewayName,
+        paymentId,
+        paymentStatus: paymentStatusValue,
         totalAmount: toFloat(
             record.total_amount ?? record.totalAmount ?? record.subtotal,
             0,

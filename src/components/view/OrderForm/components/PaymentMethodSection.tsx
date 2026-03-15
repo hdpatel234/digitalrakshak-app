@@ -185,6 +185,8 @@ const PaymentMethodSection = ({}: PaymentMethodSectionProps) => {
         setPaymentMethodId,
         paymentProviderId,
         setPaymentProviderId,
+        prefillPaymentProviderId,
+        setPrefillPaymentProviderId,
         validationErrors,
     } = useOrderFormStore()
 
@@ -364,6 +366,12 @@ const PaymentMethodSection = ({}: PaymentMethodSectionProps) => {
                     )
 
                 const defaultOption = mapped.find((item) => item.isDefault)
+                const prefillOption = prefillPaymentProviderId
+                    ? mapped.find(
+                          (item) =>
+                              item.value === prefillPaymentProviderId,
+                      )
+                    : undefined
                 setGatewayOptions(
                     mapped.map((item) => ({
                         label: item.label,
@@ -371,7 +379,10 @@ const PaymentMethodSection = ({}: PaymentMethodSectionProps) => {
                         logo: item.logo,
                     })),
                 )
-                if (defaultOption) {
+                if (prefillOption) {
+                    setPaymentProviderId(prefillOption.value)
+                    setPrefillPaymentProviderId('')
+                } else if (defaultOption) {
                     setPaymentProviderId(defaultOption.value)
                 }
             } catch {

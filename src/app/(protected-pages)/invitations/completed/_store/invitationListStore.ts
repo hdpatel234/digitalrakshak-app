@@ -1,33 +1,56 @@
 import { create } from 'zustand'
-import type { Customer, Filter } from '../types'
+import type {
+    Invitation,
+    InvitationsFilter,
+    InvitationsPagination,
+    InvitationsSorting,
+} from '../types'
 
 export const initialFilterData = {
-    invitationStatus: [],
-    country: '',
-    state: '',
-    city: '',
+    search: '',
+    status: '',
+    date_from: '',
+    date_to: '',
+    candidate_id: '',
+    package_id: '',
+    invitation_type: '',
+    invited_by: '',
 }
 
 export type InvitationListState = {
     initialLoading: boolean
-    customerList: Customer[]
-    filterData: Filter
-    selectedCustomer: Partial<Customer>[]
+    invitationList: Invitation[]
+    filterData: InvitationsFilter
+    pagination: InvitationsPagination
+    sorting: InvitationsSorting
+    selectedInvitations: Invitation[]
 }
 
 type InvitationListAction = {
-    setCustomerList: (customerList: Customer[]) => void
-    setFilterData: (payload: Filter) => void
-    setSelectedCustomer: (checked: boolean, customer: Customer) => void
-    setSelectAllCustomer: (customer: Customer[]) => void
+    setInvitationList: (list: Invitation[]) => void
+    setFilterData: (payload: InvitationsFilter) => void
+    setPagination: (payload: InvitationsPagination) => void
+    setSorting: (payload: InvitationsSorting) => void
+    setSelectedInvitation: (checked: boolean, invitation: Invitation) => void
+    setSelectAllInvitations: (invitations: Invitation[]) => void
     setInitialLoading: (payload: boolean) => void
 }
 
 const initialState: InvitationListState = {
     initialLoading: true,
-    customerList: [],
+    invitationList: [],
     filterData: initialFilterData,
-    selectedCustomer: [],
+    pagination: {
+        current_page: 1,
+        per_page: 10,
+        total: 0,
+        last_page: 1,
+    },
+    sorting: {
+        sort_by: 'candidate_invitations.created_at',
+        sort_direction: 'desc',
+    },
+    selectedInvitations: [],
 }
 
 export const useInvitationListStore = create<
@@ -35,26 +58,26 @@ export const useInvitationListStore = create<
 >((set) => ({
     ...initialState,
     setFilterData: (payload) => set(() => ({ filterData: payload })),
-    setSelectedCustomer: (checked, row) =>
+    setPagination: (payload) => set(() => ({ pagination: payload })),
+    setSorting: (payload) => set(() => ({ sorting: payload })),
+    setInvitationList: (list) => set(() => ({ invitationList: list })),
+    setSelectedInvitation: (checked, invitation) =>
         set((state) => {
-            const prevData = state.selectedCustomer
+            const prevData = state.selectedInvitations
             if (checked) {
-                return { selectedCustomer: [...prevData, ...[row]] }
-            } else {
-                if (
-                    prevData.some((prevCustomer) => row.id === prevCustomer.id)
-                ) {
-                    return {
-                        selectedCustomer: prevData.filter(
-                            (prevCustomer) => prevCustomer.id !== row.id,
-                        ),
-                    }
+                if (prevData.some((item) => item.id === invitation.id)) {
+                    return { selectedInvitations: prevData }
                 }
-                return { selectedCustomer: prevData }
+                return { selectedInvitations: [...prevData, invitation] }
+            }
+            return {
+                selectedInvitations: prevData.filter(
+                    (item) => item.id !== invitation.id,
+                ),
             }
         }),
-    setSelectAllCustomer: (row) => set(() => ({ selectedCustomer: row })),
-    setCustomerList: (customerList) => set(() => ({ customerList })),
+    setSelectAllInvitations: (invitations) =>
+        set(() => ({ selectedInvitations: invitations })),
     setInitialLoading: (payload) => set(() => ({ initialLoading: payload })),
 }))
 
