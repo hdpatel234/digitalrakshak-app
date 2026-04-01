@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import SpaceSignBoard from '@/assets/svg/SpaceSignBoard'
 import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
@@ -8,6 +8,7 @@ import Select from '@/components/ui/Select'
 import { FormItem } from '@/components/ui/Form'
 import Button from '@/components/ui/Button'
 import Notification from '@/components/ui/Notification'
+import Upload from '@/components/ui/Upload'
 import toast from '@/components/ui/toast'
 import { TbCircleCheck } from 'react-icons/tb'
 
@@ -70,6 +71,56 @@ type SubmitApiResponse = {
     data?: unknown
 }
 
+type ResumeParsePhone = {
+    countryCode?: string | null
+    number?: string | null
+    full?: string | null
+}
+
+type ResumeParsePersonalInformation = {
+    fullName?: string | null
+    firstName?: string | null
+    middleName?: string | null
+    lastName?: string | null
+    dateOfBirth?: string | null
+    email?: string | null
+    phone?: ResumeParsePhone | null
+    website?: string | null
+    linkedin?: string | null
+    github?: string | null
+}
+
+type ResumeParseAddressBlock = {
+    tehsil?: string | null
+    district?: string | null
+    city?: string | null
+    state?: string | null
+    country?: string | null
+    pincode?: string | null
+    full?: string | null
+}
+
+type ResumeParseData = {
+    personalInformation?: ResumeParsePersonalInformation | null
+    address?: {
+        residential?: ResumeParseAddressBlock | null
+        permanent?: ResumeParseAddressBlock | null
+    } | null
+    education?: Array<Record<string, unknown>>
+    workExperience?: Array<Record<string, unknown>>
+}
+
+type ResumeParseResponse = {
+    status?: boolean
+    success?: boolean
+    message?: string
+    data?: ResumeParseData
+}
+
+const MAX_RESUME_SIZE = 10 * 1024 * 1024
+const ACCEPTED_RESUME_EXTENSIONS = ['.pdf', '.doc', '.docx', '.txt']
+
+
 const fieldTypeToInputType = (fieldType: string) => {
     const normalizedType = String(fieldType || '').toLowerCase()
 
@@ -112,6 +163,53 @@ const getFirstMatchingValue = (
     return ''
 }
 
+const normalizeOptionLabel = (value: string) =>
+    value.trim().toLowerCase().replace(/\s+/g, ' ')
+
+const resolveOptionValue = (options: SelectOption[], rawHint: string) => {
+    const hint = normalizeOptionLabel(rawHint)
+    if (!hint) {
+        return ''
+    }
+
+    const exactMatch = options.find(
+        (option) => normalizeOptionLabel(option.label) === hint,
+    )
+    if (exactMatch) {
+        return exactMatch.value
+    }
+
+    const partialMatch = options.find((option) => {
+        const normalized = normalizeOptionLabel(option.label)
+        return normalized.includes(hint) || hint.includes(normalized)
+    })
+
+    return partialMatch?.value || ''
+}
+
+const splitFullName = (fullName: string) => {
+    const trimmed = fullName.trim()
+    if (!trimmed) {
+        return { firstName: '', lastName: '' }
+    }
+
+    const parts = trimmed.split(/\s+/)
+    if (parts.length === 1) {
+        return { firstName: parts[0], lastName: '' }
+    }
+
+    return {
+        firstName: parts[0],
+        lastName: parts.slice(1).join(' '),
+    }
+}
+
+const FieldSkeleton = ({ className = '' }: { className?: string }) => (
+    <div
+        className={`h-11 w-full animate-pulse rounded-md bg-gray-200/80 dark:bg-gray-800/80 ${className}`}
+    ></div>
+)
+
 const InvitationForm = ({ token }: InvitationFormProps) => {
     const [loading, setLoading] = useState(true)
     const [errorMessage, setErrorMessage] = useState('')
@@ -124,6 +222,19 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
     const [submitSuccessMessage, setSubmitSuccessMessage] = useState('')
+    const [resumeFiles, setResumeFiles] = useState<File[]>([])
+    const [isParsingResume, setIsParsingResume] = useState(false)
+    const [isPrefilling, setIsPrefilling] = useState(false)
+    const [showForm, setShowForm] = useState(false)
+    const [resumeMessage, setResumeMessage] = useState<{
+        type: 'success' | 'danger'
+        message: string
+    } | null>(null)
+    const [resumeLocationHints, setResumeLocationHints] = useState({
+        country: '',
+        state: '',
+        city: '',
+    })
 
     const [countries, setCountries] = useState<LocationOption[]>([])
     const [states, setStates] = useState<LocationOption[]>([])
@@ -131,6 +242,27 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
 
     const countryId = formValues.country_id || ''
     const stateId = formValues.state_id || ''
+
+    const validateResumeFile = (file: File | null | undefined) => {
+        if (!file) {
+            return 'Please select a resume file to upload.'
+        }
+
+        const name = file.name.toLowerCase()
+        const hasValidExtension = ACCEPTED_RESUME_EXTENSIONS.some((ext) =>
+            name.endsWith(ext),
+        )
+
+        if (!hasValidExtension) {
+            return `Allowed file types: ${ACCEPTED_RESUME_EXTENSIONS.join(', ')}`
+        }
+
+        if (file.size > MAX_RESUME_SIZE) {
+            return 'File size must be 10 MB or less.'
+        }
+
+        return true
+    }
 
     useEffect(() => {
         let isMounted = true
@@ -394,7 +526,7 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
         [cities],
     )
 
-    const handleValueChange = (name: string, value: string) => {
+    const handleValueChange = useCallback((name: string, value: string) => {
         setFieldErrors((prev) => {
             if (!prev[name]) {
                 return prev
@@ -430,7 +562,159 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
 
             return next
         })
-    }
+    }, [])
+
+    const applyResumeLocations = useCallback(() => {
+        if (
+            resumeLocationHints.country &&
+            !formValues.country_id &&
+            countryOptions.length > 0
+        ) {
+            const match = resolveOptionValue(
+                countryOptions,
+                resumeLocationHints.country,
+            )
+            if (match) {
+                handleValueChange('country_id', match)
+            }
+        }
+
+        if (
+            resumeLocationHints.state &&
+            !formValues.state_id &&
+            stateOptions.length > 0
+        ) {
+            const match = resolveOptionValue(
+                stateOptions,
+                resumeLocationHints.state,
+            )
+            if (match) {
+                handleValueChange('state_id', match)
+            }
+        }
+
+        if (
+            resumeLocationHints.city &&
+            !formValues.city_id &&
+            cityOptions.length > 0
+        ) {
+            const match = resolveOptionValue(
+                cityOptions,
+                resumeLocationHints.city,
+            )
+            if (match) {
+                handleValueChange('city_id', match)
+            }
+        }
+    }, [
+        resumeLocationHints,
+        formValues,
+        countryOptions,
+        stateOptions,
+        cityOptions,
+        handleValueChange,
+    ])
+
+    useEffect(() => {
+        applyResumeLocations()
+    }, [applyResumeLocations])
+
+    const applyResumePrefill = useCallback(
+        (data: ResumeParseData) => {
+            const personal = data.personalInformation || {}
+            const phone = personal.phone || {}
+            const address = data.address || {}
+            const residential = address.residential || {}
+            const permanent = address.permanent || {}
+            const addressSources: Array<Record<string, unknown>> = [
+                residential as Record<string, unknown>,
+                permanent as Record<string, unknown>,
+            ]
+
+            const fullName = toStringValue(personal.fullName)
+            const nameParts =
+                fullName && (!personal.firstName || !personal.lastName)
+                    ? splitFullName(fullName)
+                    : { firstName: '', lastName: '' }
+
+            const nextValues: Record<string, string> = {}
+
+            const safeSet = (key: string, value: string) => {
+                if (value) {
+                    nextValues[key] = value
+                }
+            }
+
+            safeSet(
+                'first_name',
+                toStringValue(personal.firstName) || nameParts.firstName,
+            )
+            safeSet(
+                'last_name',
+                toStringValue(personal.lastName) || nameParts.lastName,
+            )
+            safeSet('email', toStringValue(personal.email))
+            safeSet(
+                'phone',
+                toStringValue(phone.full) ||
+                    toStringValue(phone.number) ||
+                    toStringValue(phone.countryCode),
+            )
+            safeSet(
+                'address',
+                getFirstMatchingValue(addressSources, [
+                    'full',
+                    'city',
+                    'district',
+                    'state',
+                    'country',
+                    'tehsil',
+                ]),
+            )
+            safeSet(
+                'pincode',
+                getFirstMatchingValue(addressSources, ['pincode', 'zip']),
+            )
+
+            const parsedFieldValues: Record<string, string> = {
+                full_name: toStringValue(personal.fullName),
+                fullname: toStringValue(personal.fullName),
+                date_of_birth: toStringValue(personal.dateOfBirth),
+                dateOfBirth: toStringValue(personal.dateOfBirth),
+                dob: toStringValue(personal.dateOfBirth),
+                website: toStringValue(personal.website),
+                linkedin: toStringValue(personal.linkedin),
+                github: toStringValue(personal.github),
+            }
+
+            for (const field of fields) {
+                const parsedValue = parsedFieldValues[field.field_name]
+                if (parsedValue) {
+                    nextValues[field.field_name] = parsedValue
+                }
+            }
+
+            if (Object.keys(nextValues).length > 0) {
+                setFormValues((prev) => ({
+                    ...prev,
+                    ...nextValues,
+                }))
+            }
+
+            setResumeLocationHints({
+                country: toStringValue(
+                    getFirstMatchingValue(addressSources, ['country']),
+                ),
+                state: toStringValue(
+                    getFirstMatchingValue(addressSources, ['state']),
+                ),
+                city: toStringValue(
+                    getFirstMatchingValue(addressSources, ['city', 'district']),
+                ),
+            })
+        },
+        [fields],
+    )
 
     const validateRequiredForm = () => {
         const errors: Record<string, string> = {}
@@ -556,6 +840,94 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
         }
     }
 
+    const submitResume = async (file: File) => {
+        if (!token) {
+            const message = 'Invitation token is required to parse the resume.'
+            setResumeMessage({ type: 'danger', message })
+            toast.push(<Notification type="danger">{message}</Notification>, {
+                placement: 'top-center',
+            })
+            return
+        }
+
+        try {
+            setIsParsingResume(true)
+            setIsPrefilling(true)
+            setResumeMessage(null)
+
+            const requestFormData = new FormData()
+            requestFormData.append('resume', file, file.name)
+
+            const response = await fetch(
+                `/api/client/invitations/by-token/${encodeURIComponent(token)}/parse-resume`,
+                {
+                    method: 'POST',
+                    body: requestFormData,
+                },
+            )
+
+            const payload = (await response.json().catch(() => null)) as
+                | ResumeParseResponse
+                | null
+
+            const isSuccess =
+                response.ok && Boolean(payload?.status ?? payload?.success)
+            const message =
+                payload?.message ||
+                (isSuccess
+                    ? 'Resume parsed successfully.'
+                    : 'Failed to parse resume.')
+
+            setResumeMessage({
+                type: isSuccess ? 'success' : 'danger',
+                message,
+            })
+            toast.push(
+                <Notification type={isSuccess ? 'success' : 'danger'}>
+                    {message}
+                </Notification>,
+                { placement: 'top-center' },
+            )
+
+            if (isSuccess && payload?.data) {
+                applyResumePrefill(payload.data)
+            }
+        } catch (error) {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : 'Failed to parse resume.'
+            setResumeMessage({ type: 'danger', message })
+            toast.push(<Notification type="danger">{message}</Notification>, {
+                placement: 'top-center',
+            })
+        } finally {
+            setIsParsingResume(false)
+            setIsPrefilling(false)
+        }
+    }
+
+    const handleResumeUpload = (files: File[]) => {
+        setResumeFiles(files)
+        setResumeMessage(null)
+    }
+
+    const handleProcessResume = async () => {
+        const file = resumeFiles[0]
+        const validation = validateResumeFile(file)
+        if (validation !== true) {
+            const message = String(validation)
+            setResumeMessage({ type: 'danger', message })
+            toast.push(<Notification type="danger">{message}</Notification>, {
+                placement: 'top-center',
+            })
+            return
+        }
+
+        setShowForm(true)
+        await submitResume(file)
+    }
+
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-[200px]">
@@ -593,6 +965,67 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
         )
     }
 
+    if (!showForm) {
+        return (
+            <div className="w-full max-w-3xl flex flex-col gap-4">
+                <Card>
+                    <h4>Upload Resume</h4>
+                    <p className="mt-1 mb-6 text-sm text-gray-500">
+                        Upload your resume to prefill your details before
+                        completing the form.
+                    </p>
+
+                    <Upload
+                        disabled={isParsingResume}
+                        draggable
+                        accept={ACCEPTED_RESUME_EXTENSIONS.join(',')}
+                        uploadLimit={1}
+                        fileList={resumeFiles}
+                        onChange={handleResumeUpload}
+                        onFileRemove={(files) => {
+                            setResumeFiles(files)
+                            setResumeMessage(null)
+                        }}
+                        beforeUpload={(files) => validateResumeFile(files?.[0])}
+                        tip={
+                            <div className="text-xs text-gray-500">
+                                Allowed file types: {ACCEPTED_RESUME_EXTENSIONS.join(', ')}. Max size: 10 MB.
+                            </div>
+                        }
+                    />
+
+                    {resumeMessage ? (
+                        <div className="mt-4">
+                            <Notification type={resumeMessage.type}>
+                                {resumeMessage.message}
+                            </Notification>
+                        </div>
+                    ) : null}
+                </Card>
+
+                <div className="flex flex-wrap justify-end gap-3">
+                    <Button
+                        type="button"
+                        variant="plain"
+                        disabled={isParsingResume}
+                        onClick={() => setShowForm(true)}
+                    >
+                        Skip for now
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="solid"
+                        loading={isParsingResume}
+                        disabled={isParsingResume || resumeFiles.length === 0}
+                        onClick={handleProcessResume}
+                    >
+                        Process Resume
+                    </Button>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className="w-full max-w-3xl flex flex-col gap-4">
             <Card>
@@ -610,21 +1043,25 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
                             invalid={Boolean(fieldErrors.first_name)}
                             errorMessage={fieldErrors.first_name}
                         >
-                            <Input
-                                id="first_name"
-                                name="first_name"
-                                type="text"
-                                required
-                                autoComplete="off"
-                                placeholder="First Name"
-                                value={formValues.first_name || ''}
-                                onChange={(event) =>
-                                    handleValueChange(
-                                        'first_name',
-                                        event.target.value,
-                                    )
-                                }
-                            />
+                            {isPrefilling ? (
+                                <FieldSkeleton />
+                            ) : (
+                                <Input
+                                    id="first_name"
+                                    name="first_name"
+                                    type="text"
+                                    required
+                                    autoComplete="off"
+                                    placeholder="First Name"
+                                    value={formValues.first_name || ''}
+                                    onChange={(event) =>
+                                        handleValueChange(
+                                            'first_name',
+                                            event.target.value,
+                                        )
+                                    }
+                                />
+                            )}
                         </FormItem>
 
                         <FormItem
@@ -634,21 +1071,25 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
                             invalid={Boolean(fieldErrors.last_name)}
                             errorMessage={fieldErrors.last_name}
                         >
-                            <Input
-                                id="last_name"
-                                name="last_name"
-                                type="text"
-                                required
-                                autoComplete="off"
-                                placeholder="Last Name"
-                                value={formValues.last_name || ''}
-                                onChange={(event) =>
-                                    handleValueChange(
-                                        'last_name',
-                                        event.target.value,
-                                    )
-                                }
-                            />
+                            {isPrefilling ? (
+                                <FieldSkeleton />
+                            ) : (
+                                <Input
+                                    id="last_name"
+                                    name="last_name"
+                                    type="text"
+                                    required
+                                    autoComplete="off"
+                                    placeholder="Last Name"
+                                    value={formValues.last_name || ''}
+                                    onChange={(event) =>
+                                        handleValueChange(
+                                            'last_name',
+                                            event.target.value,
+                                        )
+                                    }
+                                />
+                            )}
                         </FormItem>
                     </div>
 
@@ -660,17 +1101,21 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
                             invalid={Boolean(fieldErrors.email)}
                             errorMessage={fieldErrors.email}
                         >
-                            <Input
-                                id="email"
-                                name="email"
-                                type="email"
-                                required
-                                autoComplete="off"
-                                placeholder="Email"
-                                value={formValues.email || ''}
-                                readOnly
-                                disabled
-                            />
+                            {isPrefilling ? (
+                                <FieldSkeleton />
+                            ) : (
+                                <Input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    required
+                                    autoComplete="off"
+                                    placeholder="Email"
+                                    value={formValues.email || ''}
+                                    readOnly
+                                    disabled
+                                />
+                            )}
                         </FormItem>
 
                         <FormItem
@@ -680,18 +1125,25 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
                             invalid={Boolean(fieldErrors.phone)}
                             errorMessage={fieldErrors.phone}
                         >
-                            <Input
-                                id="phone"
-                                name="phone"
-                                type="text"
-                                required
-                                autoComplete="off"
-                                placeholder="Phone"
-                                value={formValues.phone || ''}
-                                onChange={(event) =>
-                                    handleValueChange('phone', event.target.value)
-                                }
-                            />
+                            {isPrefilling ? (
+                                <FieldSkeleton />
+                            ) : (
+                                <Input
+                                    id="phone"
+                                    name="phone"
+                                    type="text"
+                                    required
+                                    autoComplete="off"
+                                    placeholder="Phone"
+                                    value={formValues.phone || ''}
+                                    onChange={(event) =>
+                                        handleValueChange(
+                                            'phone',
+                                            event.target.value,
+                                        )
+                                    }
+                                />
+                            )}
                         </FormItem>
                     </div>
 
@@ -702,18 +1154,25 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
                         invalid={Boolean(fieldErrors.address)}
                         errorMessage={fieldErrors.address}
                     >
-                        <Input
-                            id="address"
-                            name="address"
-                            type="text"
-                            required
-                            autoComplete="off"
-                            placeholder="Address"
-                            value={formValues.address || ''}
-                            onChange={(event) =>
-                                handleValueChange('address', event.target.value)
-                            }
-                        />
+                        {isPrefilling ? (
+                            <FieldSkeleton />
+                        ) : (
+                            <Input
+                                id="address"
+                                name="address"
+                                type="text"
+                                required
+                                autoComplete="off"
+                                placeholder="Address"
+                                value={formValues.address || ''}
+                                onChange={(event) =>
+                                    handleValueChange(
+                                        'address',
+                                        event.target.value,
+                                    )
+                                }
+                            />
+                        )}
                     </FormItem>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -724,22 +1183,26 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
                             invalid={Boolean(fieldErrors.country_id)}
                             errorMessage={fieldErrors.country_id}
                         >
-                            <Select<SelectOption>
-                                instanceId="country_id"
-                                options={countryOptions}
-                                placeholder="Select Country"
-                                value={countryOptions.find(
-                                    (option) =>
-                                        option.value ===
-                                        (formValues.country_id || ''),
-                                )}
-                                onChange={(option) =>
-                                    handleValueChange(
-                                        'country_id',
-                                        option?.value || '',
-                                    )
-                                }
-                            />
+                            {isPrefilling ? (
+                                <FieldSkeleton />
+                            ) : (
+                                <Select<SelectOption>
+                                    instanceId="country_id"
+                                    options={countryOptions}
+                                    placeholder="Select Country"
+                                    value={countryOptions.find(
+                                        (option) =>
+                                            option.value ===
+                                            (formValues.country_id || ''),
+                                    )}
+                                    onChange={(option) =>
+                                        handleValueChange(
+                                            'country_id',
+                                            option?.value || '',
+                                        )
+                                    }
+                                />
+                            )}
                         </FormItem>
 
                         <FormItem
@@ -749,22 +1212,27 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
                             invalid={Boolean(fieldErrors.state_id)}
                             errorMessage={fieldErrors.state_id}
                         >
-                            <Select<SelectOption>
-                                instanceId="state_id"
-                                options={stateOptions}
-                                placeholder="Select State"
-                                isDisabled={!countryId}
-                                value={stateOptions.find(
-                                    (option) =>
-                                        option.value === (formValues.state_id || ''),
-                                )}
-                                onChange={(option) =>
-                                    handleValueChange(
-                                        'state_id',
-                                        option?.value || '',
-                                    )
-                                }
-                            />
+                            {isPrefilling ? (
+                                <FieldSkeleton />
+                            ) : (
+                                <Select<SelectOption>
+                                    instanceId="state_id"
+                                    options={stateOptions}
+                                    placeholder="Select State"
+                                    isDisabled={!countryId}
+                                    value={stateOptions.find(
+                                        (option) =>
+                                            option.value ===
+                                            (formValues.state_id || ''),
+                                    )}
+                                    onChange={(option) =>
+                                        handleValueChange(
+                                            'state_id',
+                                            option?.value || '',
+                                        )
+                                    }
+                                />
+                            )}
                         </FormItem>
                     </div>
 
@@ -776,22 +1244,27 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
                             invalid={Boolean(fieldErrors.city_id)}
                             errorMessage={fieldErrors.city_id}
                         >
-                            <Select<SelectOption>
-                                instanceId="city_id"
-                                options={cityOptions}
-                                placeholder="Select City"
-                                isDisabled={!stateId}
-                                value={cityOptions.find(
-                                    (option) =>
-                                        option.value === (formValues.city_id || ''),
-                                )}
-                                onChange={(option) =>
-                                    handleValueChange(
-                                        'city_id',
-                                        option?.value || '',
-                                    )
-                                }
-                            />
+                            {isPrefilling ? (
+                                <FieldSkeleton />
+                            ) : (
+                                <Select<SelectOption>
+                                    instanceId="city_id"
+                                    options={cityOptions}
+                                    placeholder="Select City"
+                                    isDisabled={!stateId}
+                                    value={cityOptions.find(
+                                        (option) =>
+                                            option.value ===
+                                            (formValues.city_id || ''),
+                                    )}
+                                    onChange={(option) =>
+                                        handleValueChange(
+                                            'city_id',
+                                            option?.value || '',
+                                        )
+                                    }
+                                />
+                            )}
                         </FormItem>
 
                         <FormItem
@@ -801,21 +1274,25 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
                             invalid={Boolean(fieldErrors.pincode)}
                             errorMessage={fieldErrors.pincode}
                         >
-                            <Input
-                                id="pincode"
-                                name="pincode"
-                                type="text"
-                                required
-                                autoComplete="off"
-                                placeholder="Pincode"
-                                value={formValues.pincode || ''}
-                                onChange={(event) =>
-                                    handleValueChange(
-                                        'pincode',
-                                        event.target.value,
-                                    )
-                                }
-                            />
+                            {isPrefilling ? (
+                                <FieldSkeleton />
+                            ) : (
+                                <Input
+                                    id="pincode"
+                                    name="pincode"
+                                    type="text"
+                                    required
+                                    autoComplete="off"
+                                    placeholder="Pincode"
+                                    value={formValues.pincode || ''}
+                                    onChange={(event) =>
+                                        handleValueChange(
+                                            'pincode',
+                                            event.target.value,
+                                        )
+                                    }
+                                />
+                            )}
                         </FormItem>
                     </div>
                 </div>
@@ -848,29 +1325,35 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
                                     invalid={Boolean(fieldErrors[field.field_name])}
                                     errorMessage={fieldErrors[field.field_name]}
                                 >
-                                    <Input
-                                        id={field.field_name}
-                                        name={field.field_name}
-                                        type={fieldTypeToInputType(field.field_type)}
-                                        autoComplete="off"
-                                        inputMode={
-                                            field.field_type === 'integer'
-                                                ? 'numeric'
-                                                : undefined
-                                        }
-                                        pattern={
-                                            field.validation_regex || undefined
-                                        }
-                                        required
-                                        value={value}
-                                        placeholder={field.field_label}
-                                        onChange={(event) =>
-                                            handleValueChange(
-                                                field.field_name,
-                                                event.target.value,
-                                            )
-                                        }
-                                    />
+                                    {isPrefilling ? (
+                                        <FieldSkeleton />
+                                    ) : (
+                                        <Input
+                                            id={field.field_name}
+                                            name={field.field_name}
+                                            type={fieldTypeToInputType(
+                                                field.field_type,
+                                            )}
+                                            autoComplete="off"
+                                            inputMode={
+                                                field.field_type === 'integer'
+                                                    ? 'numeric'
+                                                    : undefined
+                                            }
+                                            pattern={
+                                                field.validation_regex || undefined
+                                            }
+                                            required
+                                            value={value}
+                                            placeholder={field.field_label}
+                                            onChange={(event) =>
+                                                handleValueChange(
+                                                    field.field_name,
+                                                    event.target.value,
+                                                )
+                                            }
+                                        />
+                                    )}
                                     {helperText ? (
                                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                             {helperText}
@@ -889,7 +1372,7 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
                     variant="solid"
                     onClick={handleSubmit}
                     loading={isSubmitting}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isPrefilling}
                 >
                     Submit
                 </Button>
