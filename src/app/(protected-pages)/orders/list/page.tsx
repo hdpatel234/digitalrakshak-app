@@ -105,6 +105,7 @@ const mapOrder = (item: unknown, index: number): Order => {
     const paymentStatusValue = String(
         record.payment_status ?? record.paymentStatus ?? '',
     )
+    const invoiceId = String(record.invoice_id ?? '').trim()
 
     return {
         id: id || displayId,
@@ -128,6 +129,7 @@ const mapOrder = (item: unknown, index: number): Order => {
             0,
         ),
         paymentProviderName,
+        invoiceId,
     }
 }
 

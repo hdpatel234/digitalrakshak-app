@@ -10,6 +10,7 @@ export type Order = {
     totalAmount: number
     totalAmountInPaise: number
     paymentProviderName: string
+    invoiceId: string
 }
 
 export type Orders = Order[]

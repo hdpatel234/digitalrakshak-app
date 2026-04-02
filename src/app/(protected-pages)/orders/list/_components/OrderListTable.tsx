@@ -1,5 +1,5 @@
 'use client'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import Tag from '@/components/ui/Tag'
 import Tooltip from '@/components/ui/Tooltip'
 import DataTable from '@/components/shared/DataTable'
@@ -13,6 +13,7 @@ import {
     TbEye,
     TbCreditCard,
     TbPencil,
+    TbCloudDownload,
 } from 'react-icons/tb'
 import dayjs from 'dayjs'
 import { NumericFormat } from 'react-number-format'
@@ -81,6 +82,7 @@ const OrderColumn = ({ row }: { row: Order }) => {
 
 const ActionColumn = ({ row }: { row: Order }) => {
     const router = useRouter()
+    const [downloading, setDownloading] = useState(false)
     const statusKey = row.status
     const isDraft = statusKey === 'draft'
     const isPending = statusKey === 'pending'
@@ -129,6 +131,54 @@ const ActionColumn = ({ row }: { row: Order }) => {
         })()
     }
 
+    const onDownloadInvoice = async () => {
+        if (!row.invoiceId) return
+        try {
+            setDownloading(true)
+            const response = await fetch(`/api/client/invoices/${row.invoiceId}/pdf`, {
+                method: 'GET',
+            })
+
+            if (!response.ok) {
+                let errorMessage = 'Failed to download invoice PDF'
+                try {
+                    const errorJson = await response.json()
+                    if (errorJson?.message) {
+                        errorMessage = errorJson.message
+                    }
+                } catch {
+                    // Ignore wrapper
+                }
+                toast.push(
+                    <Notification type="danger" title="Download Failed">
+                        {errorMessage}
+                    </Notification>,
+                    { placement: 'top-center' }
+                )
+                return
+            }
+
+            const blob = await response.blob()
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `Invoice_Order_${row.displayId || row.id}.pdf`
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+        } catch (error) {
+            toast.push(
+                <Notification type="danger" title="Error">
+                    Something went wrong while downloading.
+                </Notification>,
+                { placement: 'top-center' }
+            )
+        } finally {
+            setDownloading(false)
+        }
+    }
+
     return (
         <div className="flex justify-center text-lg gap-1">
             <Tooltip wrapperClass="flex" title="View">
@@ -150,6 +200,16 @@ const ActionColumn = ({ row }: { row: Order }) => {
                         onClick={onMakePayment}
                     >
                         <TbCreditCard />
+                    </span>
+                </Tooltip>
+            )}
+            {row.invoiceId && (
+                <Tooltip wrapperClass="flex" title="Download Invoice">
+                    <span
+                        className={`cursor-pointer p-2 text-primary hover:opacity-80 ${downloading ? 'opacity-50 pointer-events-none' : ''}`}
+                        onClick={onDownloadInvoice}
+                    >
+                        <TbCloudDownload />
                     </span>
                 </Tooltip>
             )}
