@@ -2,6 +2,10 @@ export interface Attachment {
     id: number
     name: string
     url: string
+    path: string
+    relativePath: string
+    iconURL: string
+    downloadURL: string
 }
 
 export interface Thread {
@@ -11,6 +15,7 @@ export interface Thread {
     sender_name: string
     sender_email: string
     created_at: string
+    time_ago: string
     attachments: Attachment[]
 }
 

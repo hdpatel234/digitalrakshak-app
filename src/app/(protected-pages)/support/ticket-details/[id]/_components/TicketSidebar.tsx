@@ -98,7 +98,7 @@ const TicketSidebar = ({ ticket }: TicketSidebarProps) => {
                 </div>
             </div>
 
-            <hr className="border-gray-100 dark:border-gray-800" />
+            <hr className="border-gray-100 dark:border-gray-800 mt-2" />
 
             <div>
                 <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 mt-2">
@@ -107,7 +107,7 @@ const TicketSidebar = ({ ticket }: TicketSidebarProps) => {
                 <div className="flex flex-col gap-4">
                     <div className="flex justify-between items-center">
                         <span className="text-gray-400 text-sm">Ticket ID</span>
-                        <span className="text-sm font-mono font-medium">{ticket.ticket_number}</span>
+                        <span className="text-sm font-mono font-medium">#{ticket.ticket_number}</span>
                     </div>
                     <div className="flex justify-between items-center">
                         <span className="text-gray-400 text-sm">Created At</span>

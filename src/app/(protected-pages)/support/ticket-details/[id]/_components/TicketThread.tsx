@@ -2,14 +2,91 @@ import Avatar from '@/components/ui/Avatar'
 import Card from '@/components/ui/Card'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { Thread } from './types'
-import { HiUser, HiChatBubbleLeftEllipsis } from 'react-icons/hi2'
+import { Thread, Attachment } from './types'
+import {
+    HiUser,
+    HiChatBubbleLeftEllipsis,
+    HiDocumentText,
+    HiPhoto,
+    HiDocumentArrowDown,
+} from 'react-icons/hi2'
 import classNames from 'classnames'
 
 dayjs.extend(relativeTime)
 
 interface TicketThreadProps {
     threads: Thread[]
+}
+
+const isImage = (filename: string) => {
+    return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(filename)
+}
+
+const isPdf = (filename: string) => {
+    return /\.pdf$/i.test(filename)
+}
+
+const AttachmentItem = ({ attachment }: { attachment: Attachment }) => {
+    const fileName = attachment.name
+    const isImg = isImage(fileName)
+    const isPDF = isPdf(fileName)
+
+    if (isImg) {
+        return (
+            <a
+                href={attachment.path || attachment.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative block overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 transition-all hover:ring-2 hover:ring-primary/20"
+            >
+                <div className="h-32 w-48 overflow-hidden">
+                    <img
+                        src={attachment.path || attachment.url}
+                        alt={fileName}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        loading="lazy"
+                    />
+                </div>
+                <div className="absolute inset-x-0 bottom-0 bg-black/40 backdrop-blur-sm p-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+                    <p className="text-[10px] text-white truncate text-center font-medium">
+                        {fileName}
+                    </p>
+                </div>
+            </a>
+        )
+    }
+
+    return (
+        <a
+            href={attachment.path || attachment.downloadURL || attachment.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 px-4 py-2.5 bg-gray-50 dark:bg-gray-700/50 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 transition-all border border-gray-200 dark:border-gray-600 group h-full"
+        >
+            <div
+                className={classNames(
+                    'p-2 rounded-lg shrink-0',
+                    isPDF
+                        ? 'bg-red-50 text-red-500 dark:bg-red-500/10'
+                        : 'bg-blue-50 text-blue-500 dark:bg-blue-500/10',
+                )}
+            >
+                {isPDF ? (
+                    <HiDocumentArrowDown className="text-xl" />
+                ) : (
+                    <HiDocumentText className="text-xl" />
+                )}
+            </div>
+            <div className="flex flex-col overflow-hidden">
+                <span className="truncate max-w-[150px] text-xs font-semibold">
+                    {fileName}
+                </span>
+                <span className="text-[10px] text-gray-400 font-normal uppercase">
+                    {isPDF ? 'PDF Document' : 'File'}
+                </span>
+            </div>
+        </a>
+    )
 }
 
 const TicketThread = ({ threads }: TicketThreadProps) => {
@@ -56,7 +133,7 @@ const TicketThread = ({ threads }: TicketThreadProps) => {
                                     {thread.sender_name}
                                 </span>
                                 <span className="text-xs text-gray-400">
-                                    {dayjs(thread.created_at).fromNow()}
+                                    {thread.time_ago}
                                 </span>
                             </div>
                             <Card
@@ -73,17 +150,12 @@ const TicketThread = ({ threads }: TicketThreadProps) => {
                                 />
 
                                 {thread.attachments && thread.attachments.length > 0 && (
-                                    <div className="mt-4 flex flex-wrap gap-2">
+                                    <div className="mt-4 flex flex-wrap gap-3">
                                         {thread.attachments.map((attachment) => (
-                                            <a
+                                            <AttachmentItem
                                                 key={attachment.id}
-                                                href={attachment.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-gray-700 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors border border-gray-200 dark:border-gray-600"
-                                            >
-                                                <span>{attachment.name}</span>
-                                            </a>
+                                                attachment={attachment}
+                                            />
                                         ))}
                                     </div>
                                 )}

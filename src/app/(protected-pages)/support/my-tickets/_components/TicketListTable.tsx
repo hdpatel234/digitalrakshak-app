@@ -47,6 +47,35 @@ const statusColor: Record<
     },
 }
 
+const priorityColor: Record<
+    string,
+    {
+        bgClass: string
+        textClass: string
+    }
+> = {
+    low: {
+        bgClass: 'bg-emerald-100 dark:bg-emerald-900/30',
+        textClass: 'text-emerald-700 dark:text-emerald-200',
+    },
+    medium: {
+        bgClass: 'bg-blue-100 dark:bg-blue-900/30',
+        textClass: 'text-blue-700 dark:text-blue-200',
+    },
+    high: {
+        bgClass: 'bg-orange-100 dark:bg-orange-900/30',
+        textClass: 'text-orange-700 dark:text-orange-200',
+    },
+    urgent: {
+        bgClass: 'bg-red-100 dark:bg-red-900/30',
+        textClass: 'text-red-700 dark:text-red-200',
+    },
+    default: {
+        bgClass: 'bg-gray-100 dark:bg-gray-700',
+        textClass: 'text-gray-600 dark:text-gray-200',
+    },
+}
+
 const TicketColumn = ({ row }: { row: Ticket }) => {
     const router = useRouter()
 
@@ -121,7 +150,13 @@ const TicketListTable = ({
                 accessorKey: 'departmentName',
                 cell: (props) => {
                     const { departmentName } = props.row.original
-                    return <span className="font-medium text-gray-600">{departmentName || '-'}</span>
+                    return (
+                        <Tag className="border-none">
+                            <span className="font-semibold">
+                                {departmentName || '-'}
+                            </span>
+                        </Tag>
+                    )
                 },
             },
             {
@@ -129,7 +164,16 @@ const TicketListTable = ({
                 accessorKey: 'priorityName',
                 cell: (props) => {
                     const { priorityName } = props.row.original
-                    return <span className="font-medium">{priorityName || '-'}</span>
+                    const normalized = priorityName.trim().toLowerCase()
+                    const style = priorityColor[normalized] || priorityColor.default
+                    
+                    return (
+                        <Tag className={style.bgClass}>
+                            <span className={`capitalize font-semibold ${style.textClass}`}>
+                                {priorityName || '-'}
+                            </span>
+                        </Tag>
+                    )
                 },
             },
             {

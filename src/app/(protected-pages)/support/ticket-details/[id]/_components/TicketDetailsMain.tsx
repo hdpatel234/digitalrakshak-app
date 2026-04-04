@@ -23,7 +23,6 @@ const TicketDetailsMain = ({ id }: TicketDetailsMainProps) => {
     const [error, setError] = useState<string | null>(null)
     const scrollRef = useRef<HTMLDivElement>(null)
     const hasFetchedThreads = useRef(false)
-    const intervalRef = useRef<NodeJS.Timeout | null>(null)
     const threadsCountRef = useRef(0)
 
     const scrollToBottom = useCallback(() => {
@@ -40,6 +39,7 @@ const TicketDetailsMain = ({ id }: TicketDetailsMainProps) => {
             try {
                 const response = await fetch(
                     `/api/client/tickets/${id}/conversations`,
+                    { cache: 'no-store' }
                 )
                 const result: ConversationsResponse = await response.json()
 
@@ -67,7 +67,9 @@ const TicketDetailsMain = ({ id }: TicketDetailsMainProps) => {
         setIsLoading(true)
         setError(null)
         try {
-            const response = await fetch(`/api/client/tickets/${id}`)
+            const response = await fetch(`/api/client/tickets/${id}`, {
+                cache: 'no-store',
+            })
             const result: TicketResponse = await response.json()
 
             if (result.status) {
@@ -87,19 +89,21 @@ const TicketDetailsMain = ({ id }: TicketDetailsMainProps) => {
     }, [fetchTicket])
 
     useEffect(() => {
-        if (ticket && !hasFetchedThreads.current) {
+        if (!ticket) return
+
+        if (!hasFetchedThreads.current) {
             hasFetchedThreads.current = true
             fetchThreads()
-
-            // Setup polling every 5 seconds
-            intervalRef.current = setInterval(() => {
-                fetchThreads(true)
-            }, 5000)
         }
 
+        // Setup polling every 5 seconds
+        const intervalId = setInterval(() => {
+            fetchThreads(true)
+        }, 5000)
+
         return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current)
+            if (intervalId) {
+                clearInterval(intervalId)
             }
         }
     }, [ticket, fetchThreads])
