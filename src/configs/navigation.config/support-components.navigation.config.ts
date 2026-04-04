@@ -43,17 +43,17 @@ const supportComponentNavigationConfig: NavigationTree[] = [
                 meta: {},
                 subMenu: [],
             },
-            {
-                key: 'support.knowledgeBase',
-                path: `/support/knowledge-base`,
-                title: 'Knowledge Base',
-                translateKey: 'nav.support.knowledgeBase',
-                icon: 'knowledgeBase',
-                type: NAV_ITEM_TYPE_ITEM,
-                authority: [ADMIN, USER],
-                meta: {},
-                subMenu: [],
-            }
+            // {
+            //     key: 'support.knowledgeBase',
+            //     path: `/support/knowledge-base`,
+            //     title: 'Knowledge Base',
+            //     translateKey: 'nav.support.knowledgeBase',
+            //     icon: 'knowledgeBase',
+            //     type: NAV_ITEM_TYPE_ITEM,
+            //     authority: [ADMIN, USER],
+            //     meta: {},
+            //     subMenu: [],
+            // }
         ],
     },
 ]
