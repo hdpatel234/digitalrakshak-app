@@ -1,8 +1,5 @@
-import Container from '@/components/shared/Container'
+import OpenTicket from './_components/OpenTicket'
 
-export default async function Page() {
-    return (
-        <Container>
-        </Container>
-    )
+export default function Page() {
+    return <OpenTicket />
 }
