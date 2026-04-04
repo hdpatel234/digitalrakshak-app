@@ -105,18 +105,18 @@ const TicketSidebar = ({ ticket }: TicketSidebarProps) => {
                     Information
                 </h4>
                 <div className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-1">
-                        <span className="text-gray-400 text-xs">Ticket ID</span>
-                        <span className="text-sm font-mono">{ticket.ticket_number}</span>
+                    <div className="flex justify-between items-center">
+                        <span className="text-gray-400 text-sm">Ticket ID</span>
+                        <span className="text-sm font-mono font-medium">{ticket.ticket_number}</span>
                     </div>
-                    <div className="flex flex-col gap-1">
-                        <span className="text-gray-400 text-xs">Created At</span>
+                    <div className="flex justify-between items-center">
+                        <span className="text-gray-400 text-sm">Created At</span>
                         <span className="text-sm font-medium">
                             {ticket.created_at}
                         </span>
                     </div>
-                    <div className="flex flex-col gap-1">
-                        <span className="text-gray-400 text-xs">Last Updated</span>
+                    <div className="flex justify-between items-center">
+                        <span className="text-gray-400 text-sm">Last Updated</span>
                         <span className="text-sm font-medium">
                             {ticket.updated_at}
                         </span>
