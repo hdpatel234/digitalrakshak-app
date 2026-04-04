@@ -5,10 +5,15 @@ import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Card from '@/components/ui/Card'
 import Upload from '@/components/ui/Upload'
+import { FormItem } from '@/components/ui/Form'
+import { useForm, Controller } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { HiPaperClip, HiPaperAirplane, HiXMark } from 'react-icons/hi2'
 import { VscFilePdf, VscFileZip, VscFile } from 'react-icons/vsc'
 import toast from '@/components/ui/toast'
 import Notification from '@/components/ui/Notification'
+import type { ZodType } from 'zod'
 
 interface TicketReplyFormProps {
     ticketId: string | number
@@ -16,27 +21,41 @@ interface TicketReplyFormProps {
     isClosed?: boolean
 }
 
+type FormSchema = {
+    message: string
+}
+
+const validationSchema: ZodType<FormSchema> = z.object({
+    message: z.string().min(1, { message: 'Message is required' }),
+})
+
 const TicketReplyForm = ({
     ticketId,
     onSuccess,
     isClosed,
 }: TicketReplyFormProps) => {
-    const [message, setMessage] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [files, setFiles] = useState<File[]>([])
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
+    const {
+        handleSubmit,
+        formState: { errors },
+        control,
+        reset,
+    } = useForm<FormSchema>({
+        defaultValues: {
+            message: '',
+        },
+        resolver: zodResolver(validationSchema),
+    })
 
-        if (!message.trim() && files.length === 0) {
-            return
-        }
-
+    const onSubmit = async (values: FormSchema) => {
         setIsSubmitting(true)
 
         try {
             const formData = new FormData()
-            formData.append('message', message)
+            formData.append('message', values.message)
+            formData.append('ticket_id', ticketId.toString())
             files.forEach((file) => {
                 formData.append('attachments[]', file)
             })
@@ -54,7 +73,7 @@ const TicketReplyForm = ({
                         Reply sent successfully.
                     </Notification>,
                 )
-                setMessage('')
+                reset()
                 setFiles([])
                 onSuccess()
             } else {
@@ -87,15 +106,26 @@ const TicketReplyForm = ({
 
     return (
         <Card className="shadow-lg border-primary/10">
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <Input
-                    textArea
-                    placeholder="Type your reply here..."
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    rows={4}
-                    className="focus:ring-primary/20"
-                />
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+                <FormItem
+                    invalid={Boolean(errors.message)}
+                    errorMessage={errors.message?.message}
+                    className="mb-0"
+                >
+                    <Controller
+                        name="message"
+                        control={control}
+                        render={({ field }) => (
+                            <Input
+                                textArea
+                                placeholder="Type your reply here..."
+                                {...field}
+                                rows={4}
+                                className="focus:ring-primary/20"
+                            />
+                        )}
+                    />
+                </FormItem>
 
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <Upload

@@ -23,6 +23,8 @@ const TicketDetailsMain = ({ id }: TicketDetailsMainProps) => {
     const [error, setError] = useState<string | null>(null)
     const scrollRef = useRef<HTMLDivElement>(null)
     const hasFetchedThreads = useRef(false)
+    const intervalRef = useRef<NodeJS.Timeout | null>(null)
+    const threadsCountRef = useRef(0)
 
     const scrollToBottom = useCallback(() => {
         if (scrollRef.current) {
@@ -30,23 +32,36 @@ const TicketDetailsMain = ({ id }: TicketDetailsMainProps) => {
         }
     }, [])
 
-    const fetchThreads = useCallback(async () => {
-        setIsThreadsLoading(true)
-        try {
-            const response = await fetch(`/api/client/tickets/${id}/conversations`)
-            const result: ConversationsResponse = await response.json()
-
-            if (result.status) {
-                setThreads(result.data)
-                // Scroll to bottom after state update
-                setTimeout(scrollToBottom, 100)
+    const fetchThreads = useCallback(
+        async (silent = false) => {
+            if (!silent) {
+                setIsThreadsLoading(true)
             }
-        } catch (err) {
-            console.error('Failed to fetch threads:', err)
-        } finally {
-            setIsThreadsLoading(false)
-        }
-    }, [id, scrollToBottom])
+            try {
+                const response = await fetch(
+                    `/api/client/tickets/${id}/conversations`,
+                )
+                const result: ConversationsResponse = await response.json()
+
+                if (result.status) {
+                    setThreads(result.data)
+
+                    // Scroll to bottom only if this is initial load or if we have new messages
+                    if (!silent || result.data.length > threadsCountRef.current) {
+                        setTimeout(scrollToBottom, 100)
+                    }
+                    threadsCountRef.current = result.data.length
+                }
+            } catch (err) {
+                console.error('Failed to fetch threads:', err)
+            } finally {
+                if (!silent) {
+                    setIsThreadsLoading(false)
+                }
+            }
+        },
+        [id, scrollToBottom],
+    )
 
     const fetchTicket = useCallback(async () => {
         setIsLoading(true)
@@ -75,6 +90,17 @@ const TicketDetailsMain = ({ id }: TicketDetailsMainProps) => {
         if (ticket && !hasFetchedThreads.current) {
             hasFetchedThreads.current = true
             fetchThreads()
+
+            // Setup polling every 5 seconds
+            intervalRef.current = setInterval(() => {
+                fetchThreads(true)
+            }, 5000)
+        }
+
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current)
+            }
         }
     }, [ticket, fetchThreads])
 
