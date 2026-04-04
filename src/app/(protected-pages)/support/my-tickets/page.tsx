@@ -106,7 +106,7 @@ const normalizeTicketsData = (data: unknown): TicketsListData => {
 
     const departmentList = Array.isArray(departmentsValue)
         ? departmentsValue
-              .map((item) => {
+              .map((item): DepartmentOption | null => {
                   if (!item || typeof item !== 'object') return null
                   const record = item as Record<string, unknown>
                   const id = String(record.id ?? '').trim()
@@ -118,7 +118,7 @@ const normalizeTicketsData = (data: unknown): TicketsListData => {
 
     const priorityList = Array.isArray(prioritiesValue)
         ? prioritiesValue
-              .map((item) => {
+              .map((item): PriorityOption | null => {
                   if (!item || typeof item !== 'object') return null
                   const record = item as Record<string, unknown>
                   const id = String(record.id ?? '').trim()
