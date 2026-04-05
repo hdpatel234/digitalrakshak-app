@@ -320,6 +320,8 @@
             "companyProfile": "Company Profile",
             "companyProfileDesc": "Company Profile",
             "teamMembers": "Team Members",
+            "teamMembersList": "List",
+            "teamMembersAdd": "Add",
             "teamMembersDesc": "Team Members",
             "apiKeys": "API Keys",
             "apiKeysDesc": "API Keys",
@@ -327,7 +329,6 @@
             "webhooksDesc": "Webhooks"
         }
     },
-    
     "header": {
         "profileDropdown": {
             "accountSetting": "Account Setting",
@@ -392,7 +393,6 @@
             "confirmMessage": "Are you sure you want to change your password?"
         }
     },
-
     "candidates": {
         "list": {
             "pageTitle": "Candidates"

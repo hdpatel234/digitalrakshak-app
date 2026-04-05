@@ -38,7 +38,10 @@ const buildAuthHeaders = (tokenType: string, accessToken: string) => ({
     Authorization: `${tokenType} ${accessToken}`,
 })
 
-export async function GET(request: NextRequest) {
+export async function GET(
+    request: NextRequest,
+    context: { params: Promise<{ id: string }> }
+) {
     try {
         const session = await auth()
         const accessToken = session?.accessToken || ''
@@ -48,22 +51,17 @@ export async function GET(request: NextRequest) {
             return buildUnauthorizedResponse()
         }
 
-        const { searchParams } = new URL(request.url)
-        const params: Record<string, string> = {}
-        searchParams.forEach((value, key) => {
-            params[key] = value
-        })
+        const { id } = await context.params
 
-        const payload = (await apiClient.request('get', 'client/settings/users', null, false, {
+        const payload = (await apiClient.request('get', `client/settings/users/${id}`, null, false, {
             headers: buildAuthHeaders(tokenType, accessToken),
-            params,
         })) as UpstreamResponse
 
         if (!resolveSuccess(payload)) {
             return NextResponse.json(
                 {
                     status: false,
-                    message: payload.message || 'Failed to fetch team members',
+                    message: payload.message || 'Failed to fetch team member',
                     ...(payload.data ? { data: payload.data } : {}),
                 },
                 { status: payload.status_code || 400 },
@@ -73,7 +71,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(
             {
                 status: true,
-                message: payload.message || 'Team members fetched successfully',
+                message: payload.message || 'Team member fetched successfully',
                 ...(payload.data ? { data: payload.data } : {}),
             },
             { status: 200 },
@@ -99,7 +97,7 @@ export async function GET(request: NextRequest) {
                     backendData?.message ||
                     backendData?.error ||
                     responseError?.message ||
-                    'Failed to fetch team members',
+                    'Failed to fetch team member',
                 ...(backendData ? { details: backendData } : {}),
             },
             { status: responseError?.response?.status || 500 },
@@ -107,7 +105,10 @@ export async function GET(request: NextRequest) {
     }
 }
 
-export async function POST(request: NextRequest) {
+export async function PUT(
+    request: NextRequest,
+    context: { params: Promise<{ id: string }> }
+) {
     try {
         const session = await auth()
         const accessToken = session?.accessToken || ''
@@ -117,9 +118,10 @@ export async function POST(request: NextRequest) {
             return buildUnauthorizedResponse()
         }
 
+        const { id } = await context.params
         const body = await request.json()
 
-        const payload = (await apiClient.request('post', 'client/settings/users', body, false, {
+        const payload = (await apiClient.request('put', `client/settings/users/${id}`, body, false, {
             headers: buildAuthHeaders(tokenType, accessToken),
         })) as UpstreamResponse
 
@@ -127,7 +129,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json(
                 {
                     status: false,
-                    message: payload.message || 'Failed to add team member',
+                    message: payload.message || 'Failed to update team member',
                     ...(payload.data ? { data: payload.data } : {}),
                 },
                 { status: payload.status_code || 400 },
@@ -137,7 +139,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
             {
                 status: true,
-                message: payload.message || 'Team member added successfully',
+                message: payload.message || 'Team member updated successfully',
                 ...(payload.data ? { data: payload.data } : {}),
             },
             { status: 200 },
@@ -163,7 +165,7 @@ export async function POST(request: NextRequest) {
                     backendData?.message ||
                     backendData?.error ||
                     responseError?.message ||
-                    'Failed to add team member',
+                    'Failed to update team member',
                 ...(backendData ? { details: backendData } : {}),
             },
             { status: responseError?.response?.status || 500 },

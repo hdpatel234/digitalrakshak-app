@@ -1,6 +1,7 @@
 import {
     NAV_ITEM_TYPE_TITLE,
     NAV_ITEM_TYPE_ITEM,
+    NAV_ITEM_TYPE_COLLAPSE,
 } from '@/constants/navigation.constant'
 import { ADMIN, USER } from '@/constants/roles.constant'
 import type { NavigationTree } from '@/@types/navigation'
@@ -34,14 +35,37 @@ const settingComponentNavigationConfig: NavigationTree[] = [
             },
             {
                 key: 'settings.teamMembers',
-                path: `/settings/team-members`,
+                path: `#`,
                 title: 'Team Members',
                 translateKey: 'nav.settings.teamMembers',
                 icon: 'teamMembers',
-                type: NAV_ITEM_TYPE_ITEM,
+                type: NAV_ITEM_TYPE_COLLAPSE,
                 authority: [ADMIN, USER],
                 meta: {},
-                subMenu: [],
+                subMenu: [
+                    {
+                        key: 'settings.teamMembersList',
+                        path: `/settings/team-members`,
+                        title: 'List',
+                        translateKey: 'nav.settings.teamMembersList',
+                        icon: 'teamMembers',
+                        type: NAV_ITEM_TYPE_ITEM,
+                        authority: [ADMIN, USER],
+                        meta: {},
+                        subMenu: [],
+                    },
+                    {
+                        key: 'settings.teamMembersAdd',
+                        path: `/settings/team-members/add`,
+                        title: 'Add',
+                        translateKey: 'nav.settings.teamMembersAdd',
+                        icon: 'addMember',
+                        type: NAV_ITEM_TYPE_ITEM,
+                        authority: [ADMIN, USER],
+                        meta: {},
+                        subMenu: [],
+                    },
+                ],
             },
             {
                 key: 'settings.apiKeys',

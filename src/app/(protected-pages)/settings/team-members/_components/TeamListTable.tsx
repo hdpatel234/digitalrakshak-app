@@ -49,9 +49,13 @@ const NameColumn = ({ row }: { row: TeamMember }) => {
     )
 }
 
+import { useRouter } from 'next/navigation'
+
 const ActionColumn = ({ row }: { row: TeamMember }) => {
+    const router = useRouter()
+
     const onEdit = () => {
-        console.log('Edit member', row.id)
+        router.push(`/settings/team-members/edit/${row.id}`)
     }
 
     const onDelete = () => {

@@ -11,7 +11,16 @@ const settingRoute: Routes = {
     },
 
     '/settings/team-members': {
-        key: 'settings.teamMembers',
+        key: 'settings.teamMembersList',
+        authority: [],
+        meta: {
+            pageBackgroundType: 'plain',
+            pageContainerType: 'contained',
+        },
+    },
+
+    '/settings/team-members/add': {
+        key: 'settings.teamMembersAdd',
         authority: [],
         meta: {
             pageBackgroundType: 'plain',
