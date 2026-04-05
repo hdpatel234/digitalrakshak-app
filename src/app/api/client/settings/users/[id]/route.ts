@@ -172,3 +172,70 @@ export async function PUT(
         )
     }
 }
+
+export async function DELETE(
+    request: NextRequest,
+    context: { params: Promise<{ id: string }> }
+) {
+    try {
+        const session = await auth()
+        const accessToken = session?.accessToken || ''
+        const tokenType = session?.tokenType || 'Bearer'
+
+        if (!accessToken) {
+            return buildUnauthorizedResponse()
+        }
+
+        const { id } = await context.params
+
+        const payload = (await apiClient.request('delete', `client/settings/users/${id}`, null, false, {
+            headers: buildAuthHeaders(tokenType, accessToken),
+        })) as UpstreamResponse
+
+        if (!resolveSuccess(payload)) {
+            return NextResponse.json(
+                {
+                    status: false,
+                    message: payload.message || 'Failed to delete team member',
+                    ...(payload.data ? { data: payload.data } : {}),
+                },
+                { status: payload.status_code || 400 },
+            )
+        }
+
+        return NextResponse.json(
+            {
+                status: true,
+                message: payload.message || 'Team member deleted successfully',
+                ...(payload.data ? { data: payload.data } : {}),
+            },
+            { status: 200 },
+        )
+    } catch (error: unknown) {
+        const responseError = error as {
+            response?: {
+                data?: {
+                    message?: string
+                    error?: string
+                }
+                status?: number
+            }
+            message?: string
+        }
+
+        const backendData = responseError?.response?.data
+
+        return NextResponse.json(
+            {
+                status: false,
+                message:
+                    backendData?.message ||
+                    backendData?.error ||
+                    responseError?.message ||
+                    'Failed to delete team member',
+                ...(backendData ? { details: backendData } : {}),
+            },
+            { status: responseError?.response?.status || 500 },
+        )
+    }
+}

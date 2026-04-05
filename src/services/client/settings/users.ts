@@ -27,3 +27,10 @@ export async function apiUpdateTeamMember<T, U extends Record<string, unknown>>(
         data,
     })
 }
+
+export async function apiDeleteTeamMember<T>(id: string) {
+    return ApiService.fetchDataWithAxios<T>({
+        url: `/client/settings/users/${id}`,
+        method: 'delete',
+    })
+}

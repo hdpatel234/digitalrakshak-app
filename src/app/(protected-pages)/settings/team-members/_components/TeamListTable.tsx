@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import Tag from '@/components/ui/Tag'
 import Tooltip from '@/components/ui/Tooltip'
 import DataTable from '@/components/shared/DataTable'
@@ -11,6 +11,10 @@ import { TbPencil, TbTrash } from 'react-icons/tb'
 import dayjs from 'dayjs'
 import type { OnSortParam, ColumnDef } from '@/components/shared/DataTable'
 import type { TeamMember } from './types'
+import ConfirmDialog from '@/components/shared/ConfirmDialog'
+import { apiDeleteTeamMember } from '@/services/client/settings/users'
+import toast from '@/components/ui/toast'
+import Notification from '@/components/ui/Notification'
 
 type TeamListTableProps = {
     teamListTotal: number
@@ -53,34 +57,86 @@ import { useRouter } from 'next/navigation'
 
 const ActionColumn = ({ row }: { row: TeamMember }) => {
     const router = useRouter()
+    const [dialogOpen, setDialogOpen] = useState(false)
+    const [isDeleting, setIsDeleting] = useState(false)
 
     const onEdit = () => {
         router.push(`/settings/team-members/edit/${row.id}`)
     }
 
     const onDelete = () => {
-        console.log('Delete member', row.id)
+        setDialogOpen(true)
+    }
+
+    const handleConfirmDelete = async () => {
+        setIsDeleting(true)
+        try {
+            const response = await apiDeleteTeamMember<any>(String(row.id))
+
+            if (response && response.status) {
+                toast.push(
+                    <Notification title="Success" type="success">
+                        {response.message || 'Team member deleted successfully'}
+                    </Notification>,
+                    { placement: 'top-end' }
+                )
+                router.refresh()
+            } else {
+                toast.push(
+                    <Notification title="Error" type="danger">
+                        {response?.message || 'Failed to delete team member'}
+                    </Notification>,
+                    { placement: 'top-end' }
+                )
+            }
+        } catch (error: any) {
+            toast.push(
+                <Notification title="Error" type="danger">
+                    {error?.response?.data?.message || 'An error occurred while deleting'}
+                </Notification>,
+                { placement: 'top-end' }
+            )
+        } finally {
+            setIsDeleting(false)
+            setDialogOpen(false)
+        }
     }
 
     return (
-        <div className="flex justify-center text-lg gap-1">
-            <Tooltip wrapperClass="flex" title="Edit">
-                <span
-                    className="cursor-pointer p-2 hover:text-primary"
-                    onClick={onEdit}
-                >
-                    <TbPencil />
-                </span>
-            </Tooltip>
-            <Tooltip wrapperClass="flex" title="Delete">
-                <span
-                    className="cursor-pointer p-2 hover:text-red-500"
-                    onClick={onDelete}
-                >
-                    <TbTrash />
-                </span>
-            </Tooltip>
-        </div>
+        <>
+            <div className="flex justify-center text-lg gap-1">
+                <Tooltip wrapperClass="flex" title="Edit">
+                    <span
+                        className="cursor-pointer p-2 hover:text-primary"
+                        onClick={onEdit}
+                    >
+                        <TbPencil />
+                    </span>
+                </Tooltip>
+                <Tooltip wrapperClass="flex" title="Delete">
+                    <span
+                        className="cursor-pointer p-2 hover:text-red-500"
+                        onClick={onDelete}
+                    >
+                        <TbTrash />
+                    </span>
+                </Tooltip>
+            </div>
+            <ConfirmDialog
+                isOpen={dialogOpen}
+                type="danger"
+                title="Delete Team Member"
+                onClose={() => setDialogOpen(false)}
+                onRequestClose={() => setDialogOpen(false)}
+                onCancel={() => setDialogOpen(false)}
+                onConfirm={handleConfirmDelete}
+                confirmButtonProps={{ loading: isDeleting }}
+            >
+                <p>
+                    Are you sure you want to delete this team member? This action cannot be undone.
+                </p>
+            </ConfirmDialog>
+        </>
     )
 }
 
