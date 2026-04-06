@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useScrumBoardStore } from '../_store/scrumBoardStore'
-import Spinner from '@/components/ui/Spinner'
+import Loading from '@/components/shared/Loading'
 import Avatar from '@/components/ui/Avatar'
 import Tooltip from '@/components/ui/Tooltip'
 import Card from '@/components/ui/Card'
@@ -142,8 +142,8 @@ const TicketContent = ({ onTicketClose }: { onTicketClose: () => void }) => {
     return (
         <>
             {loading ? (
-                <div className="flex justify-center items-center min-h-[300px]">
-                    <Spinner size={40} />
+                <div className="flex flex-col gap-6 w-full py-4 min-h-[300px]">
+                    <Loading loading={true} />
                 </div>
             ) : (
                 <>

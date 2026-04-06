@@ -5,6 +5,7 @@ import Avatar from '@/components/ui/Avatar'
 import Button from '@/components/ui/Button'
 import Dialog from '@/components/ui/Dialog'
 import ScrollBar from '@/components/ui/ScrollBar'
+import MediaSkeleton from '@/components/shared/loaders/MediaSkeleton'
 import Spinner from '@/components/ui/Spinner'
 import DebouceInput from '@/components/shared/DebouceInput'
 import classNames from '@/utils/classNames'
@@ -94,8 +95,12 @@ const NewChat = () => {
                 onRequestClose={handleDialogClose}
             >
                 {isMutating && (
-                    <div className="flex justify-center items-center h-[200px]">
-                        <Spinner size={40} />
+                    <div className="flex flex-col gap-6 h-[400px] py-4">
+                        <MediaSkeleton avatarProps={{ width: 40, height: 40 }} />
+                        <MediaSkeleton avatarProps={{ width: 40, height: 40 }} />
+                        <MediaSkeleton avatarProps={{ width: 40, height: 40 }} />
+                        <MediaSkeleton avatarProps={{ width: 40, height: 40 }} />
+                        <MediaSkeleton avatarProps={{ width: 40, height: 40 }} />
                     </div>
                 )}
                 {contacts && !isMutating && (

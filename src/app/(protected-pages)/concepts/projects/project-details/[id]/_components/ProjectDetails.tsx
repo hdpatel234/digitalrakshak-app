@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, lazy, Suspense } from 'react'
-import Spinner from '@/components/ui/Spinner'
+import Loading from '@/components/shared/Loading'
 import ProjectDetailsHeader from './ProjectDetailsHeader'
 import ProjectDetailsNavigation from './ProjectDetailsNavigation'
 import useResponsive from '@/utils/hooks/useResponsive'
@@ -97,8 +97,8 @@ const ProjectDetails = ({ id }: { id: string }) => {
                         <div className="w-full">
                             <Suspense
                                 fallback={
-                                    <div className="my-4 mx-auto text-center flex justify-center">
-                                        <Spinner size={40} />
+                                    <div className="w-full h-full">
+                                        <Loading loading={true} />
                                     </div>
                                 }
                             >

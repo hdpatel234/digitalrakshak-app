@@ -1,3 +1,5 @@
+import Skeleton from '@/components/ui/Skeleton'
+import TextBlockSkeleton from '@/components/shared/loaders/TextBlockSkeleton'
 import Spinner from '@/components/ui/Spinner'
 import classNames from 'classnames'
 import type { CommonProps } from '@/@types/common'
@@ -8,6 +10,7 @@ interface BaseLoadingProps extends CommonProps {
     customLoader?: ReactNode
     loading: boolean
     spinnerClass?: string
+    skeleton?: ReactNode
 }
 
 interface LoadingProps extends BaseLoadingProps {
@@ -22,19 +25,22 @@ const DefaultLoading = (props: BaseLoadingProps) => {
         className,
         asElement: Component = 'div',
         customLoader,
+        skeleton,
     } = props
 
     return loading ? (
         <Component
             className={classNames(
-                !customLoader && 'flex items-center justify-center h-full',
+                !customLoader && !skeleton && 'flex flex-col gap-4',
                 className,
             )}
         >
             {customLoader ? (
                 <>{customLoader}</>
+            ) : skeleton ? (
+                <>{skeleton}</>
             ) : (
-                <Spinner className={spinnerClass} size={40} />
+                <TextBlockSkeleton />
             )}
         </Component>
     ) : (
@@ -50,6 +56,7 @@ const CoveredLoading = (props: BaseLoadingProps) => {
         className,
         asElement: Component = 'div',
         customLoader,
+        skeleton,
     } = props
 
     return (
@@ -59,11 +66,15 @@ const CoveredLoading = (props: BaseLoadingProps) => {
                 <div className="w-full h-full bg-white dark:bg-gray-800 dark:bg-opacity-60 bg-opacity-50 absolute inset-0" />
             )}
             {loading && (
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 w-full px-10">
                     {customLoader ? (
-                        <>{customLoader}</>
+                        <div className="flex justify-center">{customLoader}</div>
+                    ) : skeleton ? (
+                        <>{skeleton}</>
                     ) : (
-                        <Spinner className={spinnerClass} size={40} />
+                        <div className="flex justify-center">
+                            <Spinner className={spinnerClass} size={40} />
+                        </div>
                     )}
                 </div>
             )}

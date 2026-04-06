@@ -2,7 +2,7 @@
 
 import { lazy, Suspense } from 'react'
 import Dialog from '@/components/ui/Dialog'
-import Spinner from '@/components/ui/Spinner'
+import Loading from '@/components/shared/Loading'
 import AdaptiveCard from '@/components/shared/AdaptiveCard'
 import reorderDragable from '@/utils/reorderDragable'
 import BoardColumn from './BoardColumn'
@@ -155,8 +155,8 @@ const Board = (props: BoardProps) => {
             >
                 <Suspense
                     fallback={
-                        <div className="my-4 text-center">
-                            <Spinner />
+                        <div className="w-full">
+                            <Loading loading={true} />
                         </div>
                     }
                 >

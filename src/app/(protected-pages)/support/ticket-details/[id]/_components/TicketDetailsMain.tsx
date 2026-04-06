@@ -5,6 +5,7 @@ import TicketSidebar from './TicketSidebar'
 import TicketThread from './TicketThread'
 import TicketReplyForm from './TicketReplyForm'
 import TicketThreadSkeleton from './TicketThreadSkeleton'
+import Skeleton from '@/components/ui/Skeleton'
 import Spinner from '@/components/ui/Spinner'
 import { Ticket, Thread, TicketResponse, ConversationsResponse } from './types'
 import { HiArrowLeft } from 'react-icons/hi2'
@@ -114,8 +115,25 @@ const TicketDetailsMain = ({ id }: TicketDetailsMainProps) => {
 
     if (isLoading) {
         return (
-            <div className="flex justify-center items-center h-[60vh]">
-                <Spinner size={40} className="text-primary" />
+            <div className="flex flex-col gap-6 py-4">
+                <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+                    <div className="flex flex-col gap-2 w-full">
+                        <Skeleton width="60%" height={32} />
+                        <Skeleton width="40%" height={20} />
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="lg:col-span-9 flex flex-col gap-6">
+                         <TicketThreadSkeleton />
+                    </div>
+                    <div className="lg:col-span-3">
+                         <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 flex flex-col gap-4 shadow-sm">
+                             <Skeleton width="100%" height={20} />
+                             <Skeleton width="80%" height={20} />
+                             <Skeleton width="90%" height={20} />
+                         </div>
+                    </div>
+                </div>
             </div>
         )
     }

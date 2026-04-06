@@ -9,6 +9,7 @@ import Spinner from '@/components/ui/Spinner'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import Tooltip from '@/components/ui/Tooltip'
+import MediaSkeleton from '@/components/shared/loaders/MediaSkeleton'
 import NotificationAvatar from './NotificationAvatar'
 import NotificationToggle from './NotificationToggle'
 import { HiOutlineMailOpen } from 'react-icons/hi'
@@ -178,13 +179,10 @@ const _Notification = ({ className }: { className?: string }) => {
                         </div>
                     ))}
                 {loading && (
-                    <div
-                        className={classNames(
-                            'flex items-center justify-center',
-                            notificationHeight,
-                        )}
-                    >
-                        <Spinner size={40} />
+                    <div className="flex flex-col px-4 py-3 gap-6">
+                        <MediaSkeleton avatarProps={{ width: 40, height: 40 }} />
+                        <MediaSkeleton avatarProps={{ width: 40, height: 40 }} />
+                        <MediaSkeleton avatarProps={{ width: 40, height: 40 }} />
                     </div>
                 )}
                 {noResult && notificationList.length === 0 && (
