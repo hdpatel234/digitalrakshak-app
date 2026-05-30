@@ -1,23 +1,50 @@
-import { ordersData, orderDetailsData } from '@/mock/data/ordersData'
+import { auth } from '@/auth'
+import apiClient from '@/services/axios/ApiClient'
+import type { ClientOrderDetailResponse } from '@/app/(protected-pages)/orders/details/[id]/types'
 
-const getOrderDetails = async (_queryParams: {
-    [key: string]: string | string[] | undefined
-}) => {
-    const queryParams = _queryParams
+const getOrderDetails = async (queryParams: {
+    id?: string | string[] | undefined
+    [key: string]: any
+}): Promise<ClientOrderDetailResponse | null> => {
+    try {
+        const session = await auth()
+        const accessToken = session?.accessToken || ''
+        const tokenType = session?.tokenType || 'Bearer'
 
-    const { id } = queryParams
+        if (!accessToken) {
+            console.error('No accessToken found in session')
+            return null
+        }
 
-    const order = ordersData.find((order) => order.id === id)
+        const id = queryParams.id
+        if (!id) {
+            console.error('No order ID provided to getOrderDetails')
+            return null
+        }
 
-    const newOrderDetailsData = structuredClone(orderDetailsData)
+        const payload = await apiClient.request<ClientOrderDetailResponse>(
+            'get',
+            `/client/orders/${id}`,
+            {},
+            false,
+            {
+                headers: {
+                    Accept: 'application/json',
+                    Authorization: `${tokenType} ${accessToken}`,
+                },
+            },
+        )
 
-    if (order) {
-        newOrderDetailsData.id = order.id
-        newOrderDetailsData.paymentStatus = order.status
+        if (payload && (payload.status === true || payload.success === true) && payload.data) {
+            return payload.data
+        }
+        
+        console.error('Failed to fetch order details from upstream:', payload?.message)
+        return null
+    } catch (error) {
+        console.error('Error fetching order details in action:', error)
+        return null
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return newOrderDetailsData as any
 }
 
 export default getOrderDetails

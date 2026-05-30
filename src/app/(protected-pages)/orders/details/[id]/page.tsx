@@ -1,42 +1,77 @@
+import Link from 'next/link'
+import Button from '@/components/ui/Button'
+import NotFound from '@/components/shared/NotFound'
+import getOrderDetails from '@/server/actions/getOrderDetails'
+import OrderDetailHeader from './_components/OrderDetailHeader'
 import OrderDetailProducts from './_components/OrderDetailProducts'
 import OrderDetailPayment from './_components/OrderDetailPayment'
 import OrderDetailCustomer from './_components/OrderDetailCustomer'
 import OrderDetailsActivities from './_components/OrderDetailsActivities'
 import OrderDetailNote from './_components/OrderDetailNote'
-import NotFound from '@/components/shared/NotFound'
-import getOrderDetails from '@/server/actions/getOrderDetails'
-import isEmpty from 'lodash/isEmpty'
-import type { Products } from './types'
+import { TbArrowLeft } from 'react-icons/tb'
+import type { ClientOrderDetailResponse } from './types'
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
     const params = await props.params
 
-    const data = await getOrderDetails(params)
+    const data = (await getOrderDetails(params)) as ClientOrderDetailResponse | null
 
-    if (isEmpty(data)) {
+    if (!data || !data.order) {
         return (
-            <div className="h-full flex flex-col items-center justify-center">
-                <NotFound message="No order found!" />
+            <div className="h-[60vh] flex flex-col items-center justify-center">
+                <NotFound message="Order details could not be found or retrieved!" />
+                <div className="mt-4">
+                    <Link href="/orders/list">
+                        <Button variant="solid" className="flex items-center gap-2">
+                            <TbArrowLeft className="text-lg" /> Back to Orders List
+                        </Button>
+                    </Link>
+                </div>
             </div>
         )
     }
 
+    const { order, candidates, payment_method, payment_gateway, transactions } = data
+
     return (
-        <div className="flex flex-col lg:flex-row gap-4">
-            <div className="gap-4 flex flex-col flex-auto">
-                <OrderDetailProducts products={data.product as Products} />
-                <OrderDetailPayment
-                    paymentStatus={data.paymentStatus}
-                    paymentSummary={data.paymentSummary}
-                />
-                <OrderDetailsActivities
-                    activities={data.activity}
-                    progressStatus={data.progressStatus}
-                />
-            </div>
-            <div className="lg:w-[320px] xl:w-[420px] gap-4 flex flex-col">
-                <OrderDetailCustomer customer={data.customer} />
-                <OrderDetailNote note={data.note} />
+        <div className="flex flex-col gap-6">
+            {/* Interactive client header */}
+            <OrderDetailHeader
+                orderNumber={order.order_number}
+                clientOrderNumber={order.client_order_number}
+                orderDate={order.order_date}
+            />
+
+            {/* Core Layout Grid */}
+            <div className="flex flex-col lg:flex-row gap-6">
+                {/* Main Content Area */}
+                <div className="gap-6 flex flex-col flex-auto lg:max-w-[calc(100%-344px)] xl:max-w-[calc(100%-444px)]">
+                    {/* Candidates Details */}
+                    <OrderDetailProducts candidates={candidates || []} />
+                    
+                    {/* Payment breakdown, Gateways & Transactions Ledgers */}
+                    <OrderDetailPayment
+                        order={order}
+                        paymentMethod={payment_method}
+                        paymentGateway={payment_gateway}
+                        transactions={transactions || []}
+                    />
+                    
+                    {/* Workflow status tracking timeline */}
+                    <OrderDetailsActivities order={order} />
+                </div>
+                
+                {/* Sidebar Details Area */}
+                <div className="lg:w-[320px] xl:w-[420px] gap-6 flex flex-col shrink-0">
+                    {/* Billing sync & invoicing metadata */}
+                    <OrderDetailCustomer order={order} />
+                    
+                    {/* Customer instructions & Private internal notes */}
+                    <OrderDetailNote
+                        notes={order.notes}
+                        internalNotes={order.internal_notes}
+                    />
+                </div>
             </div>
         </div>
     )
