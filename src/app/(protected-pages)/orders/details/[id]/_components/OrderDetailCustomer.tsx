@@ -58,9 +58,9 @@ const OrderDetailCustomer = ({ order }: OrderDetailCustomerProps) => {
     return (
         <Card className="shadow-sm hover:shadow-md transition-shadow duration-300">
             <h5 className="font-bold mb-4">Billing & Invoicing</h5>
-            
+
             {/* Sync Banner Status */}
-            <div className={`rounded-xl p-4 border mb-5 flex items-start gap-3 ${syncConfig.bgClass}`}>
+            {/* <div className={`rounded-xl p-4 border mb-5 flex items-start gap-3 ${syncConfig.bgClass}`}>
                 <div className={`rounded-full p-1.5 text-white ${
                     order.billing_sync_status === 'synced' 
                         ? 'bg-emerald-500' 
@@ -80,7 +80,7 @@ const OrderDetailCustomer = ({ order }: OrderDetailCustomerProps) => {
                             : order.billing_sync_message || 'Awaiting synchronization process queue or manual approval verification.'}
                     </p>
                 </div>
-            </div>
+            </div> */}
 
             <div className="flex flex-col gap-4">
                 {/* Client context */}

@@ -57,6 +57,8 @@ export type Candidate = {
     status: string
     candidate: CandidateDetail | null
     candidate_data: any
+    candaite_details?: CandidateDetail | null
+    candidate_details?: CandidateDetail | null
 }
 
 export type PaymentMethod = {

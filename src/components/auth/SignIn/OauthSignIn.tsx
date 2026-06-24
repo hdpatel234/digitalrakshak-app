@@ -2,7 +2,7 @@
 
 import Button from '@/components/ui/Button'
 
-type OauthSignInType = 'google'
+type OauthSignInType = 'google' | 'digilocker'
 
 export type OnOauthSignInPayload = {
     type: OauthSignInType

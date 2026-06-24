@@ -92,6 +92,9 @@ const SignInClient = () => {
         if (type === 'google') {
             await handleOauthSignIn('google')
         }
+        if (type === 'digilocker') {
+            await handleOauthSignIn('digilocker')
+        }
     }
 
     return <SignIn onSignIn={handleSignIn} onOauthSignIn={handleOAuthSignIn} />

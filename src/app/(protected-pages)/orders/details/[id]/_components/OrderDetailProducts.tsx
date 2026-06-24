@@ -74,7 +74,7 @@ const OrderDetailProducts = ({ candidates }: OrderDetailProductsProps) => {
                     </div>
                 )}
                 {candidates?.map((candidateItem) => {
-                    const profile = candidateItem.candidate
+                    const profile = candidateItem.candidate || candidateItem.candidate_details || candidateItem.candaite_details
                     const fullName = profile
                         ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim()
                         : ''

@@ -1,7 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import Logo from '@/components/template/Logo'
 import Alert from '@/components/ui/Alert'
+import Button from '@/components/ui/Button'
 import SignInForm from './SignInForm'
 import OauthSignIn from './OauthSignIn'
 import ActionLink from '@/components/shared/ActionLink'
@@ -17,18 +19,60 @@ type SignInProps = {
     onOauthSignIn?: OnOauthSignIn
 }
 
+const DigiLockerIcon = ({ className }: { className?: string }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 48 48"
+        className={className}
+        fill="none"
+    >
+        <path
+            stroke="currentColor"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M8.5,31.1893V41.5a2,2,0,0,0,2,2h27a2,2,0,0,0,2-2v-26h-9a2,2,0,0,1-2-2v-9h-18a2,2,0,0,0-2,2V20.6349"
+        />
+        <line
+            stroke="currentColor"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            x1="28.5"
+            y1="4.5"
+            x2="39.5"
+            y2="15.5"
+        />
+        <path
+            fill="currentColor"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M25.3968,21.9252c-.0424,0-.0834.0053-.1255.0063a7.218,7.218,0,0,0-13.4879-2.1668c-.0435-.001-.0857-.0066-.1294-.0066a6.154,6.154,0,0,0,0,12.308H25.3968a5.07,5.07,0,1,0,0-10.1409Z"
+        />
+        <circle cx="18.7" cy="26" r="1.2" fill="#0B3C5D" />
+        <polygon points="18,27 19.4,27 20,30 17.4,30" fill="#0B3C5D" />
+    </svg>
+)
+
 const SignIn = ({
     forgetPasswordUrl = '/forgot-password',
     onSignIn,
     onOauthSignIn,
 }: SignInProps) => {
     const [message, setMessage] = useTimeOutMessage()
+    const [showCredentials, setShowCredentials] = useState(false)
 
     const mode = useTheme((state) => state.mode)
 
+    const handleDigiLockerSignIn = () => {
+        onOauthSignIn?.({ type: 'digilocker', setMessage })
+    }
+
     return (
         <>
-            <div className="mb-8">
+            <div className="mb-8 flex justify-center">
                 <Logo
                     type="streamline"
                     mode={mode}
@@ -36,37 +80,79 @@ const SignIn = ({
                     logoHeight={60}
                 />
             </div>
-            <div className="mb-10">
-                <h2 className="mb-2">Welcome back!</h2>
-                <p className="font-semibold heading-text">
-                    Please enter your credentials to sign in!
+            <div className="mb-8 text-center">
+                <h2 className="mb-2 text-2xl font-bold">Welcome Back!</h2>
+                <p className="font-semibold text-gray-500 dark:text-gray-400">
+                    Continue using your DigiLocker - MeriPehchaan credentials
                 </p>
             </div>
-            {message && (
-                <Alert showIcon className="mb-4" type="danger">
-                    <span className="break-all">{message}</span>
-                </Alert>
-            )}
-            <SignInForm
-                setMessage={setMessage}
-                passwordHint={
-                    <div className="mb-7 mt-2">
-                        <ActionLink
-                            href={forgetPasswordUrl}
-                            className="font-semibold heading-text mt-2 underline"
-                            themeColor={false}
-                        >
-                            Forgot password
-                        </ActionLink>
+            <div className="mb-6">
+                <Button
+                    block
+                    className="bg-[#0B3C5D] hover:bg-[#07263b] text-white border-none py-3.5 h-auto flex items-center justify-center font-semibold rounded-lg shadow-sm transition-all duration-200"
+                    type="button"
+                    onClick={handleDigiLockerSignIn}
+                >
+                    <div className="flex items-center justify-center gap-2">
+                        <span>Continue with</span>
+                        <DigiLockerIcon className="h-6 w-6 text-white inline-block" />
+                        <span className="font-bold">DigiLocker</span>
                     </div>
-                }
-                onSignIn={onSignIn}
-            />
-            <div className="mt-8">
+                </Button>
+            </div>
+            <div className="flex items-center gap-4 my-6">
+                <div className="border-t border-gray-200 dark:border-gray-800 flex-1" />
+                <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 tracking-wider uppercase">
+                    OR
+                </span>
+                <div className="border-t border-gray-200 dark:border-gray-800 flex-1" />
+            </div>
+            <div className="mb-6 text-center">
+                <button
+                    type="button"
+                    onClick={() => setShowCredentials(!showCredentials)}
+                    className="text-base font-semibold text-gray-800 dark:text-gray-200 hover:text-[#0B3C5D] dark:hover:text-[#42a2e0] focus:outline-none transition-all flex items-center justify-center gap-1 mx-auto"
+                >
+                    <span>Login through username and password</span>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className={`w-5 h-5 transition-transform duration-200 ${showCredentials ? 'rotate-180' : ''}`}
+                    >
+                        <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+            {showCredentials && (
+                <div className="transition-all duration-300 ease-in-out">
+                    {message && (
+                        <Alert showIcon className="mb-4" type="danger">
+                            <span className="break-all">{message}</span>
+                        </Alert>
+                    )}
+                    <SignInForm
+                        setMessage={setMessage}
+                        passwordHint={
+                            <div className="mb-7 mt-2">
+                                <ActionLink
+                                    href={forgetPasswordUrl}
+                                    className="font-semibold heading-text mt-2 underline"
+                                    themeColor={false}
+                                >
+                                    Forgot password
+                                </ActionLink>
+                            </div>
+                        }
+                        onSignIn={onSignIn}
+                    />
+                </div>
+            )}
+            {/* <div className="mt-8">
                 <div className="flex items-center gap-2 mb-6">
                     <div className="border-t border-gray-200 dark:border-gray-800 flex-1 mt-[1px]" />
                     <p className="font-semibold heading-text">
-                        or countinue with
+                        or continue with
                     </p>
                     <div className="border-t border-gray-200 dark:border-gray-800 flex-1 mt-[1px]" />
                 </div>
@@ -74,7 +160,7 @@ const SignIn = ({
                     setMessage={setMessage}
                     onOauthSignIn={onOauthSignIn}
                 />
-            </div>
+            </div> */}
         </>
     )
 }
