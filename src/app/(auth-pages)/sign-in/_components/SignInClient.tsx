@@ -93,24 +93,34 @@ const SignInClient = () => {
             await handleOauthSignIn('google')
         }
         if (type === 'digilocker') {
+            let timeoutId: NodeJS.Timeout | undefined
+
             try {
-                if (setSubmitting) setSubmitting(true)
+                if (setSubmitting) {
+                    setSubmitting(true)
+                    timeoutId = setTimeout(() => {
+                        setSubmitting(false)
+                    }, 5000)
+                }
+
                 const response = await fetch('/api/auth/social-login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ provider: 'digilocker' }),
                 })
-                
+
                 const data = await response.json()
-                
+
                 if (data.url) {
                     window.location.href = data.url
                 } else if (data.error) {
                     console.error('Digilocker login failed:', data.error)
+                    if (timeoutId) clearTimeout(timeoutId)
                     if (setSubmitting) setSubmitting(false)
                 }
             } catch (error) {
                 console.error('Error initiating Digilocker login:', error)
+                if (timeoutId) clearTimeout(timeoutId)
                 if (setSubmitting) setSubmitting(false)
             }
         }
