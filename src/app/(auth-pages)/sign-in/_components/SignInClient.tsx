@@ -1,10 +1,11 @@
 'use client'
 
+import { useEffect } from 'react'
 import SignIn from '@/components/auth/SignIn'
 import { onSignInWithCredentials } from '@/server/actions/auth/handleSignIn'
 import handleOauthSignIn from '@/server/actions/auth/handleOauthSignIn'
 import { REDIRECT_URL_KEY } from '@/constants/app.constant'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import type {
     OnSignInPayload,
     OnOauthSignInPayload,
@@ -62,6 +63,7 @@ const getClientIp = async () => {
 
 const SignInClient = () => {
     const searchParams = useSearchParams()
+    const router = useRouter()
     const callbackUrl = searchParams.get(REDIRECT_URL_KEY)
 
     const handleSignIn = async ({
@@ -93,38 +95,93 @@ const SignInClient = () => {
             await handleOauthSignIn('google')
         }
         if (type === 'digilocker') {
-            let timeoutId: NodeJS.Timeout | undefined
-
+            if (setSubmitting) {
+                setSubmitting(true)
+            }
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
+            
             try {
-                if (setSubmitting) {
-                    setSubmitting(true)
-                    timeoutId = setTimeout(() => {
-                        setSubmitting(false)
-                    }, 5000)
-                }
-
-                const response = await fetch('/api/auth/social-login', {
+                const response = await fetch(`${apiUrl}/auth/social-login/digilocker`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ provider: 'digilocker' }),
                 })
 
-                const data = await response.json()
+                const result = await response.json()
 
-                if (data.url) {
-                    window.location.href = data.url
-                } else if (data.error) {
-                    console.error('Digilocker login failed:', data.error)
-                    if (timeoutId) clearTimeout(timeoutId)
+                if (result.status && result.data?.url) {
+                    window.location.href = result.data.url
+                } else {
+                    console.error('Digilocker login failed:', result.message || result)
                     if (setSubmitting) setSubmitting(false)
                 }
             } catch (error) {
                 console.error('Error initiating Digilocker login:', error)
-                if (timeoutId) clearTimeout(timeoutId)
                 if (setSubmitting) setSubmitting(false)
             }
         }
     }
+
+    useEffect(() => {
+        const code = searchParams.get('code')
+        const state = searchParams.get('state')
+
+        if (code && state) {
+            const handleDigilockerCallback = async () => {
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
+                try {
+                    const response = await fetch(`${apiUrl}/auth/social-login/digilocker/callback`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ code, state })
+                    })
+                    const result = await response.json()
+                    
+                    if (result.status && result.data?.access_token) {
+                        const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : ''
+                        const ip = await getClientIp()
+                        
+                        onSignInWithCredentials({
+                            token: result.data.access_token,
+                            isSso: true,
+                            ip,
+                            browser: getBrowserName(userAgent),
+                            device: getDeviceType(userAgent),
+                            os: getOsName(userAgent)
+                        } as SignInCredential, callbackUrl || '').then((data) => {
+                            if (data?.error) {
+                                router.replace(`/sign-in?error=${encodeURIComponent(data.error as string)}`)
+                            }
+                        })
+                    } else {
+                        router.replace(`/sign-in?error=${encodeURIComponent(result.message || 'DigiLocker login failed')}`)
+                    }
+                } catch (error) {
+                    console.error('Error handling Digilocker callback:', error)
+                    router.replace(`/sign-in?error=${encodeURIComponent('Something went wrong during DigiLocker login')}`)
+                }
+            }
+            handleDigilockerCallback()
+        } else {
+            const token = searchParams.get('token')
+            if (token) {
+                const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : ''
+                getClientIp().then(ip => {
+                    onSignInWithCredentials({
+                        token,
+                        isSso: true,
+                        ip,
+                        browser: getBrowserName(userAgent),
+                        device: getDeviceType(userAgent),
+                        os: getOsName(userAgent)
+                    } as SignInCredential, callbackUrl || '').then((data) => {
+                        if (data?.error) {
+                            router.replace(`/sign-in?error=${encodeURIComponent(data.error as string)}`)
+                        }
+                    })
+                })
+            }
+        }
+    }, [searchParams, callbackUrl, router])
 
     return <SignIn onSignIn={handleSignIn} onOauthSignIn={handleOAuthSignIn} />
 }

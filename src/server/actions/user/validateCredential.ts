@@ -71,11 +71,44 @@ const getErrorMessage = (
 export const validateCredentialWithResponse = async (
     values: SignInCredential,
 ): Promise<ValidateCredentialResult> => {
-    const endpoint = '/auth/login'
+    const isSso = Boolean(values.isSso && values.token)
+    let parsedResponse: any
 
-    const response = await apiClient.post(endpoint, values, false)
-    const parsedResponse = (response || {}) as PassportErrorPayload &
-        PassportLoginPayload
+    if (isSso) {
+        // Fetch user profile using the SSO token
+        const response = await apiClient.get('/auth/me', {}, false, {
+            headers: {
+                Authorization: `Bearer ${values.token}`
+            }
+        })
+        
+        if (!response || (!response.status && !response.success)) {
+            return {
+                user: null,
+                message: 'Failed to authenticate via SSO'
+            }
+        }
+
+        // Mock a login response structure
+        parsedResponse = {
+            success: true,
+            status: true,
+            message: 'SSO Login successful',
+            data: {
+                token: values.token,
+                access_token: values.token,
+                user: response.data?.user || response.data || {},
+                roles: response.data?.roles || [],
+                permissions: response.data?.permissions || [],
+                config: response.data?.config || {}
+            }
+        }
+    } else {
+        const endpoint = '/auth/login'
+        const response = await apiClient.post(endpoint, values, false)
+        parsedResponse = (response || {}) as PassportErrorPayload &
+            PassportLoginPayload
+    }
 
     const responseSuccess =
         typeof parsedResponse.success === 'boolean'

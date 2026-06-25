@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Logo from '@/components/template/Logo'
 import Alert from '@/components/ui/Alert'
 import Button from '@/components/ui/Button'
@@ -64,8 +65,17 @@ const SignIn = ({
     const [message, setMessage] = useTimeOutMessage()
     const [showCredentials, setShowCredentials] = useState(false)
     const [isDigilockerLoading, setIsDigilockerLoading] = useState(false)
+    const searchParams = useSearchParams()
 
     const mode = useTheme((state) => state.mode)
+
+    useEffect(() => {
+        const error = searchParams.get('error')
+        if (error) {
+            setMessage(error)
+            setShowCredentials(true)
+        }
+    }, [searchParams, setMessage])
 
     const handleDigiLockerSignIn = () => {
         onOauthSignIn?.({ 
