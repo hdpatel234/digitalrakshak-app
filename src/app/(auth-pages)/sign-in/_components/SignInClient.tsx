@@ -122,8 +122,17 @@ const SignInClient = () => {
     }
 
     useEffect(() => {
-        const code = searchParams.get('code')
-        const state = searchParams.get('state')
+        let code = searchParams.get('code')
+        let state = searchParams.get('state')
+
+        // Extract from nested redirectUrl if present
+        if (!code && callbackUrl && callbackUrl.includes('code=')) {
+            const codeMatch = callbackUrl.match(/[?&]code=([^&]+)/)
+            const stateMatch = callbackUrl.match(/[?&]state=([^&]+)/)
+            
+            if (codeMatch) code = codeMatch[1]
+            if (stateMatch) state = stateMatch[1]
+        }
 
         if (code && state) {
             const handleDigilockerCallback = async () => {

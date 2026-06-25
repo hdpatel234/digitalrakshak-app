@@ -66,12 +66,20 @@ export default auth((req) => {
             callbackUrl += nextUrl.search
         }
 
-        return Response.redirect(
-            new URL(
-                `${appConfig.unAuthenticatedEntryPath}?${REDIRECT_URL_KEY}=${callbackUrl}`,
-                nextUrl,
-            ),
+        const redirectUrl = new URL(
+            `${appConfig.unAuthenticatedEntryPath}?${REDIRECT_URL_KEY}=${encodeURIComponent(callbackUrl)}`,
+            nextUrl,
         )
+
+        // Forward OAuth parameters to allow DigiLocker callback flow to complete
+        if (nextUrl.searchParams.has('code')) {
+            redirectUrl.searchParams.set('code', nextUrl.searchParams.get('code')!)
+        }
+        if (nextUrl.searchParams.has('state')) {
+            redirectUrl.searchParams.set('state', nextUrl.searchParams.get('state')!)
+        }
+
+        return Response.redirect(redirectUrl)
     }
 
     /** Uncomment this and `import { protectedRoutes } from '@/configs/routes.config'` if you want to enable role based access */
