@@ -7,6 +7,7 @@ type OauthSignInType = 'google' | 'digilocker'
 export type OnOauthSignInPayload = {
     type: OauthSignInType
     setMessage?: (message: string) => void
+    setSubmitting?: (isSubmitting: boolean) => void
 }
 
 export type OnOauthSignIn = (payload: OnOauthSignInPayload) => void

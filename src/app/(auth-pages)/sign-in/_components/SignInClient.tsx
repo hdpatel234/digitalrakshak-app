@@ -88,12 +88,31 @@ const SignInClient = () => {
         })
     }
 
-    const handleOAuthSignIn = async ({ type }: OnOauthSignInPayload) => {
+    const handleOAuthSignIn = async ({ type, setSubmitting }: OnOauthSignInPayload) => {
         if (type === 'google') {
             await handleOauthSignIn('google')
         }
         if (type === 'digilocker') {
-            await handleOauthSignIn('digilocker')
+            try {
+                if (setSubmitting) setSubmitting(true)
+                const response = await fetch('/api/auth/social-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ provider: 'digilocker' }),
+                })
+                
+                const data = await response.json()
+                
+                if (data.url) {
+                    window.location.href = data.url
+                } else if (data.error) {
+                    console.error('Digilocker login failed:', data.error)
+                    if (setSubmitting) setSubmitting(false)
+                }
+            } catch (error) {
+                console.error('Error initiating Digilocker login:', error)
+                if (setSubmitting) setSubmitting(false)
+            }
         }
     }
 
