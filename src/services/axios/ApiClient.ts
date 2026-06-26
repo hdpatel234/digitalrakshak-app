@@ -254,8 +254,13 @@ class ApiClient {
   }
 
   // Convenience methods
-  async get<T = unknown>(endpoint: string, params: unknown = {}, withAuth: boolean = true): Promise<ApiResponse<T>> {
-    return this.request<T>('get', endpoint, params, withAuth);
+  async get<T = unknown>(
+    endpoint: string, 
+    params: unknown = {}, 
+    withAuth: boolean = true,
+    customConfig: AxiosRequestConfig = {}
+  ): Promise<ApiResponse<T>> {
+    return this.request<T>('get', endpoint, params, withAuth, customConfig);
   }
 
   async post<T = unknown>(
