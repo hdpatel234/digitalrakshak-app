@@ -124,6 +124,16 @@ export default {
             clientSecret: process.env.GOOGLE_AUTH_CLIENT_SECRET,
         }),
         Credentials({
+            credentials: {
+                email: {},
+                password: {},
+                ip: {},
+                browser: {},
+                device: {},
+                os: {},
+                token: {},
+                isSso: {},
+            },
             async authorize(credentials) {
                 /** validate credentials from backend here */
                 const result = await validateCredentialWithResponse(

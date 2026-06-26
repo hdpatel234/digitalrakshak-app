@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import SignIn from '@/components/auth/SignIn'
 import { onSignInWithCredentials } from '@/server/actions/auth/handleSignIn'
 import handleOauthSignIn from '@/server/actions/auth/handleOauthSignIn'
@@ -65,6 +65,7 @@ const SignInClient = () => {
     const searchParams = useSearchParams()
     const router = useRouter()
     const callbackUrl = searchParams.get(REDIRECT_URL_KEY)
+    const [isCallbackLoading, setIsCallbackLoading] = useState(false)
 
     const handleSignIn = async ({
         values,
@@ -135,6 +136,7 @@ const SignInClient = () => {
         }
 
         if (code && state) {
+            setIsCallbackLoading(true)
             const handleDigilockerCallback = async () => {
                 const apiUrl = process.env.NEXT_PUBLIC_API_URL || ''
                 try {
@@ -159,14 +161,17 @@ const SignInClient = () => {
                         } as SignInCredential, callbackUrl || '').then((data) => {
                             if (data?.error) {
                                 router.replace(`/sign-in?error=${encodeURIComponent(data.error as string)}`)
+                                setIsCallbackLoading(false)
                             }
                         })
                     } else {
                         router.replace(`/sign-in?error=${encodeURIComponent(result.message || 'DigiLocker login failed')}`)
+                        setIsCallbackLoading(false)
                     }
                 } catch (error) {
                     console.error('Error handling Digilocker callback:', error)
                     router.replace(`/sign-in?error=${encodeURIComponent('Something went wrong during DigiLocker login')}`)
+                    setIsCallbackLoading(false)
                 }
             }
             handleDigilockerCallback()
@@ -192,7 +197,7 @@ const SignInClient = () => {
         }
     }, [searchParams, callbackUrl, router])
 
-    return <SignIn onSignIn={handleSignIn} onOauthSignIn={handleOAuthSignIn} />
+    return <SignIn onSignIn={handleSignIn} onOauthSignIn={handleOAuthSignIn} isOAuthCallbackLoading={isCallbackLoading} />
 }
 
 export default SignInClient
