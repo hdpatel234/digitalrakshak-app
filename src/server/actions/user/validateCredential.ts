@@ -97,6 +97,7 @@ export const validateCredentialWithResponse = async (
             data: {
                 token: values.token,
                 access_token: values.token,
+                expires_in: 31536000,
                 user: response.data?.user || response.data || {},
                 roles: response.data?.roles || [],
                 permissions: response.data?.permissions || [],

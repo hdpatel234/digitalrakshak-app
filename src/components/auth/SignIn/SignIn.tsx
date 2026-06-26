@@ -72,8 +72,14 @@ const SignIn = ({
 
     useEffect(() => {
         const error = searchParams.get('error')
+        const code = searchParams.get('code')
+        const state = searchParams.get('state')
+        
         if (error) {
             setDigilockerMessage(error)
+            setIsDigilockerLoading(false)
+        } else if (code && state) {
+            setIsDigilockerLoading(true)
         }
     }, [searchParams, setDigilockerMessage])
 
