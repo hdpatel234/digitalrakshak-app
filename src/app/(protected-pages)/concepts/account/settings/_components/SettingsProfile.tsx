@@ -180,6 +180,7 @@ const SettingsProfile = () => {
                                     <Upload
                                         showList={false}
                                         uploadLimit={1}
+                                        accept="image/jpeg, image/png"
                                         beforeUpload={beforeUpload}
                                         onChange={(files) => {
                                             if (files.length > 0) {
