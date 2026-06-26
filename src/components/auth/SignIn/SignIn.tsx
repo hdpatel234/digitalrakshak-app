@@ -63,6 +63,7 @@ const SignIn = ({
     onOauthSignIn,
 }: SignInProps) => {
     const [message, setMessage] = useTimeOutMessage()
+    const [digilockerMessage, setDigilockerMessage] = useTimeOutMessage()
     const [showCredentials, setShowCredentials] = useState(false)
     const [isDigilockerLoading, setIsDigilockerLoading] = useState(false)
     const searchParams = useSearchParams()
@@ -72,15 +73,14 @@ const SignIn = ({
     useEffect(() => {
         const error = searchParams.get('error')
         if (error) {
-            setMessage(error)
-            setShowCredentials(true)
+            setDigilockerMessage(error)
         }
-    }, [searchParams, setMessage])
+    }, [searchParams, setDigilockerMessage])
 
     const handleDigiLockerSignIn = () => {
         onOauthSignIn?.({ 
             type: 'digilocker', 
-            setMessage,
+            setMessage: setDigilockerMessage,
             setSubmitting: setIsDigilockerLoading
         })
     }
@@ -101,6 +101,11 @@ const SignIn = ({
                     Continue using your DigiLocker - MeriPehchaan credentials
                 </p>
             </div>
+            {digilockerMessage && (
+                <Alert showIcon className="mb-4" type="danger">
+                    <span className="break-all">{digilockerMessage}</span>
+                </Alert>
+            )}
             <div className="mb-6">
                 <Button
                     block
