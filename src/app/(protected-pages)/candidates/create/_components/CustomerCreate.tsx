@@ -20,7 +20,7 @@ const initialFormValues: CustomerFormSchema = {
     email: '',
     img: '',
     phoneNumber: '',
-    dialCode: '',
+    dialCode: '+91',
     country: '',
     state: '',
     city: '',
@@ -181,8 +181,8 @@ const CustomerEdit = () => {
             const validationErrors = axiosError?.response?.data?.errors
             const firstValidationMessage = validationErrors
                 ? Object.values(validationErrors).find(
-                      (messages) => Array.isArray(messages) && messages.length,
-                  )?.[0]
+                    (messages) => Array.isArray(messages) && messages.length,
+                )?.[0]
                 : ''
 
             const message =

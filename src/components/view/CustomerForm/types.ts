@@ -1,11 +1,11 @@
 import type { Control, FieldErrors, UseFormSetValue } from 'react-hook-form'
 
 export type OverviewFields = {
-    firstName: string
-    lastName: string
+    firstName?: string
+    lastName?: string
     email: string
-    dialCode: string
-    phoneNumber: string
+    dialCode?: string
+    phoneNumber?: string
     img: string
 }
 

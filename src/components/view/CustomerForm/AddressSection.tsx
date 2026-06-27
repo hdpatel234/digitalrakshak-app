@@ -160,7 +160,7 @@ const AddressSection = ({ control, errors, setValue }: AddressSectionProps) => {
     }, [cityOptions, cityValue, setValue, stateValue])
 
     return (
-        <Card>
+        <Card id="address">
             <h4 className="mb-6">Address Information</h4>
             <FormItem
                 label="Address"
