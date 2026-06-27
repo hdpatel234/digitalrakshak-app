@@ -19,18 +19,18 @@ const CustomerListActionTools = () => {
 
     return (
         <div className="flex flex-col md:flex-row gap-3">
-            {/* <CSVLink
-                className="w-full"
-                filename="customerList.csv"
-                data={customerList}
+            <Button
+                icon={<TbCloudDownload className="text-xl" />}
+                className="w-full md:w-auto"
             >
-                <Button
-                    icon={<TbCloudDownload className="text-xl" />}
-                    className="w-full"
-                >
-                    Download
-                </Button>
-            </CSVLink> */}
+                Export
+            </Button>
+            <Button
+                icon={<TbCloudDownload className="text-xl" />}
+                className="w-full md:w-auto"
+            >
+                Bulk import
+            </Button>
             <Button
                 variant="solid"
                 icon={<TbUserPlus className="text-xl" />}
@@ -38,7 +38,7 @@ const CustomerListActionTools = () => {
                     router.push('/candidates/create')
                 }
             >
-                Add new
+                Add candidate
             </Button>
         </div>
     )

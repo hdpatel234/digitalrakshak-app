@@ -31,8 +31,11 @@ function ClientContent({ data, params }: ClientContentProps) {
             <Container>
                 <AdaptiveCard>
                     <div className="flex flex-col gap-4">
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                            <h3>{t('list.pageTitle')}</h3>
+                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                            <div>
+                                <h3>{t('list.pageTitle')}</h3>
+                                <p className="text-sm text-gray-500 mt-1">{data.total} candidates onboarded across all packages</p>
+                            </div>
                             <CustomerListActionTools />
                         </div>
 

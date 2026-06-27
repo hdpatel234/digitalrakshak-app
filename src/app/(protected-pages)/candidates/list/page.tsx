@@ -72,6 +72,11 @@ const mapCandidateToCustomer = (item: unknown, index: number): Customer => {
     const id = String(record.id ?? record.candidate_id ?? `candidate-${index}`)
     const status = String(record.status ?? 'active').toLowerCase()
 
+    const employeeId = String(record.employee_id ?? record.employeeId ?? `EMP-${1000 + index}`)
+    const packageName = String(record.package_name ?? record.package ?? 'Basic KYC')
+    const progress = toNumber(record.progress ?? record.completion, Math.floor(Math.random() * 100))
+    const assignedDate = String(record.assigned_date ?? record.assignedDate ?? '25 Jun 2026')
+
     return {
         id,
         name: fullName || '-',
@@ -82,6 +87,10 @@ const mapCandidateToCustomer = (item: unknown, index: number): Customer => {
         role: String(record.role ?? 'candidate'),
         lastOnline: toNumber(record.lastOnline, Date.now()),
         status,
+        employeeId,
+        package: packageName,
+        progress,
+        assignedDate,
         personalInfo: {
             location,
             title: String(personalInfo.title ?? ''),

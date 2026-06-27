@@ -85,20 +85,27 @@ const getStatusTagClass = (status: string) => {
 const DEFAULT_AVATAR = ''
 
 const NameColumn = ({ row }: { row: Customer }) => {
+    const initials = `${row.firstName?.[0] || ''}${row.lastName?.[0] || ''}`.toUpperCase()
+    
     return (
         <div className="flex items-center">
             <Avatar
                 size={40}
-                icon={<HiOutlineUser />}
                 shape="circle"
-                src={row.img?.trim() ? row.img : DEFAULT_AVATAR}
-            />
-            <Link
-                className={`hover:text-primary ml-2 rtl:mr-2 font-semibold text-gray-900 dark:text-gray-100`}
-                href={`/candidates/details/${row.id}`}
+                src={row.img?.trim() ? row.img : undefined}
+                className={!row.img?.trim() ? "bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-100 font-semibold text-sm" : ""}
             >
-                {row.name}
-            </Link>
+                {!row.img?.trim() && initials}
+            </Avatar>
+            <div className="ml-3 rtl:mr-3 flex flex-col">
+                <Link
+                    className="hover:text-primary font-semibold text-gray-900 dark:text-gray-100"
+                    href={`/candidates/details/${row.id}`}
+                >
+                    {row.name}
+                </Link>
+                <span className="text-xs text-gray-500">{row.email}</span>
+            </div>
         </div>
     )
 }
@@ -401,7 +408,7 @@ const CustomerListTable = ({
     const columns: ColumnDef<Customer>[] = useMemo(
         () => [
             {
-                header: 'Name',
+                header: 'CANDIDATE',
                 accessorKey: 'name',
                 cell: (props) => {
                     const row = props.row.original
@@ -409,15 +416,39 @@ const CustomerListTable = ({
                 },
             },
             {
-                header: 'Email',
-                accessorKey: 'email',
+                header: 'EMPLOYEE ID',
+                accessorKey: 'employeeId',
+                cell: (props) => <span>{props.row.original.employeeId}</span>,
             },
             {
-                header: 'location',
-                accessorKey: 'personalInfo.location',
+                header: 'PACKAGE',
+                accessorKey: 'package',
+                cell: (props) => <span className="font-medium text-gray-800 dark:text-gray-200">{props.row.original.package}</span>,
             },
             {
-                header: 'Status',
+                header: 'PROGRESS',
+                accessorKey: 'progress',
+                cell: (props) => {
+                    const progress = props.row.original.progress || 0
+                    let colorClass = 'bg-blue-500'
+                    if (progress < 30) colorClass = 'bg-red-500'
+                    else if (progress >= 100) colorClass = 'bg-emerald-500'
+                    
+                    return (
+                        <div className="flex items-center gap-2 w-full max-w-[120px]">
+                            <div className="flex-1 bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                                <div 
+                                    className={`h-full rounded-full ${colorClass}`} 
+                                    style={{ width: `${progress}%` }} 
+                                />
+                            </div>
+                            <span className="text-xs font-medium w-8">{progress}%</span>
+                        </div>
+                    )
+                },
+            },
+            {
+                header: 'STATUS',
                 accessorKey: 'status',
                 cell: (props) => {
                     const row = props.row.original
@@ -431,7 +462,12 @@ const CustomerListTable = ({
                 },
             },
             {
-                header: '',
+                header: 'ASSIGNED',
+                accessorKey: 'assignedDate',
+                cell: (props) => <span className="text-gray-600 dark:text-gray-400">{props.row.original.assignedDate}</span>,
+            },
+            {
+                header: 'ACTIONS',
                 id: 'action',
                 cell: (props) => (
                     <ActionColumn
