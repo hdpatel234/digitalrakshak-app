@@ -259,60 +259,71 @@ const ProductCreate = () => {
                             invalid={Boolean(servicesError)}
                             errorMessage={servicesError}
                         >
-                            <div className="max-h-[360px] overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                            <div className="max-h-[400px] overflow-y-auto border border-gray-100 bg-gray-50/50 dark:border-gray-800 dark:bg-gray-800/50 rounded-xl p-5 shadow-inner">
                                 {serviceLoading && (
-                                    <p className="text-sm text-gray-500">
-                                        Loading services...
-                                    </p>
+                                    <div className="flex items-center justify-center p-8">
+                                        <p className="text-sm font-medium text-gray-500">
+                                            Loading services...
+                                        </p>
+                                    </div>
                                 )}
 
                                 {!serviceLoading && serviceOptions.length === 0 && (
-                                    <p className="text-sm text-gray-500">
-                                        No services available.
-                                    </p>
+                                    <div className="flex items-center justify-center p-8">
+                                        <p className="text-sm font-medium text-gray-500">
+                                            No services available.
+                                        </p>
+                                    </div>
                                 )}
 
-                                {!serviceLoading &&
-                                    serviceOptions.map((service) => (
-                                        <div
-                                            key={service.id}
-                                            className="py-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-                                        >
-                                            <Checkbox
-                                                checked={selectedServiceIds.includes(
-                                                    service.id,
-                                                )}
-                                                onChange={(value) =>
-                                                    handleServiceToggle(
-                                                        value,
-                                                        service.id,
-                                                    )
-                                                }
-                                            >
-                                                <div className="flex flex-col">
-                                                    <span className="font-semibold">
-                                                        {service.name ||
-                                                            service.serviceCode}
-                                                    </span>
-                                                    {service.serviceCode && (
-                                                        <span className="text-xs text-gray-500">
-                                                            {service.serviceCode}
-                                                        </span>
-                                                    )}
-                                                    {service.category && (
-                                                        <span className="text-xs text-gray-500 mt-1">
-                                                            {service.category}
-                                                        </span>
-                                                    )}
-                                                    {service.description && (
-                                                        <span className="text-xs text-gray-500 mt-1">
-                                                            {service.description}
-                                                        </span>
-                                                    )}
+                                {!serviceLoading && serviceOptions.length > 0 && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                        {serviceOptions.map((service) => {
+                                            const isSelected = selectedServiceIds.includes(service.id)
+                                            return (
+                                                <div
+                                                    key={service.id}
+                                                    className={`group relative p-4 border rounded-xl transition-all duration-200 ${
+                                                        isSelected
+                                                            ? 'border-indigo-500 bg-indigo-50/80 shadow-sm shadow-indigo-100 dark:border-indigo-500 dark:bg-indigo-900/20 dark:shadow-none'
+                                                            : 'border-gray-200 bg-white shadow-sm hover:border-indigo-300 hover:shadow-md hover:-translate-y-0.5 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-indigo-500'
+                                                    }`}
+                                                >
+                                                    <Checkbox
+                                                        checked={isSelected}
+                                                        onChange={(value) =>
+                                                            handleServiceToggle(value, service.id)
+                                                        }
+                                                        className="w-full flex items-start"
+                                                    >
+                                                        <div className="flex flex-col w-full text-left ltr:ml-3 rtl:mr-3">
+                                                            <div className="flex items-start justify-between w-full">
+                                                                <span className={`font-semibold text-base transition-colors ${isSelected ? 'text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'}`}>
+                                                                    {service.name || service.serviceCode}
+                                                                </span>
+                                                                {service.serviceCode && (
+                                                                    <span className="text-[11px] font-semibold px-2 py-1 bg-gray-100 text-gray-600 rounded-md dark:bg-gray-800 dark:text-gray-300 ml-2 whitespace-nowrap">
+                                                                        {service.serviceCode}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            {service.category && (
+                                                                <span className="text-[11px] font-bold text-indigo-500 mt-1 uppercase tracking-widest">
+                                                                    {service.category}
+                                                                </span>
+                                                            )}
+                                                            {service.description && (
+                                                                <span className="text-sm text-gray-500 mt-2 line-clamp-2 leading-relaxed" title={service.description}>
+                                                                    {service.description}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </Checkbox>
                                                 </div>
-                                            </Checkbox>
-                                        </div>
-                                    ))}
+                                            )
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         </FormItem>
 
