@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Container from '@/components/shared/Container'
 import Button from '@/components/ui/Button'
 import Notification from '@/components/ui/Notification'
@@ -76,15 +76,6 @@ const CustomerEdit = () => {
         }
     }
 
-    const closeInviteModal = () => {
-        setInviteModalOpen(false)
-        setSelectedPackageIds([])
-        setPackageOptions([])
-        setIsPackageLoading(false)
-        setIsInviteSubmitting(false)
-        setPendingInviteValues(null)
-    }
-
     const fetchPackageOptions = async () => {
         setIsPackageLoading(true)
         try {
@@ -126,6 +117,19 @@ const CustomerEdit = () => {
         } finally {
             setIsPackageLoading(false)
         }
+    }
+
+    useEffect(() => {
+        fetchPackageOptions()
+    }, [])
+
+    const closeInviteModal = () => {
+        setInviteModalOpen(false)
+        setSelectedPackageIds([])
+        setPackageOptions([])
+        setIsPackageLoading(false)
+        setIsInviteSubmitting(false)
+        setPendingInviteValues(null)
     }
 
     const createCandidate = async (
@@ -204,15 +208,26 @@ const CustomerEdit = () => {
     }
 
     const handleFormSubmit = async (values: CustomerFormSchema) => {
-        if (submitAction === 'invite') {
-            setPendingInviteValues(values)
-            setSelectedPackageIds([])
-            setInviteModalOpen(true)
-            await fetchPackageOptions()
+        if (selectedPackageIds.length === 0) {
+            toast.push(
+                <Notification type="danger">
+                    Please select at least one package.
+                </Notification>,
+                { placement: 'top-center' },
+            )
             return
         }
 
-        await createCandidate(values)
+        const packageIds = selectedPackageIds
+            .map((id) => Number.parseInt(String(id), 10))
+            .filter((id) => Number.isInteger(id) && id > 0)
+
+        const isInvite = submitAction === 'invite'
+
+        await createCandidate(values, {
+            isInvite,
+            packageIds,
+        })
     }
 
     const handlePackageToggle = (checked: boolean, packageId: string) => {
