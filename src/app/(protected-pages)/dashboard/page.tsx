@@ -3,6 +3,7 @@ import DashboardStats from './_components/DashboardStats'
 import VerificationTrendChart from './_components/VerificationTrendChart'
 import RecentActivity from './_components/RecentActivity'
 import ServiceUsageChart from './_components/ServiceUsageChart'
+import MonthSpend from './_components/MonthSpend'
 import ActivePackages from './_components/ActivePackages'
 import LatestCandidates from './_components/LatestCandidates'
 import Container from '@/components/shared/Container'
@@ -22,7 +23,14 @@ export default async function Page() {
                 
                 <RecentActivity />
                 
-                <ServiceUsageChart />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2">
+                        <ServiceUsageChart />
+                    </div>
+                    <div>
+                        <MonthSpend />
+                    </div>
+                </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <ActivePackages />
