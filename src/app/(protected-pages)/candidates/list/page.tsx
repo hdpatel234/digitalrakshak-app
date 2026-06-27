@@ -165,27 +165,27 @@ const normalizeCandidateListData = (
     const limit =
         toNumber(
             pagination.per_page ??
-                pagination.pageSize ??
-                pagination.limit ??
-                dataRecord.limit,
+            pagination.pageSize ??
+            pagination.limit ??
+            dataRecord.limit,
             pageSize,
         ) || pageSize
 
     const total =
         toNumber(
             pagination.total ??
-                pagination.total_items ??
-                pagination.totalRecords ??
-                dataRecord.total,
+            pagination.total_items ??
+            pagination.totalRecords ??
+            dataRecord.total,
             rawList.length,
         ) || rawList.length
 
     const totalPages =
         toNumber(
             pagination.total_pages ??
-                pagination.totalPages ??
-                pagination.last_page ??
-                dataRecord.totalPages,
+            pagination.totalPages ??
+            pagination.last_page ??
+            dataRecord.totalPages,
             Math.ceil(total / Math.max(limit, 1)),
         ) || Math.ceil(total / Math.max(limit, 1))
 
@@ -199,8 +199,8 @@ const normalizeCandidateListData = (
     const statusListValue = dataRecord.status_list ?? dataRecord.statusList ?? []
     const statusList = Array.isArray(statusListValue)
         ? statusListValue
-              .map(mapStatusOption)
-              .filter((option): option is StatusOption => option !== null)
+            .map(mapStatusOption)
+            .filter((option): option is StatusOption => option !== null)
         : []
 
     return {
