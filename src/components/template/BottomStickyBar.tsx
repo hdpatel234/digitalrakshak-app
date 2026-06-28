@@ -1,3 +1,5 @@
+'use client'
+
 import classNames from '@/utils/classNames'
 import useLayout from '@/utils/hooks/useLayout'
 import type { CommonProps } from '@/@types/common'
