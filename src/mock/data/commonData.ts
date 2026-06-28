@@ -20,3 +20,20 @@ export const notificationListData = [
         readed: true,
     }
 ]
+
+export const searchQueryPoolData = [
+    {
+        title: 'Project Dashboard',
+        url: DASHBOARDS_PREFIX_PATH + '/project',
+        icon: 'project',
+        category: 'Dashboard',
+        categoryTitle: 'Dashboard',
+    },
+    {
+        title: 'Sales Dashboard',
+        url: DASHBOARDS_PREFIX_PATH + '/sales',
+        icon: 'sales',
+        category: 'Dashboard',
+        categoryTitle: 'Dashboard',
+    },
+]
