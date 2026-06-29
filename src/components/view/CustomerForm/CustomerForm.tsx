@@ -12,6 +12,8 @@ import { TbUser, TbPhoneCall, TbFingerprint, TbBriefcase, TbSchool, TbMapPin, Tb
 import useLayoutGap from '@/utils/hooks/useLayoutGap'
 import OverviewSection from './OverviewSection'
 import AddressSection from './AddressSection'
+import Input from '@/components/ui/Input'
+import { FormItem } from '@/components/ui/Form'
 import isEmpty from 'lodash/isEmpty'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -21,24 +23,34 @@ import type { CommonProps } from '@/@types/common'
 import type { CustomerFormSchema } from './types'
 import AdditionalInfo from './AdditionalInfo'
 
+export type FieldConfig = {
+    id: number
+    field_name: string
+    field_label: string
+    field_type: string
+    is_required: number | boolean
+    validation_regex?: string
+}
+
 type CustomerFormProps = {
     onFormSubmit: (values: CustomerFormSchema) => void
     defaultValues?: CustomerFormSchema
     newCustomer?: boolean
+    dynamicFields?: FieldConfig[]
 } & CommonProps
 
 const validationSchema: ZodType<CustomerFormSchema> = z
     .object({
         firstName: z
             .string()
-            .optional()
-            .refine((value) => !value || /^[A-Za-z\s]+$/.test(value), {
+            .min(1, { message: 'First name is required' })
+            .refine((value) => /^[A-Za-z\s]+$/.test(value), {
                 message: 'First name can contain letters only',
             }),
         lastName: z
             .string()
-            .optional()
-            .refine((value) => !value || /^[A-Za-z\s]+$/.test(value), {
+            .min(1, { message: 'Last name is required' })
+            .refine((value) => /^[A-Za-z\s]+$/.test(value), {
                 message: 'Last name can contain letters only',
             }),
         email: z
@@ -75,6 +87,9 @@ const validationSchema: ZodType<CustomerFormSchema> = z
             .optional(),
         img: z.string(),
         tags: z.array(z.object({ value: z.string(), label: z.string() })),
+        askConsent: z.boolean().refine(val => val === true, {
+            message: 'You must ask for candidate consent',
+        }),
     })
     .refine(
         (data) => {
@@ -145,7 +160,17 @@ const CustomerForm = (props: CustomerFormProps) => {
         onFormSubmit,
         defaultValues = {},
         children,
+        dynamicFields = [],
     } = props
+
+    const availableSections = Array.from(new Set(dynamicFields.map(f => f.section || 'Additional Info')))
+
+    const filteredNavigationList = navigationList.filter(nav => {
+        if (nav.label === 'Basic Details' || nav.label === 'Contact Details' || nav.label === 'Consent Form') {
+            return true
+        }
+        return availableSections.includes(nav.label)
+    })
 
     const {
         handleSubmit,
@@ -188,7 +213,7 @@ const CustomerForm = (props: CustomerFormProps) => {
                         <Affix offset={getTopGapValue()}>
                             <Card bodyClass="p-3">
                                 <div className="flex flex-col gap-1">
-                                    {navigationList.map((nav) => (
+                                    {filteredNavigationList.map((nav) => (
                                         <Link
                                             key={nav.label}
                                             activeClass="bg-gray-100 dark:bg-gray-700 active"
@@ -221,48 +246,164 @@ const CustomerForm = (props: CustomerFormProps) => {
                             errors={errors}
                             setValue={setValue}
                         />
-                        <div id="identity">
-                            <Card>
-                                <h4 className="mb-6">Identity</h4>
-                                <div className="text-gray-500 min-h-[100px] flex items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
-                                    Identity fields will go here
-                                </div>
-                            </Card>
-                        </div>
-                        <div id="employment">
-                            <Card>
-                                <h4 className="mb-6">Employment</h4>
-                                <div className="text-gray-500 min-h-[100px] flex items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
-                                    Employment fields will go here
-                                </div>
-                            </Card>
-                        </div>
-                        <div id="education">
-                            <Card>
-                                <h4 className="mb-6">Education</h4>
-                                <div className="text-gray-500 min-h-[100px] flex items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
-                                    Education fields will go here
-                                </div>
-                            </Card>
-                        </div>
-                        <AddressSection
-                            control={control}
-                            errors={errors}
-                            setValue={setValue}
-                        />
-                        <div id="additional-info">
-                            <AdditionalInfo
+
+                        {availableSections.includes('Identity') && (
+                            <div id="identity">
+                                <Card>
+                                    <h4 className="mb-2">Identity</h4>
+                                    <p className="text-sm text-gray-500 mb-6">These details can be skipped and filled by the candidate via email, or you can fill them now.</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {dynamicFields.filter(f => f.section === 'Identity').map((field) => (
+                                            <FormItem
+                                                key={field.id}
+                                                label={field.field_label}
+                                                asterisk={!!field.is_required}
+                                                invalid={Boolean(errors[field.field_name as keyof CustomerFormSchema])}
+                                                errorMessage={errors[field.field_name as keyof CustomerFormSchema]?.message as string}
+                                            >
+                                                <Input
+                                                    type={field.field_type === 'number' ? 'number' : 'text'}
+                                                    placeholder={`Enter ${field.field_label}`}
+                                                    {...control.register(field.field_name as any)}
+                                                />
+                                            </FormItem>
+                                        ))}
+                                    </div>
+                                </Card>
+                            </div>
+                        )}
+
+                        {availableSections.includes('Employment') && (
+                            <div id="employment">
+                                <Card>
+                                    <h4 className="mb-2">Employment</h4>
+                                    <p className="text-sm text-gray-500 mb-6">These details can be skipped and filled by the candidate via email, or you can fill them now.</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {dynamicFields.filter(f => f.section === 'Employment').map((field) => (
+                                            <FormItem
+                                                key={field.id}
+                                                label={field.field_label}
+                                                asterisk={!!field.is_required}
+                                                invalid={Boolean(errors[field.field_name as keyof CustomerFormSchema])}
+                                                errorMessage={errors[field.field_name as keyof CustomerFormSchema]?.message as string}
+                                            >
+                                                <Input
+                                                    type={field.field_type === 'number' ? 'number' : 'text'}
+                                                    placeholder={`Enter ${field.field_label}`}
+                                                    {...control.register(field.field_name as any)}
+                                                />
+                                            </FormItem>
+                                        ))}
+                                    </div>
+                                </Card>
+                            </div>
+                        )}
+
+                        {availableSections.includes('Education') && (
+                            <div id="education">
+                                <Card>
+                                    <h4 className="mb-2">Education</h4>
+                                    <p className="text-sm text-gray-500 mb-6">These details can be skipped and filled by the candidate via email, or you can fill them now.</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {dynamicFields.filter(f => f.section === 'Education').map((field) => (
+                                            <FormItem
+                                                key={field.id}
+                                                label={field.field_label}
+                                                asterisk={!!field.is_required}
+                                                invalid={Boolean(errors[field.field_name as keyof CustomerFormSchema])}
+                                                errorMessage={errors[field.field_name as keyof CustomerFormSchema]?.message as string}
+                                            >
+                                                <Input
+                                                    type={field.field_type === 'number' ? 'number' : 'text'}
+                                                    placeholder={`Enter ${field.field_label}`}
+                                                    {...control.register(field.field_name as any)}
+                                                />
+                                            </FormItem>
+                                        ))}
+                                    </div>
+                                </Card>
+                            </div>
+                        )}
+
+                        {availableSections.includes('Address') && (
+                            <AddressSection
                                 control={control}
                                 errors={errors}
                                 setValue={setValue}
                             />
-                        </div>
+                        )}
+
+                        {availableSections.includes('Additional Info') && (
+                            <div id="additional-info">
+                                <AdditionalInfo
+                                    control={control}
+                                    errors={errors}
+                                    setValue={setValue}
+                                />
+                                <Card className="mt-4">
+                                    <p className="text-sm text-gray-500 mb-4">These additional details can be skipped and filled by the candidate via email, or you can fill them now.</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {dynamicFields.filter(f => (f.section || 'Additional Info') === 'Additional Info').map((field) => (
+                                            <FormItem
+                                                key={field.id}
+                                                label={field.field_label}
+                                                asterisk={!!field.is_required}
+                                                invalid={Boolean(errors[field.field_name as keyof CustomerFormSchema])}
+                                                errorMessage={errors[field.field_name as keyof CustomerFormSchema]?.message as string}
+                                            >
+                                                <Input
+                                                    type={field.field_type === 'number' ? 'number' : 'text'}
+                                                    placeholder={`Enter ${field.field_label}`}
+                                                    {...control.register(field.field_name as any)}
+                                                />
+                                            </FormItem>
+                                        ))}
+                                    </div>
+                                </Card>
+                            </div>
+                        )}
+
                         <div id="consent-form">
                             <Card>
-                                <h4 className="mb-6">Consent Form</h4>
-                                <div className="text-gray-500 min-h-[100px] flex items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
-                                    Consent form fields will go here
-                                </div>
+                                <h4 className="mb-2">Consent Form</h4>
+                                <p className="text-sm text-gray-500 mb-6">A mail will be sent to the candidate to take consent.</p>
+                                
+                                <FormItem
+                                    invalid={Boolean(errors.askConsent)}
+                                    errorMessage={errors.askConsent?.message as string}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            className="checkbox"
+                                            id="askConsent"
+                                            {...control.register('askConsent')}
+                                        />
+                                        <label htmlFor="askConsent" className="font-semibold text-sm cursor-pointer">
+                                            Ask candidate for consent <span className="text-red-500">*</span>
+                                        </label>
+                                    </div>
+                                </FormItem>
+
+                                {dynamicFields.filter(f => f.section === 'Consent Form').length > 0 && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 border-t pt-4">
+                                        {dynamicFields.filter(f => f.section === 'Consent Form').map((field) => (
+                                            <FormItem
+                                                key={field.id}
+                                                label={field.field_label}
+                                                asterisk={!!field.is_required}
+                                                invalid={Boolean(errors[field.field_name as keyof CustomerFormSchema])}
+                                                errorMessage={errors[field.field_name as keyof CustomerFormSchema]?.message as string}
+                                            >
+                                                <Input
+                                                    type={field.field_type === 'number' ? 'number' : 'text'}
+                                                    placeholder={`Enter ${field.field_label}`}
+                                                    {...control.register(field.field_name as any)}
+                                                />
+                                            </FormItem>
+                                        ))}
+                                    </div>
+                                )}
                             </Card>
                         </div>
                     </div>

@@ -8,10 +8,11 @@ import CustomerForm from '@/components/view/CustomerForm'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import Dialog from '@/components/ui/Dialog'
 import Checkbox from '@/components/ui/Checkbox'
+import Radio from '@/components/ui/Radio'
 import { TbTrash, TbPlus, TbSend } from 'react-icons/tb'
 import { useRouter } from 'next/navigation'
 import type { CustomerFormSchema } from '@/components/view/CustomerForm'
-import { apiCreateCandidate } from '@/services/client/candidates'
+import { apiCreateCandidate, apiSendCandidateInvite } from '@/services/client/candidates'
 import type { AxiosError } from 'axios'
 
 const initialFormValues: CustomerFormSchema = {
@@ -35,6 +36,7 @@ type PackageOption = {
     name: string
     packageCode: string
     description: string
+    services?: any[]
 }
 
 type ApiResponsePayload = {
@@ -61,6 +63,10 @@ const CustomerEdit = () => {
     const [selectedPackageIds, setSelectedPackageIds] = useState<string[]>([])
     const [pendingInviteValues, setPendingInviteValues] =
         useState<CustomerFormSchema | null>(null)
+    const [dynamicFields, setDynamicFields] = useState<any[]>([])
+    const [isFieldsLoading, setIsFieldsLoading] = useState(false)
+    const [isPackageSelectionModalOpen, setIsPackageSelectionModalOpen] = useState(true)
+    const [selectedServices, setSelectedServices] = useState<any[]>([])
 
     const mapPackageOption = (item: unknown): PackageOption => {
         const record =
@@ -73,6 +79,7 @@ const CustomerEdit = () => {
             name: String(record.package_name ?? record.name ?? ''),
             packageCode: String(record.package_code ?? ''),
             description: String(record.description ?? ''),
+            services: Array.isArray(record.services) ? record.services : [],
         }
     }
 
@@ -123,6 +130,59 @@ const CustomerEdit = () => {
         fetchPackageOptions()
     }, [])
 
+    useEffect(() => {
+        const fetchFields = async () => {
+            if (selectedPackageIds.length === 0) {
+                setDynamicFields([])
+                return
+            }
+
+            setIsFieldsLoading(true)
+            try {
+                const allFields = []
+                const allServices = []
+                for (const pkgId of selectedPackageIds) {
+                    const res = await fetch(`/api/client/packages/${pkgId}/services`, {
+                        method: 'GET',
+                    })
+                    const payload = await res.json()
+                    const isSuccess = payload.status === true || payload.success === true
+                    if (isSuccess && payload.data && Array.isArray(payload.data.services)) {
+                        payload.data.services.forEach((service: any) => {
+                            allServices.push(service)
+                            if (Array.isArray(service.fields)) {
+                                allFields.push(...service.fields)
+                            }
+                        })
+                    }
+                }
+                
+                // Deduplicate fields by field_name
+                const uniqueFields = []
+                const fieldNames = new Set()
+                for (const field of allFields) {
+                    if (!fieldNames.has(field.field_name)) {
+                        fieldNames.add(field.field_name)
+                        uniqueFields.push(field)
+                    }
+                }
+                
+                setDynamicFields(uniqueFields)
+                setSelectedServices(allServices)
+            } catch (err) {
+                console.error("Failed to fetch dynamic fields and services", err)
+            } finally {
+                setIsFieldsLoading(false)
+            }
+        }
+
+        fetchFields()
+    }, [selectedPackageIds])
+
+    const closePackageSelectionModal = () => {
+        setIsPackageSelectionModalOpen(false)
+    }
+
     const closeInviteModal = () => {
         setInviteModalOpen(false)
         setSelectedPackageIds([])
@@ -163,9 +223,30 @@ const CustomerEdit = () => {
                 return false
             }
 
+            let successMessage = response.message || 'Candidate created successfully'
+            
+            if (inviteEnabled) {
+                const createdData = response.data as any
+                const candidateId = createdData?.id || createdData?.candidate_id || createdData?.candidate?.id
+                if (candidateId) {
+                    try {
+                        await apiSendCandidateInvite(candidateId, {
+                            candidate_ids: [candidateId],
+                            package_ids: packageIds,
+                        })
+                        successMessage = 'Candiate added and invite sended succesfully.'
+                    } catch (err) {
+                        console.error('Failed to send invite', err)
+                        successMessage = 'Candidate added, but failed to send invite.'
+                    }
+                } else {
+                    successMessage = 'Candidate added, but unable to send invite directly (ID not found).'
+                }
+            }
+
             toast.push(
                 <Notification type="success">
-                    {response.message || 'Candidate created successfully'}
+                    {successMessage}
                 </Notification>,
                 { placement: 'top-center' },
             )
@@ -230,17 +311,8 @@ const CustomerEdit = () => {
         })
     }
 
-    const handlePackageToggle = (checked: boolean, packageId: string) => {
-        setSelectedPackageIds((prev) => {
-            if (checked) {
-                if (prev.includes(packageId)) {
-                    return prev
-                }
-                return [...prev, packageId]
-            }
-
-            return prev.filter((id) => id !== packageId)
-        })
+    const handlePackageToggle = (packageId: string) => {
+        setSelectedPackageIds([packageId])
     }
 
     const handleInviteSubmit = async () => {
@@ -301,9 +373,125 @@ const CustomerEdit = () => {
 
     return (
         <>
+            <Dialog
+                isOpen={isPackageSelectionModalOpen}
+                onClose={() => {}}
+                onRequestClose={() => {}}
+                closable={false}
+                width={700}
+            >
+                <div className="mb-6">
+                    <h4 className="mb-2">Select Packages</h4>
+                    <p className="text-sm text-gray-500 mb-4">
+                        Please choose one or more packages before creating the candidate.
+                    </p>
+
+                    <div className="max-h-[360px] overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800">
+                        {isPackageLoading && (
+                            <p className="text-sm text-gray-500">Loading packages...</p>
+                        )}
+
+                        {!isPackageLoading && packageOptions.length === 0 && (
+                            <p className="text-sm text-gray-500">No packages available.</p>
+                        )}
+
+                        {!isPackageLoading &&
+                            packageOptions.map((pkg) => (
+                                <div
+                                    key={pkg.id}
+                                    className="py-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                >
+                                    <Radio
+                                        checked={selectedPackageIds.includes(pkg.id)}
+                                        onChange={() =>
+                                            handlePackageToggle(pkg.id)
+                                        }
+                                    >
+                                        <div className="flex flex-col">
+                                            <span className="font-semibold">
+                                                {pkg.name || pkg.packageCode}
+                                            </span>
+                                            {pkg.packageCode && (
+                                                <span className="text-xs text-gray-500">
+                                                    {pkg.packageCode}
+                                                </span>
+                                            )}
+                                            {pkg.description && (
+                                                <span className="text-xs text-gray-500 mt-1">
+                                                    {pkg.description}
+                                                </span>
+                                            )}
+                                            {pkg.services && pkg.services.length > 0 && (
+                                                <div className="mt-2 flex flex-wrap gap-1">
+                                                    {pkg.services.map((svc: any) => (
+                                                        <span key={svc.service_id} className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-[10px] font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                                            {svc.service_name}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </Radio>
+                                </div>
+                            ))}
+                    </div>
+                </div>
+                <div className="flex justify-end gap-2 mt-4">
+                    <Button 
+                        variant="solid" 
+                        onClick={closePackageSelectionModal} 
+                        disabled={selectedPackageIds.length === 0}
+                    >
+                        Continue
+                    </Button>
+                </div>
+            </Dialog>
+
+            <Container>
+                {selectedPackageIds.length > 0 && (
+                    <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800">
+                        <div className="flex justify-between items-center mb-4">
+                            <h4 className="text-lg">Selected Packages</h4>
+                            <Button size="sm" onClick={() => setIsPackageSelectionModalOpen(true)}>Change</Button>
+                        </div>
+                        <div className="flex flex-col gap-4">
+                            {packageOptions
+                                .filter(pkg => selectedPackageIds.includes(pkg.id))
+                                .map(pkg => (
+                                    <div key={pkg.id}>
+                                        <h5 className="font-semibold">{pkg.name} ({pkg.packageCode})</h5>
+                                        {selectedServices.length > 0 && (
+                                            <div className="mt-2">
+                                                <span className="text-sm text-gray-500 font-semibold block mb-1">Included Services:</span>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {selectedServices.filter(s => String(s.package_id) === pkg.id).map(service => (
+                                                        <span key={service.service_id} className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                                            {service.service_name}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))
+                            }
+                        </div>
+                    </div>
+                )}
+            </Container>
+
+            {isFieldsLoading && (
+                <Container>
+                    <div className="my-4 text-center text-gray-500">
+                        Loading required fields for selected packages...
+                    </div>
+                </Container>
+            )}
+
             <CustomerForm
                 key={formKey}
                 newCustomer
+                dynamicFields={dynamicFields}
                 defaultValues={initialFormValues}
                 onFormSubmit={handleFormSubmit}
             >
@@ -355,7 +543,7 @@ const CustomerEdit = () => {
             </CustomerForm>
 
             <Dialog
-                isOpen={inviteModalOpen}
+                isOpen={false}
                 onClose={closeInviteModal}
                 onRequestClose={closeInviteModal}
                 width={700}
@@ -380,10 +568,10 @@ const CustomerEdit = () => {
                                 key={pkg.id}
                                 className="py-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                             >
-                                <Checkbox
+                                <Radio
                                     checked={selectedPackageIds.includes(pkg.id)}
-                                    onChange={(value) =>
-                                        handlePackageToggle(value, pkg.id)
+                                    onChange={() =>
+                                        handlePackageToggle(pkg.id)
                                     }
                                 >
                                     <div className="flex flex-col">
@@ -400,8 +588,17 @@ const CustomerEdit = () => {
                                                 {pkg.description}
                                             </span>
                                         )}
+                                        {pkg.services && pkg.services.length > 0 && (
+                                            <div className="mt-2 flex flex-wrap gap-1">
+                                                {pkg.services.map((svc: any) => (
+                                                    <span key={svc.service_id} className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-[10px] font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                                        {svc.service_name}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
-                                </Checkbox>
+                                </Radio>
                             </div>
                         ))}
                 </div>

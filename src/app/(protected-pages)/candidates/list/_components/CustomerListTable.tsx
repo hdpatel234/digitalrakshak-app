@@ -206,25 +206,53 @@ const CustomerListTable = ({
         setCandidateToDelete(null)
     }
 
-    const handleConfirmDelete = () => {
+    const handleConfirmDelete = async () => {
         if (!candidateToDelete?.id) {
             handleCloseDeleteConfirmation()
             return
         }
 
-        const updatedCustomerList = customerList.filter(
-            (customer) => customer.id !== candidateToDelete.id,
-        )
+        try {
+            const response = await fetch(`/api/client/candidates/${candidateToDelete.id}`, {
+                method: 'DELETE',
+            })
+            
+            const payload = ((await response.json()) as ApiResponsePayload) || {}
+            const isSuccess = payload.status === true || payload.success === true
 
-        setCustomerList(updatedCustomerList)
-        setSelectedCustomer(false, candidateToDelete)
-        handleCloseDeleteConfirmation()
-        toast.push(
-            <Notification type="success">
-                Candidate removed successfully.
-            </Notification>,
-            { placement: 'top-center' },
-        )
+            if (!response.ok || !isSuccess) {
+                toast.push(
+                    <Notification type="danger">
+                        {payload.message || 'Failed to remove candidate.'}
+                    </Notification>,
+                    { placement: 'top-center' },
+                )
+                return
+            }
+
+            const updatedCustomerList = customerList.filter(
+                (customer) => customer.id !== candidateToDelete.id,
+            )
+
+            setCustomerList(updatedCustomerList)
+            setSelectedCustomer(false, candidateToDelete)
+            handleCloseDeleteConfirmation()
+            
+            toast.push(
+                <Notification type="success">
+                    {payload.message || 'Candidate removed successfully.'}
+                </Notification>,
+                { placement: 'top-center' },
+            )
+            router.refresh()
+        } catch {
+            toast.push(
+                <Notification type="danger">
+                    Failed to remove candidate.
+                </Notification>,
+                { placement: 'top-center' },
+            )
+        }
     }
 
     const closeInviteModal = () => {

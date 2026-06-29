@@ -62,15 +62,62 @@ const CustomerListSelected = () => {
         setDeleteConfirmationOpen(false)
     }
 
-    const handleConfirmDelete = () => {
-        const newCustomerList = customerList.filter((customer) => {
-            return !selectedCustomer.some(
-                (selected) => selected.id === customer.id,
+    const handleConfirmDelete = async () => {
+        const candidateIds = selectedCustomer.map((customer) => Number.parseInt(String(customer.id), 10)).filter((id) => Number.isInteger(id))
+        
+        if (candidateIds.length === 0) {
+            handleCancel()
+            return
+        }
+
+        try {
+            const response = await fetch('/api/client/candidates/bulk-delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ candidate_ids: candidateIds }),
+            })
+
+            const payload = ((await response.json()) as ApiResponsePayload) || {}
+            const isSuccess = payload.status === true || payload.success === true
+
+            if (!response.ok || !isSuccess) {
+                toast.push(
+                    <Notification type="danger">
+                        {payload.message || 'Failed to remove candidates.'}
+                    </Notification>,
+                    { placement: 'top-center' },
+                )
+                handleCancel()
+                return
+            }
+
+            const newCustomerList = customerList.filter((customer) => {
+                return !selectedCustomer.some(
+                    (selected) => selected.id === customer.id,
+                )
+            })
+            setSelectAllCustomer([])
+            setCustomerList(newCustomerList)
+            setDeleteConfirmationOpen(false)
+
+            toast.push(
+                <Notification type="success">
+                    {payload.message || 'Candidates removed successfully.'}
+                </Notification>,
+                { placement: 'top-center' },
             )
-        })
-        setSelectAllCustomer([])
-        setCustomerList(newCustomerList)
-        setDeleteConfirmationOpen(false)
+            router.refresh()
+        } catch {
+            toast.push(
+                <Notification type="danger">
+                    Failed to remove candidates.
+                </Notification>,
+                { placement: 'top-center' },
+            )
+            handleCancel()
+        }
     }
 
     const closeInviteModal = () => {

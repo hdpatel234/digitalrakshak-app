@@ -21,3 +21,15 @@ export async function apiCreateCandidate(data: CreateCandidatePayload) {
     })
 }
 
+export type InviteCandidatePayload = {
+    candidate_ids?: number[]
+    package_ids?: number[]
+}
+
+export async function apiSendCandidateInvite(candidateId: string | number, data: InviteCandidatePayload) {
+    return ApiService.fetchDataWithAxios<CreateCandidateResponse>({
+        url: `/client/candidates/${candidateId}/invite`,
+        method: 'post',
+        data,
+    })
+}

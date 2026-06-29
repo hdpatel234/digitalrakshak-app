@@ -31,10 +31,15 @@ export type AccountField = {
     accountVerified?: boolean
 }
 
+export type PackagesFields = {
+    packageIds?: string[]
+}
+
 export type CustomerFormSchema = OverviewFields &
     AddressFields &
     ProfileImageFields &
     TagsFields &
+    PackagesFields &
     AccountField
 
 export type FormSectionBaseProps = {
