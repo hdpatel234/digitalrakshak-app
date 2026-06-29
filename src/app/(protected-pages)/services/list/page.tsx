@@ -2,7 +2,7 @@ import Container from '@/components/shared/Container'
 import AdaptiveCard from '@/components/shared/AdaptiveCard'
 import ProductListProvider from './_components/ProductListProvider'
 import ProducListTableTools from './_components/ProducListTableTools'
-import ProductListTable from './_components/ProductListTable'
+import ServiceListGrid from './_components/ServiceListGrid'
 import ProductListSelected from './_components/ProductListSelected'
 import type { PageProps } from '@/@types/common'
 import { headers } from 'next/headers'
@@ -42,6 +42,7 @@ const mapService = (item: unknown): Product => {
         price:
             Number.parseFloat(String(record.price ?? record.base_price ?? 0)) ||
             0,
+        icon: record.icon ? String(record.icon) : undefined,
     }
 }
 
@@ -145,7 +146,7 @@ export default async function Page({ searchParams }: PageProps) {
                             <h3>Services</h3>
                         </div>
                         <ProducListTableTools />
-                        <ProductListTable
+                        <ServiceListGrid
                             productListTotal={data.total}
                             pageIndex={
                                 parseInt(params.pageIndex as string) || 1
