@@ -11,6 +11,7 @@ import Notification from '@/components/ui/Notification'
 import Upload from '@/components/ui/Upload'
 import toast from '@/components/ui/toast'
 import { TbCircleCheck } from 'react-icons/tb'
+import EmploymentVerificationSection from './EmploymentVerificationSection'
 
 type InvitationPageField = {
     id: number
@@ -217,7 +218,7 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
         null,
     )
     const [invitationLoaded, setInvitationLoaded] = useState(false)
-    const [formValues, setFormValues] = useState<Record<string, string>>({})
+    const [formValues, setFormValues] = useState<Record<string, any>>({})
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
@@ -328,7 +329,7 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
                 const formDataRecord = formData as Record<string, unknown>
                 const sources = [candidateData, formDataRecord, rootData]
 
-                const baseValues: Record<string, string> = {
+                const baseValues: Record<string, any> = {
                     first_name: getFirstMatchingValue(sources, [
                         'first_name',
                         'firstname',
@@ -780,10 +781,13 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
             pincode: String(formValues.pincode || '').trim(),
         }
 
-        const fieldValues = fields.map((field) => ({
-            field_id: field.id,
-            value: String(formValues[field.field_name] || '').trim(),
-        }))
+        const fieldValues = fields.map((field) => {
+            const rawValue = formValues[field.field_name]
+            return {
+                field_id: field.id,
+                value: typeof rawValue === 'string' ? rawValue.trim() : rawValue,
+            }
+        })
 
         const requestPayload = {
             candidate_details: candidateDetails,
@@ -1298,73 +1302,90 @@ const InvitationForm = ({ token }: InvitationFormProps) => {
                 </div>
             </Card>
 
-            {fields.length > 0 ? (
-                <Card>
-                    <h4>Verification Details</h4>
-                    <p className="mt-1 mb-6 text-sm text-gray-500">
-                        This details will use for perform verification.
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {fields.map((field) => {
-                            const value = formValues[field.field_name] || ''
-                            const regexHint = field.validation_regex
-                                ? `Pattern: ${field.validation_regex}`
-                                : ''
-                            const requiredHint =
-                                field.is_required === 1 ? 'Required field' : ''
-                            const helperText = [requiredHint, regexHint]
-                                .filter(Boolean)
-                                .join(' | ')
+            {(invitationData?.services || []).map((service, idx) => {
+                if (service.service_code === 'EMP_VER') {
+                    return (
+                        <EmploymentVerificationSection
+                            key={service.id || idx}
+                            isPrefilling={isPrefilling}
+                            fields={service.fields}
+                            formValues={formValues}
+                            fieldErrors={fieldErrors}
+                            handleValueChange={handleValueChange}
+                        />
+                    )
+                }
 
-                            return (
-                                <FormItem
-                                    key={field.id}
-                                    label={field.field_label}
-                                    htmlFor={field.field_name}
-                                    asterisk
-                                    invalid={Boolean(fieldErrors[field.field_name])}
-                                    errorMessage={fieldErrors[field.field_name]}
-                                >
-                                    {isPrefilling ? (
-                                        <FieldSkeleton />
-                                    ) : (
-                                        <Input
-                                            id={field.field_name}
-                                            name={field.field_name}
-                                            type={fieldTypeToInputType(
-                                                field.field_type,
-                                            )}
-                                            autoComplete="off"
-                                            inputMode={
-                                                field.field_type === 'integer'
-                                                    ? 'numeric'
-                                                    : undefined
-                                            }
-                                            pattern={
-                                                field.validation_regex || undefined
-                                            }
-                                            required
-                                            value={value}
-                                            placeholder={field.field_label}
-                                            onChange={(event) =>
-                                                handleValueChange(
-                                                    field.field_name,
-                                                    event.target.value,
-                                                )
-                                            }
-                                        />
-                                    )}
-                                    {helperText ? (
-                                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                            {helperText}
-                                        </p>
-                                    ) : null}
-                                </FormItem>
-                            )
-                        })}
-                    </div>
-                </Card>
-            ) : null}
+                return (
+                    <Card key={service.id || idx}>
+                        <h4>{service.service_name} Verification Details</h4>
+                        <p className="mt-1 mb-6 text-sm text-gray-500">
+                            {service.description || 'This details will use for perform verification.'}
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {service.fields.map((field) => {
+                                const rawValue = formValues[field.field_name]
+                                const value = typeof rawValue === 'string' ? rawValue : ''
+                                const regexHint = field.validation_regex
+                                    ? `Pattern: ${field.validation_regex}`
+                                    : ''
+                                const requiredHint =
+                                    field.is_required === 1 ? 'Required field' : ''
+                                const helperText = [requiredHint, regexHint]
+                                    .filter(Boolean)
+                                    .join(' | ')
+
+                                return (
+                                    <FormItem
+                                        key={field.id}
+                                        label={field.field_label}
+                                        htmlFor={field.field_name}
+                                        asterisk={field.is_required === 1}
+                                        invalid={Boolean(fieldErrors[field.field_name])}
+                                        errorMessage={fieldErrors[field.field_name]}
+                                    >
+                                        {isPrefilling ? (
+                                            <FieldSkeleton />
+                                        ) : (
+                                            <Input
+                                                id={field.field_name}
+                                                name={field.field_name}
+                                                type={fieldTypeToInputType(
+                                                    field.field_type,
+                                                )}
+                                                autoComplete="off"
+                                                inputMode={
+                                                    field.field_type === 'integer'
+                                                        ? 'numeric'
+                                                        : undefined
+                                                }
+                                                pattern={
+                                                    field.validation_regex || undefined
+                                                }
+                                                required
+                                                value={value}
+                                                placeholder={field.field_label}
+                                                onChange={(event) =>
+                                                    handleValueChange(
+                                                        field.field_name,
+                                                        event.target.value,
+                                                    )
+                                                }
+                                            />
+                                        )}
+                                        {helperText ? (
+                                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                {helperText}
+                                            </p>
+                                        ) : null}
+                                    </FormItem>
+                                )
+                            })}
+                        </div>
+                    </Card>
+                )
+            })}
+
 
             <div className="flex justify-end">
                 <Button

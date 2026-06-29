@@ -151,6 +151,74 @@ const OrderDetailProducts = ({ candidates }: OrderDetailProductsProps) => {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Service Data Fields */}
+                            {profile?.service_data && profile.service_data.length > 0 && (
+                                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                                    <h6 className="text-sm font-semibold mb-3">Submitted Verification Details</h6>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {profile.service_data.map((sd: any, i: number) => {
+                                            const isFile = sd.field_type === 'file' || String(sd.field_value).startsWith('data:');
+                                            let valueDisplay = sd.field_value;
+                                            
+                                            // Handle file fields specially
+                                            if (isFile && sd.field_value) {
+                                                if (Array.isArray(sd.field_value)) {
+                                                    // Employment details repeatable section files handling if they stored it that way
+                                                    valueDisplay = sd.field_value.map((v: string, idx: number) => 
+                                                        v.startsWith('data:') ? <a key={idx} href={v} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline block text-xs truncate" title="View Uploaded Document">View Document {idx + 1}</a> : v
+                                                    );
+                                                } else if (String(sd.field_value).startsWith('data:')) {
+                                                    valueDisplay = (
+                                                        <a href={sd.field_value} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline text-xs truncate block" title="View Uploaded Document">
+                                                            View Uploaded Document
+                                                        </a>
+                                                    );
+                                                }
+                                            } else if (Array.isArray(sd.field_value)) {
+                                                // Handle array fields (e.g. string arrays from repeatable sections)
+                                                valueDisplay = (
+                                                    <ul className="list-disc list-inside text-xs">
+                                                        {sd.field_value.map((v: any, idx: number) => (
+                                                            <li key={idx} className="truncate">
+                                                                {String(v).startsWith('data:') ? <a href={v} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline inline-block truncate max-w-full align-bottom" title="View Uploaded Document">View Document</a> : String(v)}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                );
+                                            } else if (typeof sd.field_value === 'string' && sd.field_value.startsWith('[')) {
+                                                try {
+                                                    const parsed = JSON.parse(sd.field_value);
+                                                    if (Array.isArray(parsed)) {
+                                                        valueDisplay = (
+                                                            <ul className="list-disc list-inside text-xs">
+                                                                {parsed.map((v: any, idx: number) => (
+                                                                    <li key={idx} className="truncate">
+                                                                        {String(v).startsWith('data:') ? <a href={v} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline inline-block truncate max-w-full align-bottom" title="View Uploaded Document">View Document</a> : String(v)}
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        );
+                                                    }
+                                                } catch (e) {
+                                                    // Ignore json parse error, just show as text
+                                                }
+                                            }
+
+                                            return (
+                                                <div key={sd.id || i} className="bg-white dark:bg-gray-900 rounded p-3 border border-gray-100 dark:border-gray-800 shadow-sm">
+                                                    <div className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mb-1">
+                                                        {sd.service_name} &bull; {sd.field_label}
+                                                    </div>
+                                                    <div className="text-sm text-gray-800 dark:text-gray-200 break-words">
+                                                        {valueDisplay || <span className="italic text-gray-400 text-xs">No value</span>}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )
                 })}

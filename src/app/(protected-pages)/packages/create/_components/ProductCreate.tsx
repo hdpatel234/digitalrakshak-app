@@ -12,6 +12,7 @@ import toast from '@/components/ui/toast'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import { TbTrash } from 'react-icons/tb'
 import { useRouter } from 'next/navigation'
+import BottomStickyBar from '@/components/template/BottomStickyBar'
 
 type ApiResponsePayload = {
     status?: boolean
@@ -26,6 +27,7 @@ type ServiceOption = {
     serviceCode: string
     category: string
     description: string
+    price: number
 }
 
 const ProductCreate = () => {
@@ -47,6 +49,13 @@ const ProductCreate = () => {
         [selectedServiceIds],
     )
 
+    const accumulatedCost = useMemo(() => {
+        return selectedServiceIds.reduce((total, id) => {
+            const service = serviceOptions.find((s) => s.id === id)
+            return total + (service?.price || 0)
+        }, 0)
+    }, [selectedServiceIds, serviceOptions])
+
     const mapServiceOption = (item: unknown): ServiceOption => {
         const record =
             item && typeof item === 'object'
@@ -59,6 +68,7 @@ const ProductCreate = () => {
             serviceCode: String(record.service_code ?? ''),
             category: String(record.service_category_name ?? ''),
             description: String(record.description ?? ''),
+            price: Number(record.price ?? record.base_price ?? 0),
         }
     }
 
@@ -226,32 +236,34 @@ const ProductCreate = () => {
                         <h3>Create Package</h3>
                     </div>
                     <Form onSubmit={handleFormSubmit}>
-                        <FormItem
-                            label="Package Name"
-                            asterisk
-                            invalid={Boolean(packageNameError)}
-                            errorMessage={packageNameError}
-                        >
-                            <Input
-                                placeholder="Enter package name"
-                                value={packageName}
-                                onChange={(event) => {
-                                    setPackageName(event.target.value)
-                                    if (packageNameError) {
-                                        setPackageNameError('')
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormItem
+                                label="Package Name"
+                                asterisk
+                                invalid={Boolean(packageNameError)}
+                                errorMessage={packageNameError}
+                            >
+                                <Input
+                                    placeholder="Enter package name"
+                                    value={packageName}
+                                    onChange={(event) => {
+                                        setPackageName(event.target.value)
+                                        if (packageNameError) {
+                                            setPackageNameError('')
+                                        }
+                                    }}
+                                />
+                            </FormItem>
+                            <FormItem label="Description">
+                                <Input
+                                    placeholder="Enter description (optional)"
+                                    value={description}
+                                    onChange={(event) =>
+                                        setDescription(event.target.value)
                                     }
-                                }}
-                            />
-                        </FormItem>
-                        <FormItem label="Description">
-                            <Input
-                                placeholder="Enter description (optional)"
-                                value={description}
-                                onChange={(event) =>
-                                    setDescription(event.target.value)
-                                }
-                            />
-                        </FormItem>
+                                />
+                            </FormItem>
+                        </div>
 
                         <FormItem
                             label={`Services (${selectedServicesCount} selected)`}
@@ -298,14 +310,19 @@ const ProductCreate = () => {
                                                     >
                                                         <div className="flex flex-col w-full text-left ltr:ml-3 rtl:mr-3">
                                                             <div className="flex items-start justify-between w-full">
-                                                                <span className={`font-semibold text-base transition-colors ${isSelected ? 'text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'}`}>
-                                                                    {service.name || service.serviceCode}
-                                                                </span>
-                                                                {service.serviceCode && (
-                                                                    <span className="text-[11px] font-semibold px-2 py-1 bg-gray-100 text-gray-600 rounded-md dark:bg-gray-800 dark:text-gray-300 ml-2 whitespace-nowrap">
-                                                                        {service.serviceCode}
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className={`font-semibold text-base transition-colors ${isSelected ? 'text-indigo-900 dark:text-indigo-100' : 'text-gray-900 dark:text-gray-100'}`}>
+                                                                        {service.name || service.serviceCode}
                                                                     </span>
-                                                                )}
+                                                                    {service.serviceCode && (
+                                                                        <span className="text-[11px] font-semibold px-2 py-1 bg-gray-100 text-gray-600 rounded-md dark:bg-gray-800 dark:text-gray-300 whitespace-nowrap">
+                                                                            {service.serviceCode}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <span className="font-semibold text-gray-500 text-base">
+                                                                    ${service.price}
+                                                                </span>
                                                             </div>
                                                             {service.category && (
                                                                 <span className="text-[11px] font-bold text-indigo-500 mt-1 uppercase tracking-widest">
@@ -327,26 +344,37 @@ const ProductCreate = () => {
                             </div>
                         </FormItem>
 
-                        <div className="flex items-center justify-end mt-6">
-                            <Button
-                                className="ltr:mr-3 rtl:ml-3"
-                                type="button"
-                                customColorClass={() =>
-                                    'border-error ring-1 ring-error text-error hover:border-error hover:ring-error hover:text-error bg-transparent'
-                                }
-                                icon={<TbTrash />}
-                                onClick={handleDiscard}
-                            >
-                                Discard
-                            </Button>
-                            <Button
-                                variant="solid"
-                                type="submit"
-                                loading={isSubmiting}
-                            >
-                                Create Package
-                            </Button>
+                        <div className="mt-4 px-5 py-4 border border-gray-900 dark:border-white rounded-xl flex justify-between items-center shadow-sm">
+                            <span className="font-semibold text-gray-500 dark:text-gray-400">
+                                Accumulated Per Candidate Cost:
+                            </span>
+                            <span className="font-bold text-xl text-gray-900 dark:text-white">
+                                ${accumulatedCost.toFixed(2)}
+                            </span>
                         </div>
+
+                        <BottomStickyBar>
+                            <div className="flex items-center justify-end">
+                                <Button
+                                    className="ltr:mr-3 rtl:ml-3"
+                                    type="button"
+                                    customColorClass={() =>
+                                        'border-error ring-1 ring-error text-error hover:border-error hover:ring-error hover:text-error bg-transparent'
+                                    }
+                                    icon={<TbTrash />}
+                                    onClick={handleDiscard}
+                                >
+                                    Discard
+                                </Button>
+                                <Button
+                                    variant="solid"
+                                    type="submit"
+                                    loading={isSubmiting}
+                                >
+                                    Create Package
+                                </Button>
+                            </div>
+                        </BottomStickyBar>
                     </Form>
                 </AdaptiveCard>
             </Container>

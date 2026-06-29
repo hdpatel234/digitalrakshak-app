@@ -50,10 +50,10 @@ const mapPackage = (item: unknown): Product => {
             Number.parseFloat(
                 String(
                     record.total_price ??
-                        record.final_price ??
-                        record.price ??
-                        record.total_price ??
-                        0,
+                    record.final_price ??
+                    record.price ??
+                    record.total_price ??
+                    0,
                 ),
             ) || 0,
         services,
@@ -199,7 +199,7 @@ export default async function Page({ searchParams }: PageProps) {
                                         <TbLayersLinked className="text-indigo-600 dark:text-indigo-400 text-xl" />
                                     </div>
                                 </div>
-                                
+
                                 {pkg.description && pkg.description !== '-' && (
                                     <p className="text-gray-500 dark:text-gray-400 mb-5 text-sm">
                                         {pkg.description}
@@ -237,7 +237,7 @@ export default async function Page({ searchParams }: PageProps) {
                                                 }).format(pkg.price)}
                                             </span>
                                             <span className="text-sm text-gray-500 dark:text-gray-400 font-medium ml-1">
-                                                /run
+                                                /candidate
                                             </span>
                                         </div>
                                     </div>
