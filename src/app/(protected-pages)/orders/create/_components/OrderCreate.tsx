@@ -4,6 +4,8 @@ import Button from '@/components/ui/Button'
 import Notification from '@/components/ui/Notification'
 import toast from '@/components/ui/toast'
 import Container from '@/components/shared/Container'
+import Dialog from '@/components/ui/Dialog'
+import Spinner from '@/components/ui/Spinner'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import OrderForm from '@/components/view/OrderForm'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -29,6 +31,7 @@ const OrderCreate = () => {
         useState(false)
     const [isSubmiting, setIsSubmiting] = useState(false)
     const [isDraftSubmitting, setIsDraftSubmitting] = useState(false)
+    const [isPaymentLoading, setIsPaymentLoading] = useState(false)
 
     const {
         selectedProduct,
@@ -393,6 +396,7 @@ const OrderCreate = () => {
                 initBody.total_amount_in_paise = createInfo.totalAmountInPaise
             }
 
+            setIsPaymentLoading(true)
             const paymentHandled = await startOrderPaymentFlow({
                 orderId: createInfo.orderId,
                 initBody,
@@ -423,6 +427,7 @@ const OrderCreate = () => {
                     router.push('/orders/list')
                 },
             })
+            setIsPaymentLoading(false)
 
             if (paymentHandled) {
                 return
@@ -505,7 +510,7 @@ const OrderCreate = () => {
                                 loading={isSubmiting}
                                 disabled={!isFormValid || isPrefillLoading}
                             >
-                                Create Order
+                                Place Order
                             </Button>
                         </div>
                     </div>
@@ -525,6 +530,16 @@ const OrderCreate = () => {
                     be undo.{' '}
                 </p>
             </ConfirmDialog>
+
+            <Dialog
+                isOpen={isPaymentLoading}
+                closable={false}
+                width={300}
+                contentClassName="flex flex-col items-center justify-center p-6 gap-4"
+            >
+                <Spinner size={40} />
+                <h5 className="text-center mt-2">Initializing Payment...</h5>
+            </Dialog>
         </>
     )
 }

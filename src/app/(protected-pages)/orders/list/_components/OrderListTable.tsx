@@ -10,6 +10,8 @@ import useAppendQueryParams from '@/utils/hooks/useAppendQueryParams'
 import { useRouter } from 'next/navigation'
 import Notification from '@/components/ui/Notification'
 import toast from '@/components/ui/toast'
+import Dialog from '@/components/ui/Dialog'
+import Spinner from '@/components/ui/Spinner'
 import { startOrderPaymentFlow } from '@/utils/payments/orderPaymentFlow'
 import {
     TbCreditCard,
@@ -84,9 +86,11 @@ const OrderColumn = ({ row }: { row: Order }) => {
 const ActionColumn = ({ row }: { row: Order }) => {
     const router = useRouter()
     const [downloading, setDownloading] = useState(false)
+    const [isPaymentLoading, setIsPaymentLoading] = useState(false)
     const statusKey = row.status
     const isDraft = statusKey === 'draft'
     const isPending = statusKey === 'pending'
+    const canDownloadInvoice = !isDraft && !isPending
 
     const onEdit = () => {
         router.push(`/orders/create?orderId=${row.id}`)
@@ -94,7 +98,8 @@ const ActionColumn = ({ row }: { row: Order }) => {
 
     const onMakePayment = () => {
         void (async () => {
-            const handled = await startOrderPaymentFlow({
+            setIsPaymentLoading(true)
+            await startOrderPaymentFlow({
                 orderId: row.id,
                 fetchOrderDetails: true,
                 onInitError: (message) => {
@@ -121,6 +126,7 @@ const ActionColumn = ({ row }: { row: Order }) => {
                     router.push('/orders/list')
                 },
             })
+            setIsPaymentLoading(false)
         })()
     }
 
@@ -166,7 +172,7 @@ const ActionColumn = ({ row }: { row: Order }) => {
 
     return (
         <div className="flex justify-center text-lg gap-1">
-            {isDraft && (
+            {(isDraft || isPending) && (
                 <Tooltip wrapperClass="flex" title="Edit">
                     <span className="cursor-pointer p-2" onClick={onEdit}>
                         <TbPencil />
@@ -183,7 +189,7 @@ const ActionColumn = ({ row }: { row: Order }) => {
                     </span>
                 </Tooltip>
             )}
-            {!isDraft && (
+            {canDownloadInvoice && (
                 <Tooltip wrapperClass="flex" title="Download Invoice">
                     <span
                         className={`cursor-pointer p-2 text-primary hover:opacity-80 ${downloading ? 'opacity-50 pointer-events-none' : ''}`}
@@ -193,6 +199,16 @@ const ActionColumn = ({ row }: { row: Order }) => {
                     </span>
                 </Tooltip>
             )}
+
+            <Dialog
+                isOpen={isPaymentLoading}
+                closable={false}
+                width={300}
+                contentClassName="flex flex-col items-center justify-center p-6 gap-4"
+            >
+                <Spinner size={40} />
+                <h5 className="text-center mt-2">Initializing Payment...</h5>
+            </Dialog>
         </div>
     )
 }
