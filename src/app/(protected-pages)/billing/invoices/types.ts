@@ -28,6 +28,11 @@ export type Invoice = {
     updatedBy: number
     createdAt: string
     updatedAt: string
+    order?: {
+        orderNumber?: string
+        clientOrderNumber?: string
+        [key: string]: unknown
+    } | null
 }
 
 export type Invoices = Invoice[]

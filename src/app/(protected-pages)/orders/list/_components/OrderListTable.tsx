@@ -1,7 +1,6 @@
 'use client'
 import { useMemo, useState } from 'react'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
+
 import Tag from '@/components/ui/Tag'
 import Tooltip from '@/components/ui/Tooltip'
 import DataTable from '@/components/shared/DataTable'
@@ -133,35 +132,42 @@ const ActionColumn = ({ row }: { row: Order }) => {
     const onDownloadInvoice = async () => {
         try {
             setDownloading(true)
-            
-            const doc = new jsPDF()
-            
-            doc.setFontSize(20)
-            doc.text("Invoice", 105, 20, { align: "center" })
-            
-            doc.setFontSize(12)
-            doc.text(`Order ID: #${row.displayId || row.id}`, 14, 40)
-            doc.text(`Date: ${dayjs.unix(row.date).format('DD/MM/YYYY')}`, 14, 50)
-            doc.text(`Customer: ${row.customer}`, 14, 60)
-            doc.text(`Status: ${row.status.charAt(0).toUpperCase() + row.status.slice(1)}`, 14, 70)
-            
-            autoTable(doc, {
-                startY: 85,
-                head: [['Description', 'Amount']],
-                body: [
-                    ['Order Total', `Rs. ${row.totalAmount}`],
-                    ['Payment Status', row.paymentStatus ? (row.paymentStatus.charAt(0).toUpperCase() + row.paymentStatus.slice(1)) : 'Pending'],
-                    ['Payment Gateway', row.paymentGatewayName || '-'],
-                    ['Payment ID', row.paymentId && row.paymentId !== '-' ? row.paymentId : '-']
-                ],
-                headStyles: { fillColor: [59, 130, 246] }
+            const response = await fetch(`/api/client/orders/${row.id}/pdf`, {
+                method: 'GET',
             })
-            
-            doc.save(`Invoice_Order_${row.displayId || row.id}.pdf`)
+
+            if (!response.ok) {
+                let errorMessage = 'Failed to download invoice PDF'
+                try {
+                    const errorJson = await response.json()
+                    if (errorJson?.message) {
+                        errorMessage = errorJson.message
+                    }
+                } catch {
+                    // Ignore json parsing error if the content is not json
+                }
+                toast.push(
+                    <Notification type="danger" title="Download Failed">
+                        {errorMessage}
+                    </Notification>,
+                    { placement: 'top-center' }
+                )
+                return
+            }
+
+            const blob = await response.blob()
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = row.invoiceNumber ? `${row.invoiceNumber}.pdf` : `Invoice_Order_${row.displayId || row.id}.pdf`
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
         } catch (error) {
             toast.push(
                 <Notification type="danger" title="Error">
-                    Something went wrong while generating the invoice.
+                    Something went wrong while downloading.
                 </Notification>,
                 { placement: 'top-center' }
             )

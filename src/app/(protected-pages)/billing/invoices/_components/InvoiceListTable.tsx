@@ -139,6 +139,15 @@ const InvoiceListTable = ({
                 ),
             },
             {
+                header: 'Order',
+                accessorKey: 'order.orderNumber',
+                cell: (props) => (
+                    <span className="font-semibold block">
+                        {props.row.original.order?.orderNumber ? `#${props.row.original.order.orderNumber}` : '-'}
+                    </span>
+                ),
+            },
+            {
                 header: 'Total',
                 accessorKey: 'totalAmount',
                 cell: (props) => {
