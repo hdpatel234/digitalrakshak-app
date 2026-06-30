@@ -23,7 +23,7 @@ const conceptsRoute: Routes = {
     },
 
     '/candidates/edit/[slug]': {
-        key: 'concepts.candidates.candidateEdit',
+        key: 'concepts.candidates.candidateList',
         authority: [ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
@@ -32,7 +32,7 @@ const conceptsRoute: Routes = {
     },
 
     '/candidates/details/[slug]': {
-        key: 'concepts.candidates.candidateDetails',
+        key: 'concepts.candidates.candidateList',
         authority: [ADMIN, USER],
         meta: {
             pageContainerType: 'contained',
