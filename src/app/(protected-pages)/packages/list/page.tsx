@@ -243,12 +243,21 @@ export default async function Page({ searchParams }: PageProps) {
                                     </div>
 
                                     <div className="flex gap-3 w-full">
-                                        <Link
-                                            href={`/orders/create?package_id=${pkg.id}`}
-                                            className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition-colors shadow-sm text-sm text-center"
-                                        >
-                                            Place order
-                                        </Link>
+                                        {pkg.availableCandidates === 0 ? (
+                                            <button
+                                                disabled
+                                                className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-gray-400 text-white rounded-lg font-semibold shadow-sm text-sm text-center cursor-not-allowed opacity-70"
+                                            >
+                                                Place order
+                                            </button>
+                                        ) : (
+                                            <Link
+                                                href={`/orders/create?package_id=${pkg.id}`}
+                                                className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition-colors shadow-sm text-sm text-center"
+                                            >
+                                                Place order
+                                            </Link>
+                                        )}
                                         {isEditable && (
                                             <Link
                                                 href={`/packages/edit/${pkg.id}`}
