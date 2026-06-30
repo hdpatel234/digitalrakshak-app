@@ -13,6 +13,7 @@ import {
 } from '@/constants/route.constant'
 import { apiGetSearchResult } from '@/services/CommonService'
 import debounce from 'lodash/debounce'
+import Spinner from '@/components/ui/Spinner'
 import { HiOutlineSearch, HiChevronRight } from 'react-icons/hi'
 import { PiMagnifyingGlassDuotone } from 'react-icons/pi'
 import Link from 'next/link'
@@ -32,37 +33,13 @@ type SearchResult = {
     data: SearchData[]
 }
 
-const recommendedSearch: SearchResult[] = [
-    {
-        title: 'Recommended',
-        data: [
-            {
-                key: 'guide.documentation',
-                path: `${GUIDE_PREFIX_PATH}/documentation/introduction`,
-                title: 'Documentation',
-                icon: 'documentation',
-                category: 'Docs',
-                categoryTitle: 'Guide',
-            },
-            {
-                key: 'guide.changeLog',
-                path: `${GUIDE_PREFIX_PATH}/changelog`,
-                title: 'Changelog',
-                icon: 'changeLog',
-                category: 'Docs',
-                categoryTitle: 'Guide',
-            },
-            {
-                key: 'uiComponent.common.button',
-                path: `${UI_COMPONENTS_PREFIX_PATH}/button`,
-                title: 'Button',
-                icon: 'uiCommonButton',
-                category: 'Common',
-                categoryTitle: 'UI Components',
-            },
-        ],
-    },
-]
+type SearchApiResponse = {
+    status: boolean
+    message: string
+    data: SearchResult[]
+}
+
+
 
 const ListItem = (props: {
     icon: string
@@ -110,15 +87,16 @@ const ListItem = (props: {
 
 const _Search = ({ className }: { className?: string }) => {
     const [searchDialogOpen, setSearchDialogOpen] = useState(false)
-    const [searchResult, setSearchResult] =
-        useState<SearchResult[]>(recommendedSearch)
+    const [searchResult, setSearchResult] = useState<SearchResult[]>([])
     const [noResult, setNoResult] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
 
     const inputRef = useRef<HTMLInputElement>(null)
 
     const handleReset = () => {
         setNoResult(false)
-        setSearchResult(recommendedSearch)
+        setSearchResult([])
+        setIsLoading(false)
     }
 
     const handleSearchOpen = () => {
@@ -134,7 +112,7 @@ const _Search = ({ className }: { className?: string }) => {
 
     async function handleDebounceFn(query: string) {
         if (!query) {
-            setSearchResult(recommendedSearch)
+            setSearchResult([])
             return
         }
 
@@ -142,13 +120,19 @@ const _Search = ({ className }: { className?: string }) => {
             setNoResult(false)
         }
 
-        const respond = await apiGetSearchResult<SearchResult[]>({ query })
+        setIsLoading(true)
 
-        if (respond) {
-            if (respond.length === 0) {
-                setNoResult(true)
+        try {
+            const respond = await apiGetSearchResult<SearchApiResponse>({ query })
+
+            if (respond && respond.status && respond.data) {
+                if (respond.data.length === 0) {
+                    setNoResult(true)
+                }
+                setSearchResult(respond.data)
             }
-            setSearchResult(respond)
+        } finally {
+            setIsLoading(false)
         }
     }
 
@@ -200,7 +184,13 @@ const _Search = ({ className }: { className?: string }) => {
                     </div>
                     <div className="py-6 px-5">
                         <ScrollBar className=" max-h-[350px] overflow-y-auto">
-                            {searchResult.map((result) => (
+                            {isLoading && (
+                                <div className="my-10 text-center flex flex-col items-center justify-center">
+                                    <Spinner className="text-4xl mb-3 text-primary" />
+                                    <span className="text-gray-500 text-lg">Searching...</span>
+                                </div>
+                            )}
+                            {!isLoading && searchResult.map((result) => (
                                 <div key={result.title} className="mb-4">
                                     <h6 className="mb-3">{result.title}</h6>
                                     {result.data.map((data, index) => (
@@ -217,7 +207,7 @@ const _Search = ({ className }: { className?: string }) => {
                                     ))}
                                 </div>
                             ))}
-                            {searchResult.length === 0 && noResult && (
+                            {!isLoading && searchResult.length === 0 && noResult && (
                                 <div className="my-10 text-center text-lg">
                                     <span>No results for </span>
                                     <span className="heading-text">
@@ -225,6 +215,12 @@ const _Search = ({ className }: { className?: string }) => {
                                         {inputRef.current?.value}
                                         {`'`}
                                     </span>
+                                </div>
+                            )}
+                            {!isLoading && searchResult.length === 0 && !noResult && (
+                                <div className="my-10 text-center text-lg text-gray-500 flex flex-col items-center justify-center">
+                                    <HiOutlineSearch className="text-4xl mb-3 text-gray-300" />
+                                    <span>Start typing to search...</span>
                                 </div>
                             )}
                         </ScrollBar>

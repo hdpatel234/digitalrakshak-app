@@ -31,7 +31,7 @@ export async function apiGetNotificationList() {
 
 export async function apiGetSearchResult<T>(params: { query: string }) {
     return ApiService.fetchDataWithAxios<T>({
-        url: '/search',
+        url: '/client/search',
         method: 'get',
         params,
     })
