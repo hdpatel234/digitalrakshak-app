@@ -1,5 +1,7 @@
 'use client'
 import { useMemo, useState } from 'react'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import Tag from '@/components/ui/Tag'
 import Tooltip from '@/components/ui/Tooltip'
 import DataTable from '@/components/shared/DataTable'
@@ -132,45 +134,37 @@ const ActionColumn = ({ row }: { row: Order }) => {
     }
 
     const onDownloadInvoice = async () => {
-        if (!row.invoiceId) return
         try {
             setDownloading(true)
-            const response = await fetch(`/api/client/invoices/${row.invoiceId}/pdf`, {
-                method: 'GET',
+            
+            const doc = new jsPDF()
+            
+            doc.setFontSize(20)
+            doc.text("Invoice", 105, 20, { align: "center" })
+            
+            doc.setFontSize(12)
+            doc.text(`Order ID: #${row.displayId || row.id}`, 14, 40)
+            doc.text(`Date: ${dayjs.unix(row.date).format('DD/MM/YYYY')}`, 14, 50)
+            doc.text(`Customer: ${row.customer}`, 14, 60)
+            doc.text(`Status: ${row.status.charAt(0).toUpperCase() + row.status.slice(1)}`, 14, 70)
+            
+            autoTable(doc, {
+                startY: 85,
+                head: [['Description', 'Amount']],
+                body: [
+                    ['Order Total', `Rs. ${row.totalAmount}`],
+                    ['Payment Status', row.paymentStatus ? (row.paymentStatus.charAt(0).toUpperCase() + row.paymentStatus.slice(1)) : 'Pending'],
+                    ['Payment Gateway', row.paymentGatewayName || '-'],
+                    ['Payment ID', row.paymentId && row.paymentId !== '-' ? row.paymentId : '-']
+                ],
+                headStyles: { fillColor: [59, 130, 246] }
             })
-
-            if (!response.ok) {
-                let errorMessage = 'Failed to download invoice PDF'
-                try {
-                    const errorJson = await response.json()
-                    if (errorJson?.message) {
-                        errorMessage = errorJson.message
-                    }
-                } catch {
-                    // Ignore wrapper
-                }
-                toast.push(
-                    <Notification type="danger" title="Download Failed">
-                        {errorMessage}
-                    </Notification>,
-                    { placement: 'top-center' }
-                )
-                return
-            }
-
-            const blob = await response.blob()
-            const url = window.URL.createObjectURL(blob)
-            const a = document.createElement('a')
-            a.href = url
-            a.download = `Invoice_Order_${row.displayId || row.id}.pdf`
-            document.body.appendChild(a)
-            a.click()
-            window.URL.revokeObjectURL(url)
-            document.body.removeChild(a)
+            
+            doc.save(`Invoice_Order_${row.displayId || row.id}.pdf`)
         } catch (error) {
             toast.push(
                 <Notification type="danger" title="Error">
-                    Something went wrong while downloading.
+                    Something went wrong while generating the invoice.
                 </Notification>,
                 { placement: 'top-center' }
             )
@@ -203,7 +197,7 @@ const ActionColumn = ({ row }: { row: Order }) => {
                     </span>
                 </Tooltip>
             )}
-            {row.invoiceId && (
+            {!isDraft && (
                 <Tooltip wrapperClass="flex" title="Download Invoice">
                     <span
                         className={`cursor-pointer p-2 text-primary hover:opacity-80 ${downloading ? 'opacity-50 pointer-events-none' : ''}`}
