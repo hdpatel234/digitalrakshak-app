@@ -8,6 +8,7 @@ import ActivePackages from './_components/ActivePackages'
 import LatestCandidates from './_components/LatestCandidates'
 import Container from '@/components/shared/Container'
 import getServerSession from '@/server/actions/auth/getServerSession'
+import { DashboardProvider } from './_components/DashboardProvider'
 
 export default async function Page() {
     const session = await getServerSession()
@@ -15,28 +16,30 @@ export default async function Page() {
     
     return (
         <Container>
-            <div className="flex flex-col gap-4">
-                <DashboardHeader userName={userName} />
-                <DashboardStats />
-                
-                <VerificationTrendChart />
-                
-                <RecentActivity />
-                
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2">
-                        <ServiceUsageChart />
+            <DashboardProvider>
+                <div className="flex flex-col gap-4">
+                    <DashboardHeader userName={userName} />
+                    <DashboardStats />
+                    
+                    <VerificationTrendChart />
+                    
+                    <RecentActivity />
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="lg:col-span-2">
+                            <ServiceUsageChart />
+                        </div>
+                        <div>
+                            <MonthSpend />
+                        </div>
                     </div>
-                    <div>
-                        <MonthSpend />
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <ActivePackages />
+                        <LatestCandidates />
                     </div>
                 </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <ActivePackages />
-                    <LatestCandidates />
-                </div>
-            </div>
+            </DashboardProvider>
         </Container>
     )
 }

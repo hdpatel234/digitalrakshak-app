@@ -72,10 +72,15 @@ const mapCandidateToCustomer = (item: unknown, index: number): Customer => {
     const id = String(record.id ?? record.candidate_id ?? `candidate-${index}`)
     const status = String(record.status ?? 'active').toLowerCase()
 
-    const employeeId = String(record.employee_id ?? record.employeeId ?? `EMP-${1000 + index}`)
-    const packageName = String(record.package_name ?? record.package ?? 'Basic KYC')
-    const progress = toNumber(record.progress ?? record.completion, Math.floor(Math.random() * 100))
-    const assignedDate = String(record.assigned_date ?? record.assignedDate ?? '25 Jun 2026')
+    const packageName = String(record.package_name ?? record.package ?? '-')
+    const progress = toNumber(record.progress ?? record.completion, 0)
+    
+    let assignedDateStr = String(record.created_at ?? record.createdAt ?? record.assigned_date ?? record.assignedDate ?? '');
+    if (!assignedDateStr) {
+        assignedDateStr = new Date().toISOString();
+    }
+    const dateObj = new Date(assignedDateStr);
+    const assignedDate = isNaN(dateObj.getTime()) ? assignedDateStr : dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
     return {
         id,
@@ -87,7 +92,6 @@ const mapCandidateToCustomer = (item: unknown, index: number): Customer => {
         role: String(record.role ?? 'candidate'),
         lastOnline: toNumber(record.lastOnline, Date.now()),
         status,
-        employeeId,
         package: packageName,
         progress,
         assignedDate,

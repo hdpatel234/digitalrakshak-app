@@ -8,7 +8,8 @@ import Notification from '@/components/ui/Notification'
 import toast from '@/components/ui/toast'
 import useAppendQueryParams from '@/utils/hooks/useAppendQueryParams'
 import { useRouter } from 'next/navigation'
-import { TbEye, TbRefresh, TbTrash } from 'react-icons/tb'
+import { TbRefresh, TbCopy } from 'react-icons/tb'
+import Avatar from '@/components/ui/Avatar'
 import { useInvitationListStore } from '../_store/invitationListStore'
 import type { OnSortParam, ColumnDef, Row } from '@/components/shared/DataTable'
 import type { Invitation, InvitationPackage } from '../types'
@@ -18,12 +19,46 @@ type InvitationListTableProps = {
     pageSize?: number
 }
 
-const statusColor: Record<string, string> = {
-    pending: 'bg-amber-100 text-amber-700',
-    sent: 'bg-sky-100 text-sky-700',
-    viewed: 'bg-emerald-100 text-emerald-700',
-    completed: 'bg-indigo-100 text-indigo-700',
-    expired: 'bg-red-100 text-red-700',
+const STATUS_TAG_STYLES = {
+    success: 'bg-emerald-200 dark:bg-emerald-200 text-gray-900 dark:text-gray-900',
+    warning: 'bg-amber-200 dark:bg-amber-200 text-gray-900 dark:text-gray-900',
+    danger: 'bg-red-200 dark:bg-red-200 text-gray-900 dark:text-gray-900',
+    info: 'bg-sky-200 dark:bg-sky-200 text-gray-900 dark:text-gray-900',
+    muted: 'bg-gray-200 dark:bg-gray-200 text-gray-900 dark:text-gray-900',
+} as const
+
+const getStatusTagClass = (status: string) => {
+    const normalized = status.trim().toLowerCase()
+
+    if (
+        ['active', 'approved', 'accepted', 'verified', 'hired', 'completed'].includes(
+            normalized,
+        )
+    ) {
+        return STATUS_TAG_STYLES.success
+    }
+
+    if (
+        ['pending', 'in_progress', 'in progress', 'on_hold', 'on hold', 'shortlisted', 'sent'].includes(
+            normalized,
+        )
+    ) {
+        return STATUS_TAG_STYLES.warning
+    }
+
+    if (
+        ['blocked', 'rejected', 'declined', 'failed', 'inactive', 'cancelled', 'canceled', 'expired'].includes(
+            normalized,
+        )
+    ) {
+        return STATUS_TAG_STYLES.danger
+    }
+
+    if (['new', 'invited', 'interview_scheduled', 'interviewed', 'viewed'].includes(normalized)) {
+        return STATUS_TAG_STYLES.info
+    }
+
+    return STATUS_TAG_STYLES.muted
 }
 
 const formatDateTime = (value?: string | null) => {
@@ -84,6 +119,32 @@ const PackageCell = ({ invitation }: { invitation: Invitation }) => {
     )
 }
 
+const NameColumn = ({ row }: { row: Invitation }) => {
+    const candidate = row.candidate
+    const name = candidate?.name || '-'
+    const firstName = candidate?.first_name || name.split(' ')[0] || ''
+    const lastName = candidate?.last_name || name.split(' ')[1] || ''
+    const initials = `${firstName[0] || ''}${lastName[0] || ''}`.toUpperCase()
+    
+    return (
+        <div className="flex items-center">
+            <Avatar
+                size={40}
+                shape="circle"
+                className="bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-100 font-semibold text-sm"
+            >
+                {initials}
+            </Avatar>
+            <div className="ml-3 rtl:mr-3 flex flex-col">
+                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                    {name}
+                </span>
+                <span className="text-xs text-gray-500">{candidate?.email || '-'}</span>
+            </div>
+        </div>
+    )
+}
+
 const InvitationListTable = ({
     pageIndex = 1,
     pageSize = 10,
@@ -106,10 +167,6 @@ const InvitationListTable = ({
 
     const reloadData = () => {
         router.refresh()
-    }
-
-    const handleViewDetails = (invitation: Invitation) => {
-        router.push(`/invitations/details/${invitation.id}`)
     }
 
     const handleResend = async (invitation: Invitation) => {
@@ -149,140 +206,104 @@ const InvitationListTable = ({
         }
     }
 
-    const handleDelete = async (invitation: Invitation) => {
-        const confirmed = window.confirm(
-            `Delete invitation #${invitation.id}? This action cannot be undone.`,
-        )
-        if (!confirmed) {
-            return
-        }
-
-        setLoadingActionId(invitation.id)
+    const handleCopyLink = async (link: string) => {
         try {
-            const response = await fetch(`/api/client/invitations/${invitation.id}`, {
-                method: 'DELETE',
-            })
-            const payload = (await response.json()) as {
-                status?: boolean
-                message?: string
-            }
-
-            if (!response.ok || !payload.status) {
-                throw new Error(payload.message || 'Failed to delete invitation')
-            }
-
+            await navigator.clipboard.writeText(link)
             toast.push(
                 <Notification type="success">
-                    {payload.message || 'Invitation deleted successfully'}
+                    Link copied to clipboard
                 </Notification>,
                 { placement: 'top-center' },
             )
-            reloadData()
-        } catch (error) {
-            const errorMessage =
-                error instanceof Error ? error.message : 'Failed to delete invitation'
+        } catch (err) {
             toast.push(
-                <Notification type="danger">{errorMessage}</Notification>,
+                <Notification type="danger">
+                    Failed to copy link
+                </Notification>,
                 { placement: 'top-center' },
             )
-        } finally {
-            setLoadingActionId(null)
         }
     }
 
     const columns: ColumnDef<Invitation>[] = [
             {
-                header: 'Candidate',
+                header: 'CANDIDATE',
                 accessorKey: 'candidate.name',
-                cell: (props) => props.row.original.candidate?.name || '-',
+                cell: (props) => <NameColumn row={props.row.original} />,
             },
             {
-                header: 'Email',
-                accessorKey: 'candidate.email',
-                cell: (props) => props.row.original.candidate?.email || '-',
-            },
-            {
-                header: 'Phone',
+                header: 'PHONE',
                 accessorKey: 'candidate.phone',
                 cell: (props) => props.row.original.candidate?.phone || '-',
             },
             {
-                header: 'Packages',
+                header: 'PACKAGES',
                 id: 'packages',
                 cell: (props) => <PackageCell invitation={props.row.original} />,
             },
-            // {
-            //     header: 'Type',
-            //     accessorKey: 'invitation_type',
-            //     cell: (props) => (
-            //         <span className="uppercase">
-            //             {props.row.original.invitation_type || '-'}
-            //         </span>
-            //     ),
-            // },
             {
-                header: 'Invited At',
+                header: 'INVITED AT',
                 accessorKey: 'invited_at',
-                cell: (props) => formatDateTime(props.row.original.invited_at),
+                cell: (props) => (
+                    <span className="whitespace-nowrap">
+                        {formatDateTime(props.row.original.invited_at)}
+                    </span>
+                ),
             },
             {
-                header: 'Expires At',
+                header: 'EXPIRES AT',
                 accessorKey: 'expires_at',
-                cell: (props) => formatDateTime(props.row.original.expires_at),
+                cell: (props) => (
+                    <span className="whitespace-nowrap">
+                        {formatDateTime(props.row.original.expires_at)}
+                    </span>
+                ),
             },
             {
-                header: 'Status',
+                header: 'STATUS',
                 accessorKey: 'status',
                 cell: (props) => {
                     const status = String(props.row.original.status || '').toLowerCase()
                     return (
-                        <Tag className={statusColor[status] || 'bg-gray-100 text-gray-700'}>
+                        <Tag className={getStatusTagClass(status)}>
                             <span className="capitalize">{status || '-'}</span>
                         </Tag>
                     )
                 },
             },
             {
-                header: 'Action',
+                header: 'ACTIONS',
                 id: 'action',
                 cell: (props) => {
                     const invitation = props.row.original
                     const isLoading = loadingActionId === invitation.id
+                    const isCompleted = String(invitation.status || '').toLowerCase() === 'completed'
                     return (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                             <Tooltip title="Resend">
                                 <div
-                                    className={`text-xl select-none font-semibold cursor-pointer ${
-                                        isLoading ? 'opacity-50 pointer-events-none' : ''
+                                    className={`text-xl select-none font-semibold ${
+                                        (isLoading || isCompleted) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                                     }`}
                                     role="button"
-                                    onClick={() => handleResend(invitation)}
+                                    onClick={() => !isCompleted && !isLoading && handleResend(invitation)}
                                 >
                                     <TbRefresh
                                         className={isLoading ? 'animate-spin' : ''}
                                     />
                                 </div>
                             </Tooltip>
-                            <Tooltip title="View">
-                                <div
-                                    className="text-xl cursor-pointer select-none font-semibold"
-                                    role="button"
-                                    onClick={() => handleViewDetails(invitation)}
-                                >
-                                    <TbEye />
-                                </div>
-                            </Tooltip>
-                            <Tooltip title="Delete">
-                                <div
-                                    className={`text-xl cursor-pointer select-none font-semibold text-error ${
-                                        isLoading ? 'opacity-50 pointer-events-none' : ''
-                                    }`}
-                                    role="button"
-                                    onClick={() => handleDelete(invitation)}
-                                >
-                                    <TbTrash />
-                                </div>
-                            </Tooltip>
+                            {invitation.form_link && (
+                                <Tooltip title="Copy Link">
+                                    <div
+                                        className="text-xl cursor-pointer select-none font-semibold"
+                                        role="button"
+                                        onClick={() => handleCopyLink(invitation.form_link!)}
+                                    >
+                                        <TbCopy />
+                                    </div>
+                                </Tooltip>
+                            )}
                         </div>
                     )
                 },

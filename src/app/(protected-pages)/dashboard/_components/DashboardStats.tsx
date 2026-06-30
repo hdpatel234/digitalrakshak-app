@@ -1,6 +1,8 @@
+'use client'
 import React from 'react';
 import { FiUsers, FiClock, FiCheckCircle, FiShield, FiCreditCard, FiZap, FiArrowUpRight, FiArrowDownRight } from 'react-icons/fi';
 import Card from '@/components/ui/Card';
+import { useDashboardData } from './DashboardProvider';
 
 const StatCard = ({ title, value, change, changeText, isPositive, isNegative, icon: Icon }) => (
     <Card className="flex flex-col justify-between">
@@ -23,10 +25,18 @@ const StatCard = ({ title, value, change, changeText, isPositive, isNegative, ic
 );
 
 const DashboardStats = () => {
-    const stats = [
+    const { data, loading } = useDashboardData();
+
+    if (loading || !data?.stats) {
+        return <div className="animate-pulse flex space-x-4 mb-6"><div className="flex-1 space-y-4 py-1"><div className="h-24 bg-gray-200 rounded"></div></div></div>;
+    }
+
+    const { stats } = data;
+
+    const statsConfig = [
         {
-            title: 'Candidates Added',
-            value: '1,482',
+            title: 'Total Candidates',
+            value: stats.total_verifications?.toLocaleString() || '0',
             change: '+12.4%',
             changeText: 'vs last 30 days',
             isPositive: true,
@@ -42,7 +52,7 @@ const DashboardStats = () => {
         },
         {
             title: 'In Progress',
-            value: '1,410',
+            value: stats.in_progress?.toLocaleString() || '0',
             change: '+18.2%',
             changeText: 'vs last 30 days',
             isPositive: true,
@@ -50,7 +60,7 @@ const DashboardStats = () => {
         },
         {
             title: 'Insufficiency',
-            value: '30',
+            value: stats.flagged?.toLocaleString() || '0',
             change: '+2.1%',
             changeText: 'review required',
             isNegative: true,
@@ -66,7 +76,7 @@ const DashboardStats = () => {
         },
         {
             title: 'Verification Completed',
-            value: '12,842',
+            value: stats.completed?.toLocaleString() || '0',
             change: '+4.6%',
             changeText: 'success rate',
             isPositive: true,
@@ -76,7 +86,7 @@ const DashboardStats = () => {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-            {stats.map((stat, index) => (
+            {statsConfig.map((stat, index) => (
                 <StatCard key={index} {...stat} />
             ))}
         </div>

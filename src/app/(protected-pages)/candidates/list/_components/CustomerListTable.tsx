@@ -31,6 +31,7 @@ type PackageOption = {
     name: string
     packageCode: string
     description: string
+    services?: any[]
 }
 
 type ApiResponsePayload = {
@@ -275,6 +276,7 @@ const CustomerListTable = ({
             name: String(record.package_name ?? record.name ?? ''),
             packageCode: String(record.package_code ?? ''),
             description: String(record.description ?? ''),
+            services: Array.isArray(record.services) ? record.services : [],
         }
     }
 
@@ -444,11 +446,6 @@ const CustomerListTable = ({
                 },
             },
             {
-                header: 'EMPLOYEE ID',
-                accessorKey: 'employeeId',
-                cell: (props) => <span>{props.row.original.employeeId}</span>,
-            },
-            {
                 header: 'PACKAGE',
                 accessorKey: 'package',
                 cell: (props) => <span className="font-medium text-gray-800 dark:text-gray-200">{props.row.original.package}</span>,
@@ -490,7 +487,7 @@ const CustomerListTable = ({
                 },
             },
             {
-                header: 'ASSIGNED',
+                header: 'CREATED AT',
                 accessorKey: 'assignedDate',
                 cell: (props) => <span className="text-gray-600 dark:text-gray-400">{props.row.original.assignedDate}</span>,
             },
@@ -592,7 +589,7 @@ const CustomerListTable = ({
                         : 'Select package(s) to invite candidate'}
                 </p>
 
-                <div className="max-h-[360px] overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                <div className="max-h-[360px] overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-white dark:bg-gray-800">
                     {isPackageLoading && (
                         <p className="text-sm text-gray-500">
                             Loading packages...
@@ -630,6 +627,15 @@ const CustomerListTable = ({
                                             <span className="text-xs text-gray-500 mt-1">
                                                 {pkg.description}
                                             </span>
+                                        )}
+                                        {pkg.services && pkg.services.length > 0 && (
+                                            <div className="mt-2 flex flex-wrap gap-1">
+                                                {pkg.services.map((svc: any) => (
+                                                    <span key={svc.service_id} className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-[10px] font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                                        {svc.service_name}
+                                                    </span>
+                                                ))}
+                                            </div>
                                         )}
                                     </div>
                                 </Checkbox>

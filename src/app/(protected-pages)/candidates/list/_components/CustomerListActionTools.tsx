@@ -1,7 +1,7 @@
 'use client'
 
 import Button from '@/components/ui/Button'
-import { TbCloudDownload, TbUserPlus } from 'react-icons/tb'
+import { TbCloudDownload, TbCloudUpload, TbUserPlus } from 'react-icons/tb'
 import { useRouter } from 'next/navigation'
 import { useCustomerListStore } from '../_store/customerListStore'
 import dynamic from 'next/dynamic'
@@ -26,7 +26,7 @@ const CustomerListActionTools = () => {
                 Export
             </Button>
             <Button
-                icon={<TbCloudDownload className="text-xl" />}
+                icon={<TbCloudUpload className="text-xl" />}
                 className="w-full md:w-auto"
             >
                 Bulk import

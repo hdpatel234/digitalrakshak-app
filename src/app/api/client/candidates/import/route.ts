@@ -195,6 +195,7 @@ export async function POST(request: NextRequest) {
                     responseError?.response?.data?.message ||
                     responseError?.message ||
                     'Failed to import candidates.',
+                errors: responseError?.response?.data?.errors,
             },
             { status: responseError?.response?.status || 500 },
         )

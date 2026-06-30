@@ -3,11 +3,20 @@
 import React from 'react';
 import Card from '@/components/ui/Card';
 import Chart from '@/components/shared/Chart';
+import { useDashboardData } from './DashboardProvider';
 
 const ServiceUsageChart = () => {
-    const series = [45, 25, 15, 15];
-    const labels = ['Aadhaar OTP', 'PAN Validate', 'Face AI Match', 'Education'];
-    const colors = ['#4f46e5', '#10b981', '#f59e0b', '#818cf8'];
+    const { data, loading } = useDashboardData();
+
+    if (loading || !data?.service_usage) {
+        return <Card className="h-[400px] animate-pulse bg-gray-100 dark:bg-gray-800"></Card>;
+    }
+
+    const { service_usage } = data;
+    const totalUsage = service_usage.reduce((sum: number, item: any) => sum + item.usage, 0);
+    const series = service_usage.map((item: any) => Math.round((item.usage / totalUsage) * 100));
+    const labels = service_usage.map((item: any) => item.service);
+    const colors = ['#4f46e5', '#10b981', '#f59e0b', '#818cf8', '#ec4899', '#8b5cf6'];
 
     return (
         <Card className="h-full flex flex-col p-6">
@@ -62,7 +71,7 @@ const ServiceUsageChart = () => {
                                                 fontWeight: 700,
                                                 color: '#9ca3af',
                                                 formatter: function () {
-                                                    return '4,120'
+                                                    return totalUsage.toLocaleString()
                                                 }
                                             }
                                         }

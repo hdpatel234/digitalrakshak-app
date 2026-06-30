@@ -1,12 +1,23 @@
+'use client'
 import React from 'react';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Chart from '@/components/shared/Chart';
+import { useDashboardData } from './DashboardProvider';
 
 const VerificationTrendChart = () => {
+    const { data, loading } = useDashboardData();
+
+    if (loading || !data?.verification_trend) {
+        return <Card className="mb-6 h-[400px] animate-pulse bg-gray-100 dark:bg-gray-800"></Card>;
+    }
+
+    const { verification_trend } = data;
+    const xAxis = verification_trend.map((item: any) => item.month);
+    
     const series = [
-        { name: 'Total Verifications', data: [15, 28, 25, 5, 23, 27, 24, 15, 5, 20, 23, 10, 8, 22].map(x => x * 4) },
-        { name: 'Successful', data: [15, 28, 25, 5, 23, 27, 24, 15, 5, 20, 23, 10, 8, 22] }
+        { name: 'Total Verifications', data: verification_trend.map((item: any) => item.verifications) },
+        { name: 'Successful', data: verification_trend.map((item: any) => Math.floor(item.verifications * 0.8)) }
     ];
 
     return (
@@ -26,7 +37,7 @@ const VerificationTrendChart = () => {
                 <Chart
                     type="area"
                     series={series}
-                    xAxis={['Jun 14', 'Jun 15', 'Jun 16', 'Jun 17', 'Jun 18', 'Jun 19', 'Jun 20', 'Jun 21', 'Jun 22', 'Jun 23', 'Jun 24', 'Jun 25', 'Jun 26', 'Jun 27']}
+                    xAxis={xAxis}
                     height={300}
                     customOptions={{
                         colors: ['#3b82f6', '#10b981'],

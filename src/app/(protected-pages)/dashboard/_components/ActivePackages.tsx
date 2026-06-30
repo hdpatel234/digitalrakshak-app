@@ -1,7 +1,9 @@
+'use client'
 import React from 'react';
 import { FiStar } from 'react-icons/fi';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
+import { useDashboardData } from './DashboardProvider';
 
 const PackageItem = ({ title, services, count }) => (
     <div className="flex items-center justify-between py-4 border-b border-gray-100 dark:border-gray-800 last:border-0">
@@ -14,12 +16,17 @@ const PackageItem = ({ title, services, count }) => (
 );
 
 const ActivePackages = () => {
-    const packages = [
-        { title: 'Basic KYC', services: '2', count: '412' },
-        { title: 'Employee Verification', services: '6', count: '286' },
-        { title: 'Executive Background', services: '8', count: '64' },
-        { title: 'Vendor Verification', services: '3', count: '138' },
-    ];
+    const { data, loading } = useDashboardData();
+
+    if (loading || !data?.active_packages) {
+        return <Card className="mb-6 h-full flex flex-col p-0 animate-pulse bg-gray-100 dark:bg-gray-800"></Card>;
+    }
+
+    const packages = data.active_packages.map((pkg: any) => ({
+        title: pkg.name,
+        services: 'N/A', // Update with actual service count if available in API
+        count: pkg.price ? `₹${pkg.price}` : 'Free'
+    }));
 
     return (
         <Card className="mb-6 h-full flex flex-col p-0" bodyClass="p-0 flex flex-col h-full">

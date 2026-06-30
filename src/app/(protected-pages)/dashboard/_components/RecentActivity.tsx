@@ -1,7 +1,9 @@
+'use client'
 import React from 'react';
-import { FiCheckCircle, FiClock, FiMail, FiShield } from 'react-icons/fi';
+import { FiCheckCircle, FiClock, FiMail, FiShield, FiInfo } from 'react-icons/fi';
 import Card from '@/components/ui/Card';
 import Avatar from '@/components/ui/Avatar';
+import { useDashboardData } from './DashboardProvider';
 
 const ActivityItem = ({ title, subtitle, time, icon: Icon, iconClass }) => (
     <div className="flex items-start justify-between py-4 border-b border-gray-100 dark:border-gray-800 last:border-0">
@@ -19,50 +21,37 @@ const ActivityItem = ({ title, subtitle, time, icon: Icon, iconClass }) => (
 );
 
 const RecentActivity = () => {
-    const activities = [
-        {
-            title: 'Ananya Iyer',
-            subtitle: 'Executive Background',
-            time: '2m ago',
-            icon: FiCheckCircle,
-            iconClass: 'text-green-500 border-green-200 dark:border-green-900',
-        },
-        {
-            title: 'Rohan Das',
-            subtitle: 'Awaiting Aadhaar OTP',
-            time: '12m ago',
-            icon: FiClock,
-            iconClass: 'text-yellow-500 border-yellow-200 dark:border-yellow-900',
-        },
-        {
-            title: 'vikram.s@vertex.in',
-            subtitle: 'Invitation sent',
-            time: '38m ago',
-            icon: FiMail,
-            iconClass: 'text-blue-500 border-blue-200 dark:border-blue-900',
-        },
-        {
-            title: 'Karan Joshi',
-            subtitle: 'Face match mismatch',
-            time: '1h ago',
-            icon: FiShield,
-            iconClass: 'text-red-500 border-red-200 dark:border-red-900',
-        },
-        {
-            title: 'Priya Sharma',
-            subtitle: 'Basic KYC',
-            time: '2h ago',
-            icon: FiCheckCircle,
-            iconClass: 'text-green-500 border-green-200 dark:border-green-900',
-        },
-        {
-            title: 'Aditya Patel',
-            subtitle: 'Vendor Verification',
-            time: '3h ago',
-            icon: FiCheckCircle,
-            iconClass: 'text-green-500 border-green-200 dark:border-green-900',
+    const { data, loading } = useDashboardData();
+
+    if (loading || !data?.recent_activities) {
+        return <Card className="mb-6 h-[400px] animate-pulse bg-gray-100 dark:bg-gray-800"></Card>;
+    }
+
+    const { recent_activities } = data;
+
+    const activities = recent_activities.map((act: any) => {
+        let icon = FiInfo;
+        let iconClass = 'text-gray-500 border-gray-200 dark:border-gray-900';
+
+        if (act.type === 'success') {
+            icon = FiCheckCircle;
+            iconClass = 'text-green-500 border-green-200 dark:border-green-900';
+        } else if (act.type === 'warning') {
+            icon = FiShield;
+            iconClass = 'text-red-500 border-red-200 dark:border-red-900';
+        } else if (act.type === 'info') {
+            icon = FiCheckCircle;
+            iconClass = 'text-blue-500 border-blue-200 dark:border-blue-900';
         }
-    ];
+
+        return {
+            title: act.description,
+            subtitle: act.type,
+            time: act.timestamp,
+            icon,
+            iconClass
+        };
+    });
 
     return (
         <Card className="mb-6 p-0" bodyClass="p-0">

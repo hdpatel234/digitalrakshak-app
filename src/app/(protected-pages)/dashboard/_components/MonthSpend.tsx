@@ -1,8 +1,20 @@
+'use client'
 import React from 'react';
 import Card from '@/components/ui/Card';
 import { FiDollarSign, FiActivity, FiClock, FiCalendar } from 'react-icons/fi';
+import { useDashboardData } from './DashboardProvider';
 
 const MonthSpend = () => {
+    const { data, loading } = useDashboardData();
+
+    if (loading || !data?.month_spend) {
+        return <Card className="h-full relative overflow-hidden flex flex-col p-8 min-h-[300px] animate-pulse bg-gray-100 dark:bg-gray-800"></Card>;
+    }
+
+    const { month_spend } = data;
+    const { total, currency } = month_spend;
+    const symbol = currency === 'INR' ? '₹' : '$';
+
     return (
         <Card className="h-full relative overflow-hidden flex flex-col p-8 min-h-[300px]">
             {/* Header */}
@@ -33,7 +45,7 @@ const MonthSpend = () => {
                             <p className="text-[13px] text-gray-500 font-medium mt-0.5">Avg. usage</p>
                         </div>
                     </div>
-                    <p className="text-xl font-bold text-slate-800 dark:text-gray-200">$95.00</p>
+                    <p className="text-xl font-bold text-slate-800 dark:text-gray-200">{symbol}{(total / 4).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 
                 {/* Monthly (Highlighted) */}
@@ -48,7 +60,7 @@ const MonthSpend = () => {
                             <p className="text-[13px] text-indigo-400 font-medium mt-0.5">Current cycle</p>
                         </div>
                     </div>
-                    <p className="text-[1.75rem] leading-none font-extrabold text-indigo-600 dark:text-indigo-400">$380.00</p>
+                    <p className="text-[1.75rem] leading-none font-extrabold text-indigo-600 dark:text-indigo-400">{symbol}{total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 
                 {/* Yearly */}
@@ -62,7 +74,7 @@ const MonthSpend = () => {
                             <p className="text-[13px] text-gray-500 font-medium mt-0.5">Projected</p>
                         </div>
                     </div>
-                    <p className="text-xl font-bold text-slate-800 dark:text-gray-200">$4,560.00</p>
+                    <p className="text-xl font-bold text-slate-800 dark:text-gray-200">{symbol}{(total * 12).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
             </div>
             
