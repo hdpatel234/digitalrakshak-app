@@ -136,7 +136,7 @@ export async function POST(
             )
         }
 
-        const body = await request.json()
+        const formData = await request.formData()
         const baseUrl = resolveApiBaseUrl()
         const upstreamUrl = `${baseUrl}/client/invitations/${encodeURIComponent(invitationToken)}`
 
@@ -144,9 +144,8 @@ export async function POST(
             method: 'POST',
             headers: {
                 Accept: 'application/json',
-                'Content-Type': 'application/json',
             },
-            body: JSON.stringify(body),
+            body: formData,
             cache: 'no-store',
         })
 

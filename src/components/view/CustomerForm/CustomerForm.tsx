@@ -213,36 +213,37 @@ const CustomerForm = (props: CustomerFormProps) => {
         >
             <Container>
                 <div className="flex flex-col md:flex-row gap-8">
-                    <div className="w-[240px] hidden lg:block shrink-0">
-                        <Affix offset={getTopGapValue()}>
-                            <Card bodyClass="p-3">
-                                <div className="flex flex-col gap-1">
-                                    {filteredNavigationList.map((nav) => (
-                                        <Link
-                                            key={nav.label}
-                                            activeClass="bg-gray-100 dark:bg-gray-700 active"
-                                            className="cursor-pointer px-3 py-2.5 rounded-lg group hover:bg-gray-100 dark:hover:bg-gray-700"
-                                            to={nav.link}
-                                            spy={true}
-                                            smooth={true}
-                                            duration={500}
-                                            offset={-80}
-                                        >
-                                            <span className="flex items-center gap-3">
-                                                <Avatar
-                                                    size={32}
-                                                    icon={nav.icon}
-                                                    className="bg-gray-100 dark:bg-gray-700 group-hover:bg-white group-[.active]:bg-white dark:group-hover:bg-gray-800 dark:group-[.active]:bg-gray-800 text-gray-900 dark:text-gray-100"
-                                                />
-                                                <span className="heading-text font-semibold text-sm">
-                                                    {nav.label}
-                                                </span>
+                    <div 
+                        className="w-[240px] hidden lg:block shrink-0 sticky self-start"
+                        style={{ top: getTopGapValue() + 20 }}
+                    >
+                        <Card bodyClass="p-3">
+                            <div className="flex flex-col gap-1">
+                                {filteredNavigationList.map((nav) => (
+                                    <Link
+                                        key={nav.label}
+                                        activeClass="bg-gray-100 dark:bg-gray-700 active"
+                                        className="cursor-pointer px-3 py-2.5 rounded-lg group hover:bg-gray-100 dark:hover:bg-gray-700"
+                                        to={nav.link}
+                                        spy={true}
+                                        smooth={true}
+                                        duration={500}
+                                        offset={-80}
+                                    >
+                                        <span className="flex items-center gap-3">
+                                            <Avatar
+                                                size={32}
+                                                icon={nav.icon}
+                                                className="bg-gray-100 dark:bg-gray-700 group-hover:bg-white group-[.active]:bg-white dark:group-hover:bg-gray-800 dark:group-[.active]:bg-gray-800 text-gray-900 dark:text-gray-100"
+                                            />
+                                            <span className="heading-text font-semibold text-sm">
+                                                {nav.label}
                                             </span>
-                                        </Link>
-                                    ))}
-                                </div>
-                            </Card>
-                        </Affix>
+                                        </span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </Card>
                     </div>
                     <div className="gap-4 flex flex-col flex-auto min-w-0">
                         <OverviewSection

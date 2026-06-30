@@ -230,10 +230,22 @@ const InvitationContent = () => {
             const dynamicShape: Record<string, any> = {}
             invitationData.fields.forEach((f: FieldConfig) => {
                 if (f.section === 'Consent Form') return
-                if (f.is_required) {
-                    dynamicShape[f.field_name] = z.string().min(1, `${f.field_label} is required`)
+                
+                if (f.field_type === 'file') {
+                    if (f.is_required) {
+                        dynamicShape[f.field_name] = z.any().refine(
+                            (val) => val instanceof File || (Array.isArray(val) && val.length > 0) || (val !== undefined && val !== null && val !== ''),
+                            { message: `${f.field_label} is required` }
+                        )
+                    } else {
+                        dynamicShape[f.field_name] = z.any().optional()
+                    }
                 } else {
-                    dynamicShape[f.field_name] = z.string().optional()
+                    if (f.is_required) {
+                        dynamicShape[f.field_name] = z.string().min(1, `${f.field_label} is required`)
+                    } else {
+                        dynamicShape[f.field_name] = z.string().optional()
+                    }
                 }
             })
             if (Object.keys(dynamicShape).length > 0) {
