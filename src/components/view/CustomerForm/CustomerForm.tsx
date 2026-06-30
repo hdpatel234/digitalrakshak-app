@@ -16,12 +16,14 @@ import Input from '@/components/ui/Input'
 import { FormItem } from '@/components/ui/Form'
 import isEmpty from 'lodash/isEmpty'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { z } from 'zod'
 import type { ZodType } from 'zod'
 import type { CommonProps } from '@/@types/common'
 import type { CustomerFormSchema } from './types'
 import AdditionalInfo from './AdditionalInfo'
+import DatePicker from '@/components/ui/DatePicker'
+import Upload from '@/components/ui/Upload'
 
 export type FieldConfig = {
     id: number
@@ -263,11 +265,49 @@ const CustomerForm = (props: CustomerFormProps) => {
                                                 invalid={Boolean(errors[field.field_name as keyof CustomerFormSchema])}
                                                 errorMessage={errors[field.field_name as keyof CustomerFormSchema]?.message as string}
                                             >
-                                                <Input
-                                                    type={field.field_type === 'number' ? 'number' : 'text'}
-                                                    placeholder={`Enter ${field.field_label}`}
-                                                    {...control.register(field.field_name as any)}
-                                                />
+                                                {field.field_type === 'date' ? (
+                                                    <Controller
+                                                        name={field.field_name as any}
+                                                        control={control}
+                                                        render={({ field: { value, onChange } }) => (
+                                                            <DatePicker
+                                                                value={value ? new Date(value as string) : null}
+                                                                onChange={(date) => {
+                                                                    onChange(date ? date.toISOString().split('T')[0] : '')
+                                                                }}
+                                                                placeholder={`Select ${field.field_label}`}
+                                                            />
+                                                        )}
+                                                    />
+                                                ) : field.field_type === 'file' ? (
+                                                    <Controller
+                                                        name={field.field_name as any}
+                                                        control={control}
+                                                        render={({ field: { onChange, value } }) => (
+                                                            <Upload
+                                                                draggable
+                                                                uploadLimit={1}
+                                                                onChange={(files) => onChange(files[0] || null)}
+                                                                fileList={value ? [value as any] : []}
+                                                            >
+                                                                <div className="text-center">
+                                                                    <p className="font-semibold">
+                                                                        <span className="text-gray-800 dark:text-white">
+                                                                            Drop your file here, or{' '}
+                                                                        </span>
+                                                                        <span className="text-blue-500">browse</span>
+                                                                    </p>
+                                                                </div>
+                                                            </Upload>
+                                                        )}
+                                                    />
+                                                ) : (
+                                                    <Input
+                                                        type={field.field_type === 'number' ? 'number' : 'text'}
+                                                        placeholder={`Enter ${field.field_label}`}
+                                                        {...control.register(field.field_name as any)}
+                                                    />
+                                                )}
                                             </FormItem>
                                         ))}
                                     </div>
@@ -289,11 +329,49 @@ const CustomerForm = (props: CustomerFormProps) => {
                                                 invalid={Boolean(errors[field.field_name as keyof CustomerFormSchema])}
                                                 errorMessage={errors[field.field_name as keyof CustomerFormSchema]?.message as string}
                                             >
-                                                <Input
-                                                    type={field.field_type === 'number' ? 'number' : 'text'}
-                                                    placeholder={`Enter ${field.field_label}`}
-                                                    {...control.register(field.field_name as any)}
-                                                />
+                                                {field.field_type === 'date' ? (
+                                                    <Controller
+                                                        name={field.field_name as any}
+                                                        control={control}
+                                                        render={({ field: { value, onChange } }) => (
+                                                            <DatePicker
+                                                                value={value ? new Date(value as string) : null}
+                                                                onChange={(date) => {
+                                                                    onChange(date ? date.toISOString().split('T')[0] : '')
+                                                                }}
+                                                                placeholder={`Select ${field.field_label}`}
+                                                            />
+                                                        )}
+                                                    />
+                                                ) : field.field_type === 'file' ? (
+                                                    <Controller
+                                                        name={field.field_name as any}
+                                                        control={control}
+                                                        render={({ field: { onChange, value } }) => (
+                                                            <Upload
+                                                                draggable
+                                                                uploadLimit={1}
+                                                                onChange={(files) => onChange(files[0] || null)}
+                                                                fileList={value ? [value as any] : []}
+                                                            >
+                                                                <div className="text-center">
+                                                                    <p className="font-semibold">
+                                                                        <span className="text-gray-800 dark:text-white">
+                                                                            Drop your file here, or{' '}
+                                                                        </span>
+                                                                        <span className="text-blue-500">browse</span>
+                                                                    </p>
+                                                                </div>
+                                                            </Upload>
+                                                        )}
+                                                    />
+                                                ) : (
+                                                    <Input
+                                                        type={field.field_type === 'number' ? 'number' : 'text'}
+                                                        placeholder={`Enter ${field.field_label}`}
+                                                        {...control.register(field.field_name as any)}
+                                                    />
+                                                )}
                                             </FormItem>
                                         ))}
                                     </div>
@@ -315,11 +393,49 @@ const CustomerForm = (props: CustomerFormProps) => {
                                                 invalid={Boolean(errors[field.field_name as keyof CustomerFormSchema])}
                                                 errorMessage={errors[field.field_name as keyof CustomerFormSchema]?.message as string}
                                             >
-                                                <Input
-                                                    type={field.field_type === 'number' ? 'number' : 'text'}
-                                                    placeholder={`Enter ${field.field_label}`}
-                                                    {...control.register(field.field_name as any)}
-                                                />
+                                                {field.field_type === 'date' ? (
+                                                    <Controller
+                                                        name={field.field_name as any}
+                                                        control={control}
+                                                        render={({ field: { value, onChange } }) => (
+                                                            <DatePicker
+                                                                value={value ? new Date(value as string) : null}
+                                                                onChange={(date) => {
+                                                                    onChange(date ? date.toISOString().split('T')[0] : '')
+                                                                }}
+                                                                placeholder={`Select ${field.field_label}`}
+                                                            />
+                                                        )}
+                                                    />
+                                                ) : field.field_type === 'file' ? (
+                                                    <Controller
+                                                        name={field.field_name as any}
+                                                        control={control}
+                                                        render={({ field: { onChange, value } }) => (
+                                                            <Upload
+                                                                draggable
+                                                                uploadLimit={1}
+                                                                onChange={(files) => onChange(files[0] || null)}
+                                                                fileList={value ? [value as any] : []}
+                                                            >
+                                                                <div className="text-center">
+                                                                    <p className="font-semibold">
+                                                                        <span className="text-gray-800 dark:text-white">
+                                                                            Drop your file here, or{' '}
+                                                                        </span>
+                                                                        <span className="text-blue-500">browse</span>
+                                                                    </p>
+                                                                </div>
+                                                            </Upload>
+                                                        )}
+                                                    />
+                                                ) : (
+                                                    <Input
+                                                        type={field.field_type === 'number' ? 'number' : 'text'}
+                                                        placeholder={`Enter ${field.field_label}`}
+                                                        {...control.register(field.field_name as any)}
+                                                    />
+                                                )}
                                             </FormItem>
                                         ))}
                                     </div>
@@ -353,11 +469,49 @@ const CustomerForm = (props: CustomerFormProps) => {
                                                 invalid={Boolean(errors[field.field_name as keyof CustomerFormSchema])}
                                                 errorMessage={errors[field.field_name as keyof CustomerFormSchema]?.message as string}
                                             >
-                                                <Input
-                                                    type={field.field_type === 'number' ? 'number' : 'text'}
-                                                    placeholder={`Enter ${field.field_label}`}
-                                                    {...control.register(field.field_name as any)}
-                                                />
+                                                {field.field_type === 'date' ? (
+                                                    <Controller
+                                                        name={field.field_name as any}
+                                                        control={control}
+                                                        render={({ field: { value, onChange } }) => (
+                                                            <DatePicker
+                                                                value={value ? new Date(value as string) : null}
+                                                                onChange={(date) => {
+                                                                    onChange(date ? date.toISOString().split('T')[0] : '')
+                                                                }}
+                                                                placeholder={`Select ${field.field_label}`}
+                                                            />
+                                                        )}
+                                                    />
+                                                ) : field.field_type === 'file' ? (
+                                                    <Controller
+                                                        name={field.field_name as any}
+                                                        control={control}
+                                                        render={({ field: { onChange, value } }) => (
+                                                            <Upload
+                                                                draggable
+                                                                uploadLimit={1}
+                                                                onChange={(files) => onChange(files[0] || null)}
+                                                                fileList={value ? [value as any] : []}
+                                                            >
+                                                                <div className="text-center">
+                                                                    <p className="font-semibold">
+                                                                        <span className="text-gray-800 dark:text-white">
+                                                                            Drop your file here, or{' '}
+                                                                        </span>
+                                                                        <span className="text-blue-500">browse</span>
+                                                                    </p>
+                                                                </div>
+                                                            </Upload>
+                                                        )}
+                                                    />
+                                                ) : (
+                                                    <Input
+                                                        type={field.field_type === 'number' ? 'number' : 'text'}
+                                                        placeholder={`Enter ${field.field_label}`}
+                                                        {...control.register(field.field_name as any)}
+                                                    />
+                                                )}
                                             </FormItem>
                                         ))}
                                     </div>
@@ -397,11 +551,49 @@ const CustomerForm = (props: CustomerFormProps) => {
                                                 invalid={Boolean(errors[field.field_name as keyof CustomerFormSchema])}
                                                 errorMessage={errors[field.field_name as keyof CustomerFormSchema]?.message as string}
                                             >
-                                                <Input
-                                                    type={field.field_type === 'number' ? 'number' : 'text'}
-                                                    placeholder={`Enter ${field.field_label}`}
-                                                    {...control.register(field.field_name as any)}
-                                                />
+                                                {field.field_type === 'date' ? (
+                                                    <Controller
+                                                        name={field.field_name as any}
+                                                        control={control}
+                                                        render={({ field: { value, onChange } }) => (
+                                                            <DatePicker
+                                                                value={value ? new Date(value as string) : null}
+                                                                onChange={(date) => {
+                                                                    onChange(date ? date.toISOString().split('T')[0] : '')
+                                                                }}
+                                                                placeholder={`Select ${field.field_label}`}
+                                                            />
+                                                        )}
+                                                    />
+                                                ) : field.field_type === 'file' ? (
+                                                    <Controller
+                                                        name={field.field_name as any}
+                                                        control={control}
+                                                        render={({ field: { onChange, value } }) => (
+                                                            <Upload
+                                                                draggable
+                                                                uploadLimit={1}
+                                                                onChange={(files) => onChange(files[0] || null)}
+                                                                fileList={value ? [value as any] : []}
+                                                            >
+                                                                <div className="text-center">
+                                                                    <p className="font-semibold">
+                                                                        <span className="text-gray-800 dark:text-white">
+                                                                            Drop your file here, or{' '}
+                                                                        </span>
+                                                                        <span className="text-blue-500">browse</span>
+                                                                    </p>
+                                                                </div>
+                                                            </Upload>
+                                                        )}
+                                                    />
+                                                ) : (
+                                                    <Input
+                                                        type={field.field_type === 'number' ? 'number' : 'text'}
+                                                        placeholder={`Enter ${field.field_label}`}
+                                                        {...control.register(field.field_name as any)}
+                                                    />
+                                                )}
                                             </FormItem>
                                         ))}
                                     </div>

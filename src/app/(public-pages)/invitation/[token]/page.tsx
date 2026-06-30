@@ -7,11 +7,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
+import Spinner from '@/components/ui/Spinner'
 import Notification from '@/components/ui/Notification'
 import toast from '@/components/ui/toast'
 import Checkbox from '@/components/ui/Checkbox'
 import Container from '@/components/shared/Container'
 import Upload from '@/components/ui/Upload'
+import DatePicker from '@/components/ui/DatePicker'
 import Logo from '@/components/template/Logo'
 import Footer from '@/components/template/Footer'
 import { Form, FormItem } from '@/components/ui/Form'
@@ -381,15 +383,30 @@ const InvitationContent = () => {
                 pincode: values.postcode,
             }
 
-            const dynamicFieldsInput: any[] = []
+            const formData = new FormData()
+
+            formData.append('candidate_details[first_name]', values.firstName)
+            formData.append('candidate_details[last_name]', values.lastName)
+            formData.append('candidate_details[email]', values.email)
+            formData.append('candidate_details[phone]', values.phoneNumber)
+            formData.append('candidate_details[address]', values.address)
+            formData.append('candidate_details[country_id]', values.country)
+            formData.append('candidate_details[state_id]', values.state)
+            formData.append('candidate_details[city_id]', values.city)
+            formData.append('candidate_details[pincode]', values.postcode)
 
             if (invitationData?.fields && Array.isArray(invitationData.fields)) {
+                let fieldIndex = 0;
                 invitationData.fields.forEach((field: FieldConfig) => {
-                    if (values[field.field_name] !== undefined) {
-                        dynamicFieldsInput.push({
-                            field_id: field.id,
-                            value: values[field.field_name]
-                        })
+                    const value = values[field.field_name];
+                    if (value !== undefined && value !== null && value !== '') {
+                        formData.append(`fields[${fieldIndex}][field_id]`, String(field.id))
+                        if (field.field_type === 'file' && value instanceof File) {
+                            formData.append(`fields[${fieldIndex}][value]`, value)
+                        } else {
+                            formData.append(`fields[${fieldIndex}][value]`, value)
+                        }
+                        fieldIndex++;
                     }
                 })
             }
@@ -397,13 +414,9 @@ const InvitationContent = () => {
             const response = await fetch(`/api/client/invitations/by-token/${encodeURIComponent(tokenValue)}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Accept': 'application/json',
                 },
-                body: JSON.stringify({
-                    candidate_details: candidateDetails,
-                    fields: dynamicFieldsInput
-                })
+                body: formData
             })
 
             const payload = await response.json()
@@ -433,7 +446,12 @@ const InvitationContent = () => {
     if (isLoading) {
         return (
             <div className="w-full flex justify-center items-center p-10 h-[50vh]">
-                <div className="text-gray-500 font-medium text-lg">Checking invitation...</div>
+                <div className="flex flex-col items-center justify-center gap-4 animate-pulse">
+                    <Spinner size={40} className="text-indigo-600" />
+                    <div className="text-gray-500 font-medium text-lg tracking-wide">
+                        Checking invitation<span className="animate-bounce inline-block">...</span>
+                    </div>
+                </div>
             </div>
         )
     }
@@ -803,11 +821,49 @@ const InvitationContent = () => {
                                         invalid={Boolean(errors[field.field_name as keyof CandidateFormSchema])}
                                         errorMessage={errors[field.field_name as keyof CandidateFormSchema]?.message as string}
                                     >
-                                        <Input
-                                            type={field.field_type === 'number' ? 'number' : 'text'}
-                                            placeholder={`Enter ${field.field_label}`}
-                                            {...register(field.field_name)}
-                                        />
+                                        {field.field_type === 'date' ? (
+                                            <Controller
+                                                name={field.field_name}
+                                                control={control}
+                                                render={({ field: { value, onChange } }) => (
+                                                    <DatePicker
+                                                        value={value ? new Date(value) : null}
+                                                        onChange={(date) => {
+                                                            onChange(date ? date.toISOString().split('T')[0] : '')
+                                                        }}
+                                                        placeholder={`Select ${field.field_label}`}
+                                                    />
+                                                )}
+                                            />
+                                        ) : field.field_type === 'file' ? (
+                                            <Controller
+                                                name={field.field_name}
+                                                control={control}
+                                                render={({ field: { onChange, value } }) => (
+                                                    <Upload
+                                                        draggable
+                                                        uploadLimit={1}
+                                                        onChange={(files) => onChange(files[0] || null)}
+                                                        fileList={value ? [value] : []}
+                                                    >
+                                                        <div className="text-center">
+                                                            <p className="font-semibold">
+                                                                <span className="text-gray-800 dark:text-white">
+                                                                    Drop your file here, or{' '}
+                                                                </span>
+                                                                <span className="text-blue-500">browse</span>
+                                                            </p>
+                                                        </div>
+                                                    </Upload>
+                                                )}
+                                            />
+                                        ) : (
+                                            <Input
+                                                type={field.field_type === 'number' ? 'number' : 'text'}
+                                                placeholder={`Enter ${field.field_label}`}
+                                                {...register(field.field_name)}
+                                            />
+                                        )}
                                     </FormItem>
                                 ))}
                             </div>
@@ -864,7 +920,12 @@ const Page = () => {
             <main className="flex-grow">
                 <Suspense fallback={
                     <div className="w-full flex justify-center items-center p-10 h-[50vh]">
-                        <div className="text-gray-500 font-medium text-lg">Loading...</div>
+                        <div className="flex flex-col items-center justify-center gap-4 animate-pulse">
+                            <Spinner size={40} className="text-indigo-600" />
+                            <div className="text-gray-500 font-medium text-lg tracking-wide">
+                                Loading<span className="animate-bounce inline-block">...</span>
+                            </div>
+                        </div>
                     </div>
                 }>
                     <InvitationContent />

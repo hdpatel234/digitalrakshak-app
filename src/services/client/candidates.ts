@@ -14,10 +14,33 @@ export type CreateCandidatePayload = CustomerFormSchema & {
 }
 
 export async function apiCreateCandidate(data: CreateCandidatePayload) {
+    const formData = new FormData()
+
+    Object.entries(data).forEach(([key, value]) => {
+        if (value === undefined || value === null) return
+
+        if (Array.isArray(value)) {
+            value.forEach((v) => {
+                if (v !== undefined && v !== null && v !== '') {
+                    formData.append(`${key}[]`, v instanceof File ? v : String(v))
+                }
+            })
+        } else if (value instanceof File) {
+            formData.append(key, value)
+        } else if (typeof value === 'boolean') {
+            formData.append(key, value ? '1' : '0')
+        } else {
+            formData.append(key, String(value))
+        }
+    })
+
     return ApiService.fetchDataWithAxios<CreateCandidateResponse>({
         url: '/client/candidates',
         method: 'post',
-        data,
+        data: formData,
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
     })
 }
 
