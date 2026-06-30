@@ -129,11 +129,11 @@ const PackageEdit = ({ packageId }: { packageId: string }) => {
                 const response = await fetch(`/api/client/packages/${packageId}`)
                 const payload = await response.json()
                 if (payload.status && payload.data) {
-                    setPackageName(payload.data.name || '')
+                    setPackageName(payload.data.package_name || payload.data.name || '')
                     setDescription(payload.data.description || '')
                     // Assuming payload.data.services is an array of service objects or IDs
                     if (Array.isArray(payload.data.services)) {
-                        setSelectedServiceIds(payload.data.services.map((s: any) => String(s.id || s)))
+                        setSelectedServiceIds(payload.data.services.map((s: any) => String(s.service_id || s.id || s)))
                     }
                 }
             } catch (error) {
@@ -390,7 +390,7 @@ const PackageEdit = ({ packageId }: { packageId: string }) => {
                                     Discard
                                 </Button>
                                 <Button
-                                    className="w-full"
+                                    className="w-auto"
                                     variant="solid"
                                     type="submit"
                                     loading={isSubmiting || packageLoading}

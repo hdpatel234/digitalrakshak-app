@@ -72,11 +72,40 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             )
         }
 
+        let servicesData: unknown[] = []
+        try {
+            const servicesPayload = (await apiClient.request(
+                'get',
+                `/client/packages/${packageId}/services`,
+                queryPayload,
+                false,
+                {
+                    headers: buildAuthHeaders(tokenType, accessToken),
+                },
+            )) as UpstreamPackagesResponse
+
+            if (resolveSuccess(servicesPayload)) {
+                const sData = servicesPayload.data as any
+                servicesData = Array.isArray(sData?.services) 
+                    ? sData.services 
+                    : Array.isArray(sData?.list) 
+                        ? sData.list 
+                        : (Array.isArray(sData) ? sData : [])
+            }
+        } catch (error) {
+            console.error('Failed to fetch package services', error)
+        }
+
+        const responseData = {
+            ...(typeof payload.data === 'object' && payload.data !== null ? payload.data : {}),
+            services: servicesData,
+        }
+
         return NextResponse.json(
             {
                 status: true,
                 message: payload.message || 'Package fetched successfully',
-                ...(payload.data ? { data: payload.data } : {}),
+                data: responseData,
             },
             { status: 200 },
         )
