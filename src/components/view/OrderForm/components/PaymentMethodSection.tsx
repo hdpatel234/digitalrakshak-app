@@ -2,11 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Card from '@/components/ui/Card'
-import Select, { Option as DefaultOption } from '@/components/ui/Select'
 import { FormItem } from '@/components/ui/Form'
 import Notification from '@/components/ui/Notification'
 import toast from '@/components/ui/toast'
-import { components } from 'react-select'
 import {
     TbBrandPaypal,
     TbBuildingBank,
@@ -18,7 +16,6 @@ import {
 } from 'react-icons/tb'
 import { useOrderFormStore } from '../store/orderFormStore'
 import type { FormSectionBaseProps } from '../types'
-import type { ControlProps, OptionProps } from 'react-select'
 
 type PaymentMethodSectionProps = FormSectionBaseProps
 
@@ -40,8 +37,6 @@ type PaymentGatewayOption = {
     value: string
     logo: string
 }
-
-const { Control } = components
 
 const normalizeIconName = (value: string) =>
     value
@@ -80,95 +75,6 @@ const resolveMethodIcon = (iconName: string) => {
         default:
             return null
     }
-}
-
-const CustomMethodOption = (props: OptionProps<PaymentMethodOption>) => {
-    return (
-        <DefaultOption<PaymentMethodOption>
-            {...props}
-            customLabel={(data, label) => {
-                const icon = data.icon ? resolveMethodIcon(data.icon) : null
-                return (
-                    <span className="flex items-center gap-2">
-                        {icon ? (
-                            <span className="text-gray-700 dark:text-gray-200">
-                                {icon}
-                            </span>
-                        ) : (
-                            <span className="h-5 w-5 rounded bg-gray-200 dark:bg-gray-700" />
-                        )}
-                        <span>{label}</span>
-                    </span>
-                )
-            }}
-        />
-    )
-}
-
-const CustomMethodControl = ({
-    children,
-    ...props
-}: ControlProps<PaymentMethodOption>) => {
-    const selected = props.getValue()[0]
-    const icon = selected?.icon ? resolveMethodIcon(selected.icon) : null
-
-    return (
-        <Control {...props}>
-            {icon ? (
-                <span className="text-gray-700 dark:text-gray-200 ltr:ml-4 rtl:mr-4">
-                    {icon}
-                </span>
-            ) : (
-                <span className="h-5 w-5 rounded bg-gray-200 dark:bg-gray-700 ltr:ml-4 rtl:mr-4" />
-            )}
-            {children}
-        </Control>
-    )
-}
-
-const CustomGatewayOption = (props: OptionProps<PaymentGatewayOption>) => {
-    return (
-        <DefaultOption<PaymentGatewayOption>
-            {...props}
-            customLabel={(data, label) => (
-                <span className="flex items-center gap-2">
-                    {data.logo ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                            src={data.logo}
-                            alt={label}
-                            className="h-5 w-5 rounded object-contain"
-                        />
-                    ) : (
-                        <span className="h-5 w-5 rounded bg-gray-200 dark:bg-gray-700" />
-                    )}
-                    <span>{label}</span>
-                </span>
-            )}
-        />
-    )
-}
-
-const CustomGatewayControl = ({
-    children,
-    ...props
-}: ControlProps<PaymentGatewayOption>) => {
-    const selected = props.getValue()[0]
-    return (
-        <Control {...props}>
-            {selected?.logo ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                    src={selected.logo}
-                    alt={selected.label}
-                    className="h-5 w-5 rounded object-contain ltr:ml-4 rtl:mr-4"
-                />
-            ) : (
-                <span className="h-5 w-5 rounded bg-gray-200 dark:bg-gray-700 ltr:ml-4 rtl:mr-4" />
-            )}
-            {children}
-        </Control>
-    )
 }
 
 const PaymentMethodSection = ({}: PaymentMethodSectionProps) => {
@@ -262,9 +168,6 @@ const PaymentMethodSection = ({}: PaymentMethodSectionProps) => {
                 )
 
             const defaultOption = mapped.find((item) => item.isDefault)
-            const hasExistingSelection = mapped.some(
-                (item) => item.value === paymentMethodId,
-            )
             setMethodOptions(
                 mapped.map((item) => ({
                     label: item.label,
@@ -272,7 +175,7 @@ const PaymentMethodSection = ({}: PaymentMethodSectionProps) => {
                     icon: item.icon,
                 })),
             )
-            if (!hasExistingSelection && defaultOption) {
+            if (!paymentMethodId && defaultOption) {
                 setPaymentMethodId(defaultOption.value)
             }
         } catch {
@@ -286,7 +189,8 @@ const PaymentMethodSection = ({}: PaymentMethodSectionProps) => {
         } finally {
             setMethodsLoading(false)
         }
-    }, [paymentMethodId, setPaymentMethodId])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [setPaymentMethodId])
 
     const fetchGateways = useCallback(
         async (methodId: string) => {
@@ -433,49 +337,76 @@ const PaymentMethodSection = ({}: PaymentMethodSectionProps) => {
         <Card id="payment">
             <h4 className="mb-6">Payment</h4>
             <FormItem label="Payment method">
-                <Select<PaymentMethodOption>
-                    instanceId="payment-method"
-                    options={methodOptions}
-                    isLoading={methodsLoading}
-                    value={selectedMethod}
-                    components={{
-                        Option: CustomMethodOption,
-                        Control: CustomMethodControl,
-                    }}
-                    placeholder="Select payment method"
-                    onChange={(option) => {
-                        const nextMethodId = option?.value || ''
-                        setPaymentMethodId(nextMethodId)
-                        setPaymentProviderId('')
-                        setGatewayOptions([])
-                    }}
-                />
+                {methodsLoading ? (
+                    <div className="py-4 text-gray-500">Loading payment methods...</div>
+                ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                        {methodOptions.map((option) => (
+                            <div
+                                key={option.value}
+                                className={`flex flex-col items-center justify-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                                    paymentMethodId === option.value
+                                        ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400'
+                                        : 'border-gray-200 dark:border-gray-700 hover:border-indigo-600 dark:hover:border-indigo-500'
+                                }`}
+                                onClick={() => {
+                                    setPaymentMethodId(option.value)
+                                    setPaymentProviderId('')
+                                    setGatewayOptions([])
+                                }}
+                            >
+                                <span className="text-3xl text-gray-700 dark:text-gray-300">
+                                    {resolveMethodIcon(option.icon) || <span className="h-8 w-8 rounded bg-gray-200 dark:bg-gray-700" />}
+                                </span>
+                                <span className="text-sm font-medium text-center">
+                                    {option.label}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </FormItem>
-            <FormItem
-                label="Payment provider"
-                invalid={Boolean(validationErrors.paymentProvider)}
-                errorMessage={validationErrors.paymentProvider}
-            >
-                <Select<PaymentGatewayOption>
-                    instanceId="payment-provider"
-                    options={gatewayOptions}
-                    isLoading={gatewaysLoading}
-                    isDisabled={!paymentMethodId || methodsLoading}
-                    value={selectedGateway}
-                    components={{
-                        Option: CustomGatewayOption,
-                        Control: CustomGatewayControl,
-                    }}
-                    placeholder={
-                        paymentMethodId
-                            ? 'Select payment provider'
-                            : 'Select payment method first'
-                    }
-                    onChange={(option) =>
-                        setPaymentProviderId(option?.value || '')
-                    }
-                />
-            </FormItem>
+            {paymentMethodId && (
+                <FormItem
+                    label="Payment provider"
+                    invalid={Boolean(validationErrors.paymentProvider)}
+                    errorMessage={validationErrors.paymentProvider}
+                >
+                    {gatewaysLoading ? (
+                        <div className="py-4 text-gray-500">Loading payment providers...</div>
+                    ) : gatewayOptions.length === 0 ? (
+                        <div className="py-4 text-gray-500">No payment providers available.</div>
+                    ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                            {gatewayOptions.map((option) => (
+                                <div
+                                    key={option.value}
+                                    className={`flex flex-col items-center justify-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                                        paymentProviderId === option.value
+                                            ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400'
+                                            : 'border-gray-200 dark:border-gray-700 hover:border-indigo-600 dark:hover:border-indigo-500'
+                                    }`}
+                                    onClick={() => setPaymentProviderId(option.value)}
+                                >
+                                    {option.logo ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                            src={option.logo}
+                                            alt={option.label}
+                                            className="h-8 w-auto object-contain"
+                                        />
+                                    ) : (
+                                        <span className="h-8 w-8 rounded bg-gray-200 dark:bg-gray-700" />
+                                    )}
+                                    <span className="text-sm font-medium text-center">
+                                        {option.label}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </FormItem>
+            )}
         </Card>
     )
 }

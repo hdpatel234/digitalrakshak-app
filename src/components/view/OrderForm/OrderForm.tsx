@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react'
 import { Form } from '@/components/ui/Form'
-import Affix from '@/components/shared/Affix'
 import Card from '@/components/ui/Card'
 import Container from '@/components/shared/Container'
 import BottomStickyBar from '@/components/template/BottomStickyBar'
@@ -11,7 +10,6 @@ import CustomerDetailSection from './components/CustomerDetailSection'
 import PaymentMethodSection from './components/PaymentMethodSection'
 import Navigator from './components/Navigator'
 import { useOrderFormStore } from './store/orderFormStore'
-import useLayoutGap from '@/utils/hooks/useLayoutGap'
 import isEmpty from 'lodash/isEmpty'
 import { useForm } from 'react-hook-form'
 import type { ReactNode } from 'react'
@@ -44,8 +42,6 @@ const OrderForm = (props: OrderFormProps) => {
         selectedCandidates,
         paymentProviderId,
     } = useOrderFormStore()
-
-    const { getTopGapValue } = useLayoutGap()
 
     useEffect(() => {
         if (defaultProducts) {
@@ -83,13 +79,11 @@ const OrderForm = (props: OrderFormProps) => {
                 onSubmit={handleSubmit(onSubmit)}
             >
                 <Container>
-                    <div className="flex gap-4">
-                        <div className="w-[360px] hidden lg:block">
-                            <Affix offset={getTopGapValue()}>
-                                <Card>
-                                    <Navigator />
-                                </Card>
-                            </Affix>
+                    <div className="flex flex-col gap-4">
+                        <div className="w-full">
+                            <Card>
+                                <Navigator />
+                            </Card>
                         </div>
 
                         <div className="flex-1">

@@ -61,9 +61,16 @@ const OrderCreate = () => {
     ).trim()
     const isEditMode = Boolean(editOrderId)
     const hasFetchedEditDetails = useRef(false)
-    const [prefillPackageId, setPrefillPackageId] = useState('')
+    const urlPackageId = String(searchParams?.get('package_id') || '').trim()
+    const [prefillPackageId, setPrefillPackageId] = useState(urlPackageId)
     const [prefillCandidateIds, setPrefillCandidateIds] = useState<string[]>([])
     const [isPrefillLoading, setIsPrefillLoading] = useState(false)
+
+    const isFormValid =
+        Boolean(selectedPackageId) &&
+        selectedCandidateIds.length > 0 &&
+        Boolean(paymentMethodId) &&
+        Boolean(paymentProviderId)
 
     useEffect(() => {
         setSelectedProduct([])
@@ -496,6 +503,7 @@ const OrderCreate = () => {
                                 variant="solid"
                                 type="submit"
                                 loading={isSubmiting}
+                                disabled={!isFormValid || isPrefillLoading}
                             >
                                 Create Order
                             </Button>

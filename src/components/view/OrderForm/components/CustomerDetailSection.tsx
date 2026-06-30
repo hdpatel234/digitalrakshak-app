@@ -3,13 +3,12 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import Card from '@/components/ui/Card'
 import Table from '@/components/ui/Table'
-import Select from '@/components/ui/Select'
 import Checkbox from '@/components/ui/Checkbox'
 import Notification from '@/components/ui/Notification'
 import toast from '@/components/ui/toast'
 import { FormItem } from '@/components/ui/Form'
 import { useOrderFormStore } from '../store/orderFormStore'
-import type { Candidate, CandidateOption, FormSectionBaseProps } from '../types'
+import type { Candidate, FormSectionBaseProps } from '../types'
 
 const { Tr, Th, Td, THead, TBody } = Table
 
@@ -136,128 +135,98 @@ const CustomerDetailSection = ({}: CustomerDetailSectionProps) => {
         setSelectedCandidates,
     ])
 
-    const candidateOptions = useMemo<CandidateOption[]>(
-        () =>
-            candidateList.map((candidate) => {
-                const fullName = `${candidate.firstName} ${candidate.lastName}`.trim()
-                const displayName = fullName || `Candidate #${candidate.id}`
-                return {
-                    value: candidate.id,
-                    label: displayName,
-                }
-            }),
-        [candidateList],
-    )
-
-    const selectedCandidateOptions = useMemo<CandidateOption[]>(
-        () =>
-            selectedCandidates.map((candidate) => {
-                const fullName = `${candidate.firstName} ${candidate.lastName}`.trim()
-                const displayName = fullName || `Candidate #${candidate.id}`
-                return {
-                    value: candidate.id,
-                    label: displayName,
-                }
-            }),
-        [selectedCandidates],
-    )
-
     const allSelected =
         candidateList.length > 0 &&
         selectedCandidates.length === candidateList.length
 
     return (
         <Card id="customerDetails">
-            <h4 className="mb-6">Candidate details</h4>
+            <div className="flex justify-between items-end mb-4">
+                <h4 className="mb-0">Candidate details</h4>
+                {selectedPackageId && candidateList.length > 0 && (
+                    <span className="text-sm font-medium text-gray-500">
+                        {selectedCandidates.length} of {candidateList.length} selected
+                    </span>
+                )}
+            </div>
 
             <FormItem
-                label="Candidates"
                 invalid={Boolean(validationErrors.candidates)}
                 errorMessage={validationErrors.candidates}
             >
-                <Select<CandidateOption, true>
-                    isMulti
-                    isClearable
-                    isDisabled={!selectedPackageId}
-                    options={candidateOptions}
-                    value={selectedCandidateOptions}
-                    placeholder={
-                        selectedPackageId
-                            ? 'Select one or more candidates'
-                            : 'Select package first'
-                    }
-                    onChange={(options) => {
-                        const selectedIds = new Set(
-                            Array.isArray(options)
-                                ? options.map((option) => option.value)
-                                : [],
-                        )
-                        setSelectedCandidates(
-                            candidateList.filter((candidate) =>
-                                selectedIds.has(candidate.id),
-                            ),
-                        )
-                    }}
-                />
-            </FormItem>
-
-            <div className="mb-4">
-                <Checkbox
-                    disabled={!selectedPackageId || candidateList.length === 0}
-                    checked={allSelected}
-                    onChange={(checked) =>
-                        setSelectedCandidates(checked ? candidateList : [])
+                <div
+                    className={
+                        candidateList.length > 8
+                            ? 'max-h-[400px] overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm'
+                            : 'border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm'
                     }
                 >
-                    Select all candidates
-                </Checkbox>
-            </div>
+                    {!selectedPackageId && (
+                        <div className="p-8 text-center text-gray-500">
+                            Select a package first to load available candidates.
+                        </div>
+                    )}
 
-            <div
-                className={
-                    selectedCandidates.length > 10
-                        ? 'max-h-[360px] overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg'
-                        : 'border border-gray-200 dark:border-gray-700 rounded-lg'
-                }
-            >
-                {!selectedPackageId && (
-                    <p className="text-sm text-gray-500">
-                        Select a package to load candidates.
-                    </p>
-                )}
+                    {selectedPackageId && candidateList.length === 0 && (
+                        <div className="p-8 text-center text-gray-500">
+                            No candidates available for this package.
+                        </div>
+                    )}
 
-                {selectedPackageId && selectedCandidates.length === 0 && (
-                    <p className="text-sm text-gray-500">
-                        No candidate selected.
-                    </p>
-                )}
-
-                {selectedCandidates.length > 0 && (
-                    <Table compact className="w-full">
-                        <THead>
-                            <Tr>
-                                <Th>Name</Th>
-                                <Th>Email</Th>
-                                <Th>Phone</Th>
-                            </Tr>
-                        </THead>
-                        <TBody>
-                            {selectedCandidates.map((candidate) => {
-                                const fullName =
-                                    `${candidate.firstName} ${candidate.lastName}`.trim() ||
-                                    `Candidate #${candidate.id}`
-                                return (
-                                    <Tr key={candidate.id}>
-                                        <Td className="font-semibold">{fullName}</Td>
-                                        <Td>{candidate.email || '-'}</Td>
-                                        <Td>{candidate.phone || '-'}</Td>
-                                    </Tr>
-                                )
-                            })}
-                        </TBody>
-                    </Table>
-                )}
-            </div>
+                    {selectedPackageId && candidateList.length > 0 && (
+                        <Table compact className="w-full">
+                            <THead>
+                                <Tr>
+                                    <Th className="w-12 text-center">
+                                        <Checkbox
+                                            checked={allSelected}
+                                            onChange={(checked) =>
+                                                setSelectedCandidates(checked ? candidateList : [])
+                                            }
+                                        />
+                                    </Th>
+                                    <Th>Name</Th>
+                                    <Th>Email</Th>
+                                    <Th>Phone</Th>
+                                </Tr>
+                            </THead>
+                            <TBody>
+                                {candidateList.map((candidate) => {
+                                    const isSelected = selectedCandidates.some((c) => c.id === candidate.id)
+                                    const fullName =
+                                        `${candidate.firstName} ${candidate.lastName}`.trim() ||
+                                        `Candidate #${candidate.id}`
+                                    
+                                    return (
+                                        <Tr 
+                                            key={candidate.id}
+                                            className={`transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${isSelected ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : ''}`}
+                                        >
+                                            <Td className="w-12 text-center">
+                                                <Checkbox
+                                                    checked={isSelected}
+                                                    onChange={(checked) => {
+                                                        if (checked) {
+                                                            setSelectedCandidates([...selectedCandidates, candidate])
+                                                        } else {
+                                                            setSelectedCandidates(
+                                                                selectedCandidates.filter((c) => c.id !== candidate.id)
+                                                            )
+                                                        }
+                                                    }}
+                                                />
+                                            </Td>
+                                            <Td className="font-semibold text-gray-900 dark:text-gray-100">{fullName}</Td>
+                                            <Td>{candidate.email || '-'}</Td>
+                                            <Td>{candidate.phone || '-'}</Td>
+                                        </Tr>
+                                    )
+                                })}
+                            </TBody>
+                        </Table>
+                    )}
+                </div>
+            </FormItem>
         </Card>
     )
 }

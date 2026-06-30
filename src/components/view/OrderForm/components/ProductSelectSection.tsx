@@ -2,9 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Card from '@/components/ui/Card'
-import Button from '@/components/ui/Button'
-import Select from '@/components/ui/Select'
 import { FormItem } from '@/components/ui/Form'
+import { TbLayersLinked, TbUsers } from 'react-icons/tb'
 import { useOrderFormStore } from '../store/orderFormStore'
 import Notification from '@/components/ui/Notification'
 import toast from '@/components/ui/toast'
@@ -154,48 +153,69 @@ const ProductSelectSection = () => {
                     invalid={Boolean(validationErrors.package)}
                     errorMessage={validationErrors.package}
                 >
-                    <Select<ProductOption>
-                        instanceId="package-select"
-                        options={productOption}
-                        isLoading={isLoading}
-                        isSearchable
-                        value={selectedOption}
-                        placeholder="Select package"
-                        onChange={handleOptionSelect}
-                    />
-                </FormItem>
-                <div className="mt-4">
-                    {isLoading && (
-                        <p className="text-sm text-gray-500">
-                            Loading packages...
-                        </p>
-                    )}
-                    {!isLoading && !selectedPackage && (
-                        <p className="text-sm text-gray-500">
-                            No package selected yet.
-                        </p>
-                    )}
-                    {!isLoading && selectedPackage && (
-                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                            <div className="flex items-center justify-between gap-3">
-                                <p className="font-semibold">{selectedPackage.name}</p>
-                                <Button
-                                    type="button"
-                                    size="xs"
-                                    onClick={() => setSelectedProduct([])}
-                                >
-                                    Remove
-                                </Button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-2">
+                        {isLoading && (
+                            <div className="col-span-full py-8 text-center text-gray-500">
+                                Loading packages...
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">
-                                Code: {selectedPackage.productCode}
-                            </p>
-                            <p className="text-xs text-gray-500 mt-1">
-                                Available candidates: {selectedPackage.stock}
-                            </p>
-                        </div>
-                    )}
-                </div>
+                        )}
+                        {!isLoading && productList.length === 0 && (
+                            <div className="col-span-full py-8 text-center text-gray-500">
+                                No packages available.
+                            </div>
+                        )}
+                        {!isLoading && productList.map((pkg, index) => {
+                            const isSelected = selectedPackage?.id === pkg.id
+                            
+                            const colorThemes = [
+                                'bg-blue-50/50 border-blue-200 dark:bg-blue-900/10 dark:border-blue-800/30',
+                                'bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700',
+                                'bg-orange-50/50 border-orange-200 dark:bg-orange-900/10 dark:border-orange-800/30',
+                                'bg-emerald-50/50 border-emerald-200 dark:bg-emerald-900/10 dark:border-emerald-800/30',
+                            ]
+                            const baseTheme = colorThemes[index % colorThemes.length]
+                            const themeClass = isSelected 
+                                ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-600 ring-2 ring-indigo-600'
+                                : `${baseTheme} hover:border-indigo-400 hover:shadow-md`
+
+                            return (
+                                <div
+                                    key={pkg.id}
+                                    onClick={() => handleOptionSelect({ value: pkg.id, label: pkg.name, quantity: pkg.stock, img: '' })}
+                                    className={`rounded-xl border p-5 shadow-sm flex flex-col h-full cursor-pointer transition-all ${themeClass}`}
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                                            {pkg.name}
+                                        </h3>
+                                        <div className="bg-indigo-100 dark:bg-indigo-900/30 p-1.5 rounded-md flex-shrink-0 ml-4">
+                                            <TbLayersLinked className="text-indigo-600 dark:text-indigo-400 text-xl" />
+                                        </div>
+                                    </div>
+                                    
+                                    <p className="text-xs text-gray-500 mb-6">Code: {pkg.productCode}</p>
+                                    
+                                    <div className="mt-auto flex justify-between items-center pt-4 border-t border-gray-200/60 dark:border-gray-700/60">
+                                        <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 text-sm">
+                                            <TbUsers className="text-base" />
+                                            <span>{pkg.stock} candidates</span>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="text-lg font-bold text-gray-900 dark:text-white">
+                                                {new Intl.NumberFormat('en-IN', {
+                                                    style: 'currency',
+                                                    currency: 'INR',
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 0,
+                                                }).format(pkg.price)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </FormItem>
             </Card>
         </>
     )
