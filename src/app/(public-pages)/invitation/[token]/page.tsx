@@ -23,6 +23,7 @@ import type { ControlProps, OptionProps } from 'react-select'
 import Avatar from '@/components/ui/Avatar'
 import useSWR from 'swr'
 import ApiService from '@/services/ApiService'
+import { apiGetPostalCodeLocation } from '@/services/auth/postalCodes'
 
 const ACCEPTED_EXTENSIONS = ['.pdf', '.doc', '.docx', '.txt']
 const MAX_RESUME_SIZE = 10 * 1024 * 1024
@@ -256,6 +257,7 @@ const InvitationContent = () => {
     const countryValue = useWatch({ control, name: 'country' })
     const stateValue = useWatch({ control, name: 'state' })
     const cityValue = useWatch({ control, name: 'city' })
+    const postcodeValue = useWatch({ control, name: 'postcode' })
 
     const { data: countriesData } = useSWR<any>(
         '/api/auth/countries',
@@ -263,13 +265,13 @@ const InvitationContent = () => {
         { revalidateOnFocus: false, revalidateIfStale: false, revalidateOnReconnect: false }
     )
 
-    const { data: statesData } = useSWR<any>(
+    const { data: statesData, isLoading: isStatesLoading } = useSWR<any>(
         countryValue ? `/api/auth/states?country_id=${countryValue}` : null,
         () => ApiService.fetchDataWithAxios<any>({ url: '/auth/states', method: 'get', params: { country_id: countryValue } }),
         { revalidateOnFocus: false, revalidateIfStale: false, revalidateOnReconnect: false }
     )
 
-    const { data: citiesData } = useSWR<any>(
+    const { data: citiesData, isLoading: isCitiesLoading } = useSWR<any>(
         stateValue ? `/api/auth/cities?state_id=${stateValue}` : null,
         () => ApiService.fetchDataWithAxios<any>({ url: '/auth/cities', method: 'get', params: { state_id: stateValue } }),
         { revalidateOnFocus: false, revalidateIfStale: false, revalidateOnReconnect: false }
@@ -324,6 +326,26 @@ const InvitationContent = () => {
             setValue('city', '')
         }
     }, [cityOptions, cityValue, setValue, stateValue])
+
+    // Auto-fill Location from Postal Code
+    useEffect(() => {
+        if (postcodeValue && String(postcodeValue).trim().length === 6) {
+            const fetchLocation = async () => {
+                try {
+                    const response = await apiGetPostalCodeLocation<any>({ postal_code: String(postcodeValue).trim() })
+                    if (response?.status && response?.data) {
+                        const { country_id, state_id, city_id } = response.data
+                        if (country_id) setValue('country', String(country_id))
+                        if (state_id) setValue('state', String(state_id))
+                        if (city_id) setValue('city', String(city_id))
+                    }
+                } catch (error) {
+                    // console.error('Failed to auto-fill location by pincode', error)
+                }
+            }
+            fetchLocation()
+        }
+    }, [postcodeValue, setValue])
 
     useEffect(() => {
         reset(defaultValues)
@@ -699,6 +721,7 @@ const InvitationContent = () => {
                                         options={stateOptions}
                                         placeholder="Select State"
                                         isDisabled={!countryValue}
+                                        isLoading={isStatesLoading}
                                         value={stateOptions.find(
                                             (option: any) => option.value === field.value,
                                         )}
@@ -725,6 +748,7 @@ const InvitationContent = () => {
                                         options={cityOptions}
                                         placeholder="Select City"
                                         isDisabled={!stateValue}
+                                        isLoading={isCitiesLoading}
                                         value={cityOptions.find(
                                             (option: any) => option.value === field.value,
                                         )}
