@@ -24,7 +24,7 @@ const InvitationContent = () => {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [invitationData, setInvitationData] = useState<any>(null)
     const [error, setError] = useState<string | null>(null)
-    const [view, setView] = useState<'consent' | 'resume' | 'form' | 'success'>('consent')
+    const [view, setView] = useState<'consent' | 'form' | 'success'>('consent')
     const [termsAccepted, setTermsAccepted] = useState(false)
     const [termsError, setTermsError] = useState(false)
     
@@ -32,6 +32,7 @@ const InvitationContent = () => {
     const [selectedFiles, setSelectedFiles] = useState<File[]>([])
     const [isParsingResume, setIsParsingResume] = useState(false)
     const [parsedResumeData, setParsedResumeData] = useState<any>(null)
+    const [resumeProcessed, setResumeProcessed] = useState(false)
 
     useEffect(() => {
         if (!tokenValue) {
@@ -109,8 +110,8 @@ const InvitationContent = () => {
                 toast.push(<Notification type="danger">{payload.message || 'Failed to parse resume.'}</Notification>, { placement: 'top-center' })
             } else {
                 setParsedResumeData(payload.data)
-                toast.push(<Notification type="success">Resume parsed successfully.</Notification>, { placement: 'top-center' })
-                setView('form')
+                setResumeProcessed(true)
+                toast.push(<Notification type="success">Resume parsed successfully. Form details have been pre-filled.</Notification>, { placement: 'top-center' })
             }
         } catch (err: any) {
             toast.push(<Notification type="danger">{err.message || 'Failed to parse resume.'}</Notification>, { placement: 'top-center' })
@@ -137,7 +138,6 @@ const InvitationContent = () => {
         setTermsError(false)
 
         try {
-            // Extract the standard fields and candidate details
             const candidateDetails = {
                 first_name: values.firstName,
                 last_name: values.lastName,
@@ -150,7 +150,6 @@ const InvitationContent = () => {
                 pincode: values.postcode,
             }
 
-            // Extract dynamic field values
             const dynamicFieldsInput: any[] = []
             
             if (invitationData?.fields && Array.isArray(invitationData.fields)) {
@@ -244,7 +243,7 @@ const InvitationContent = () => {
                 <Card className="border border-gray-200/80 shadow-sm dark:border-gray-700/80 p-8">
                     <div className="flex flex-col gap-6 text-center">
                         <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                            Invitation to Provide Details
+                            Candidate Verification
                         </h2>
                         
                         <div className="text-gray-600 dark:text-gray-300 leading-relaxed text-left">
@@ -252,23 +251,22 @@ const InvitationContent = () => {
                                 Hello <strong>{invitationData?.candidate?.first_name || 'Candidate'}</strong>,
                             </p>
                             <p className="mb-4">
-                                You have been invited by <strong>{invitationData?.package?.[0]?.client_name || 'our organization'}</strong> to securely provide your personal and professional details for verification purposes.
+                                You have been invited by <strong>{invitationData?.package?.[0]?.client_name || 'our organization'}</strong> to securely provide your personal and professional details for background verification.
                             </p>
                             
-                            <h4 className="font-semibold text-gray-800 dark:text-gray-200 mt-6 mb-2">What you need to do:</h4>
+                            <h4 className="font-semibold text-gray-800 dark:text-gray-200 mt-6 mb-2">Instructions for Step 2:</h4>
                             <ul className="list-disc pl-5 space-y-2">
-                                <li>Review and fill out the detailed form with your information.</li>
-                                <li>You will have the option to upload your resume to prefill your details automatically.</li>
+                                <li>In the next step, you can choose to manually fill out the form or <strong>upload your resume</strong> to automatically pre-fill your information.</li>
                                 <li>Ensure you have any necessary documents ready, as you may need to fill in information corresponding to them.</li>
-                                <li>Review the terms and conditions and submit the form.</li>
+                                <li>Review all the details carefully, agree to the terms and conditions, and submit the form.</li>
                             </ul>
                             
                             {invitationData?.services && invitationData.services.length > 0 && (
                                 <div className="mt-6">
-                                    <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Required Information:</h4>
+                                    <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Required Checks:</h4>
                                     <div className="flex flex-wrap gap-2">
                                         {invitationData.services.map((service: any) => (
-                                            <span key={service.id} className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                            <span key={service.id} className="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
                                                 {service.service_name}
                                             </span>
                                         ))}
@@ -281,69 +279,9 @@ const InvitationContent = () => {
                             <Button 
                                 variant="solid" 
                                 className="w-full sm:w-auto min-w-[200px]"
-                                onClick={() => setView('resume')}
-                            >
-                                Continue
-                            </Button>
-                        </div>
-                    </div>
-                </Card>
-            </div>
-        )
-    }
-
-    if (view === 'resume') {
-        return (
-            <div className="w-full max-w-3xl mx-auto p-6 md:p-10 mt-10">
-                <Card className="border border-gray-200/80 shadow-sm dark:border-gray-700/80 p-8">
-                    <div className="flex flex-col gap-6">
-                        <div>
-                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                                Upload Resume
-                            </h2>
-                            <p className="text-gray-600 dark:text-gray-300">
-                                Upload your resume to prefill your details before completing the form.
-                            </p>
-                        </div>
-                        
-                        <Upload
-                            draggable
-                            accept={ACCEPTED_EXTENSIONS.join(',')}
-                            uploadLimit={1}
-                            fileList={selectedFiles}
-                            onChange={(files) => {
-                                const validation = validateResumeFile(files?.[0])
-                                if (validation !== true) {
-                                    toast.push(<Notification type="danger">{String(validation)}</Notification>, { placement: 'top-center' })
-                                    return
-                                }
-                                setSelectedFiles(files)
-                            }}
-                            onFileRemove={(files) => {
-                                setSelectedFiles(files)
-                            }}
-                            tip={
-                                <div className="text-xs text-gray-500 mt-2">
-                                    Allowed file types: {ACCEPTED_EXTENSIONS.join(', ')}. Max size: 10 MB.
-                                </div>
-                            }
-                        />
-
-                        <div className="mt-4 flex flex-col sm:flex-row justify-end items-center gap-3">
-                            <Button 
-                                variant="plain" 
                                 onClick={() => setView('form')}
-                                disabled={isParsingResume}
                             >
-                                Skip for now
-                            </Button>
-                            <Button 
-                                variant="solid"
-                                loading={isParsingResume}
-                                disabled={selectedFiles.length === 0 || isParsingResume}
-                                onClick={processResume}
-                            >
-                                Process Resume
+                                Continue to Form
                             </Button>
                         </div>
                     </div>
@@ -352,13 +290,13 @@ const InvitationContent = () => {
         )
     }
 
-    // Map candidate data to default values
+    // Default values for the form
     const defaultValues: CustomerFormSchema = {
         firstName: parsedResumeData?.first_name || invitationData?.candidate?.first_name || '',
         lastName: parsedResumeData?.last_name || invitationData?.candidate?.last_name || '',
         email: parsedResumeData?.email || invitationData?.candidate?.email || '',
         phoneNumber: parsedResumeData?.phone || invitationData?.candidate?.phone || '',
-        dialCode: '+91', // Default dial code, adjust as needed
+        dialCode: '+91',
         country: parsedResumeData?.country_id?.toString() || invitationData?.candidate?.country_id?.toString() || '',
         state: parsedResumeData?.state_id?.toString() || invitationData?.candidate?.state_id?.toString() || '',
         city: parsedResumeData?.city_id?.toString() || invitationData?.candidate?.city_id?.toString() || '',
@@ -367,10 +305,9 @@ const InvitationContent = () => {
         img: '',
         tags: [],
         managerEmails: [''],
-        askConsent: true, // Always true for candidate self-filling
+        askConsent: true,
     }
 
-    // Populate dynamic fields default values if available in formData or parsed resume data
     if (invitationData?.fields && Array.isArray(invitationData.fields)) {
         invitationData.fields.forEach((field: FieldConfig) => {
             let val = field.value
@@ -385,6 +322,58 @@ const InvitationContent = () => {
 
     return (
         <div className="w-full py-8">
+            <Container>
+                {/* Resume Upload Section - Embedded in the second step above the form */}
+                {!resumeProcessed && (
+                    <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                        <div className="flex flex-col gap-6">
+                            <div>
+                                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                                    Alternative: Upload Resume
+                                </h2>
+                                <p className="text-gray-600 dark:text-gray-300">
+                                    Save time! Upload your resume to automatically pre-fill your details below. You can also just fill out the form manually.
+                                </p>
+                            </div>
+                            
+                            <Upload
+                                draggable
+                                accept={ACCEPTED_EXTENSIONS.join(',')}
+                                uploadLimit={1}
+                                fileList={selectedFiles}
+                                onChange={(files) => {
+                                    const validation = validateResumeFile(files?.[0])
+                                    if (validation !== true) {
+                                        toast.push(<Notification type="danger">{String(validation)}</Notification>, { placement: 'top-center' })
+                                        return
+                                    }
+                                    setSelectedFiles(files)
+                                }}
+                                onFileRemove={(files) => {
+                                    setSelectedFiles(files)
+                                }}
+                                tip={
+                                    <div className="text-xs text-gray-500 mt-2">
+                                        Allowed file types: {ACCEPTED_EXTENSIONS.join(', ')}. Max size: 10 MB.
+                                    </div>
+                                }
+                            />
+
+                            <div className="flex flex-col sm:flex-row justify-end items-center gap-3">
+                                <Button 
+                                    variant="solid"
+                                    loading={isParsingResume}
+                                    disabled={selectedFiles.length === 0 || isParsingResume}
+                                    onClick={processResume}
+                                >
+                                    Process Resume
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </Container>
+
             <CustomerForm
                 newCustomer
                 dynamicFields={invitationData?.fields || []}
@@ -408,13 +397,6 @@ const InvitationContent = () => {
                         </div>
                         
                         <div className="flex justify-end gap-3">
-                            <Button 
-                                type="button"
-                                onClick={() => setView('resume')}
-                                disabled={isSubmitting}
-                            >
-                                Back
-                            </Button>
                             <Button
                                 className="w-full sm:w-auto min-w-[150px]"
                                 variant="solid"
@@ -434,13 +416,39 @@ const InvitationContent = () => {
 
 const Page = () => {
     return (
-        <Suspense fallback={
-            <div className="w-full flex justify-center items-center p-10 h-[50vh]">
-                <div className="text-gray-500 font-medium text-lg">Loading...</div>
-            </div>
-        }>
-            <InvitationContent />
-        </Suspense>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+            {/* Header */}
+            <header className="bg-white dark:bg-gray-800 shadow-sm py-4 px-6 md:px-10 flex items-center justify-between border-b border-gray-200 dark:border-gray-700 z-10">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded bg-indigo-600 text-white flex items-center justify-center font-bold text-xl">D</div>
+                    <div className="font-bold text-xl text-gray-900 dark:text-white tracking-tight">DigitalRakshak</div>
+                </div>
+                <div className="hidden sm:block text-sm text-gray-500 font-medium">Candidate Verification Portal</div>
+            </header>
+            
+            {/* Main Content */}
+            <main className="flex-grow">
+                <Suspense fallback={
+                    <div className="w-full flex justify-center items-center p-10 h-[50vh]">
+                        <div className="text-gray-500 font-medium text-lg">Loading...</div>
+                    </div>
+                }>
+                    <InvitationContent />
+                </Suspense>
+            </main>
+            
+            {/* Footer */}
+            <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-6 px-6 md:px-10 flex flex-col sm:flex-row items-center justify-between z-10">
+                <div className="text-sm text-gray-500">
+                    &copy; {new Date().getFullYear()} DigitalRakshak. All rights reserved.
+                </div>
+                <div className="text-xs text-gray-400 mt-2 sm:mt-0 flex gap-4">
+                    <span>Secure Verification System</span>
+                    <a href="#" className="hover:text-indigo-600 transition-colors">Privacy Policy</a>
+                    <a href="#" className="hover:text-indigo-600 transition-colors">Terms of Service</a>
+                </div>
+            </footer>
+        </div>
     )
 }
 

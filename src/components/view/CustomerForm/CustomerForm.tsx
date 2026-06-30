@@ -37,6 +37,7 @@ type CustomerFormProps = {
     defaultValues?: CustomerFormSchema
     newCustomer?: boolean
     dynamicFields?: FieldConfig[]
+    disableStickyBar?: boolean
 } & CommonProps
 
 const validationSchema: ZodType<CustomerFormSchema> = z
@@ -161,6 +162,7 @@ const CustomerForm = (props: CustomerFormProps) => {
         defaultValues = {},
         children,
         dynamicFields = [],
+        disableStickyBar = false,
     } = props
 
     const availableSections = Array.from(new Set(dynamicFields.map(f => f.section || 'Additional Info')))
@@ -409,7 +411,11 @@ const CustomerForm = (props: CustomerFormProps) => {
                     </div>
                 </div>
             </Container>
-            <BottomStickyBar>{children}</BottomStickyBar>
+            {disableStickyBar ? (
+                <div className="mt-4 flex w-full max-w-4xl mx-auto px-4 justify-center">{children}</div>
+            ) : (
+                <BottomStickyBar>{children}</BottomStickyBar>
+            )}
         </Form>
     )
 }
