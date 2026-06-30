@@ -12,7 +12,6 @@ import Notification from '@/components/ui/Notification'
 import toast from '@/components/ui/toast'
 import { startOrderPaymentFlow } from '@/utils/payments/orderPaymentFlow'
 import {
-    TbEye,
     TbCreditCard,
     TbPencil,
     TbCloudDownload,
@@ -89,10 +88,6 @@ const ActionColumn = ({ row }: { row: Order }) => {
     const isDraft = statusKey === 'draft'
     const isPending = statusKey === 'pending'
 
-    const onView = () => {
-        router.push(`/orders/details/${row.id}`)
-    }
-
     const onEdit = () => {
         router.push(`/orders/create?orderId=${row.id}`)
     }
@@ -113,7 +108,7 @@ const ActionColumn = ({ row }: { row: Order }) => {
                         <Notification type="success">{message}</Notification>,
                         { placement: 'top-center' },
                     )
-                    router.push('/orders/list')
+                    router.refresh()
                 },
                 onVerificationError: (message) => {
                     toast.push(
@@ -126,10 +121,6 @@ const ActionColumn = ({ row }: { row: Order }) => {
                     router.push('/orders/list')
                 },
             })
-
-            if (!handled) {
-                router.push(`/orders/details/${row.id}?action=payment`)
-            }
         })()
     }
 
@@ -175,11 +166,6 @@ const ActionColumn = ({ row }: { row: Order }) => {
 
     return (
         <div className="flex justify-center text-lg gap-1">
-            <Tooltip wrapperClass="flex" title="View">
-                <span className="cursor-pointer p-2" onClick={onView}>
-                    <TbEye />
-                </span>
-            </Tooltip>
             {isDraft && (
                 <Tooltip wrapperClass="flex" title="Edit">
                     <span className="cursor-pointer p-2" onClick={onEdit}>

@@ -344,6 +344,25 @@ export const startOrderPaymentFlow = async ({
         theme: {
             color: themeColor,
         },
+        config: {
+            display: {
+                blocks: {
+                    upi: {
+                        name: 'Pay via UPI',
+                        instruments: [
+                            {
+                                method: 'upi',
+                                flows: ['qr', 'collect', 'intent'],
+                            },
+                        ],
+                    },
+                },
+                sequence: ['block.upi', 'block.other'],
+                preferences: {
+                    show_default_blocks: true,
+                },
+            },
+        },
         modal: {
             ondismiss: () => {
                 onDismiss?.()
