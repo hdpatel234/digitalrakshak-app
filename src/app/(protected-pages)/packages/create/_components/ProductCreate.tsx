@@ -321,7 +321,7 @@ const ProductCreate = () => {
                                                                     )}
                                                                 </div>
                                                                 <span className="font-semibold text-gray-500 text-base">
-                                                                    ${service.price}
+                                                                    ₹{service.price}
                                                                 </span>
                                                             </div>
                                                             {service.category && (
@@ -349,7 +349,7 @@ const ProductCreate = () => {
                                 Accumulated Per Candidate Cost:
                             </span>
                             <span className="font-bold text-xl text-gray-900 dark:text-white">
-                                ${accumulatedCost.toFixed(2)}
+                                ₹{accumulatedCost.toFixed(2)}
                             </span>
                         </div>
 

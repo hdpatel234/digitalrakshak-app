@@ -242,14 +242,22 @@ export default async function Page({ searchParams }: PageProps) {
                                         </div>
                                     </div>
 
-                                    {isEditable && (
+                                    <div className="flex gap-3 w-full">
                                         <Link
-                                            href={`/packages/edit/${pkg.id}`}
-                                            className="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm text-sm"
+                                            href={`/orders/create?package_id=${pkg.id}`}
+                                            className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition-colors shadow-sm text-sm text-center"
                                         >
-                                            Edit package
+                                            Place order
                                         </Link>
-                                    )}
+                                        {isEditable && (
+                                            <Link
+                                                href={`/packages/edit/${pkg.id}`}
+                                                className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm text-sm text-center"
+                                            >
+                                                Edit
+                                            </Link>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         )
