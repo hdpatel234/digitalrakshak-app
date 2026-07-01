@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -34,6 +34,47 @@ const InvitationContent = () => {
     const [parsedResumeData, setParsedResumeData] = useState<any>(null)
     const [resumeProcessed, setResumeProcessed] = useState(false)
 
+    const computedDynamicFields = useMemo(() => {
+        let fields: any[] = []
+        if (invitationData?.services && Array.isArray(invitationData.services)) {
+            const allFields: any[] = []
+            invitationData.services.forEach((service: any) => {
+                if (Array.isArray(service.fields)) {
+                    allFields.push(...service.fields)
+                }
+            })
+            const uniqueFields: any[] = []
+            const fieldNames = new Set()
+            for (const field of allFields) {
+                if (!fieldNames.has(field.field_name)) {
+                    fieldNames.add(field.field_name)
+                    uniqueFields.push(field)
+                }
+            }
+            fields = uniqueFields
+        }
+        
+        if (invitationData?.fields && Array.isArray(invitationData.fields)) {
+            if (fields.length === 0) {
+                fields = invitationData.fields
+            } else {
+                fields = fields.map(f => {
+                    const existing = invitationData.fields.find((ef: any) => ef.field_name === f.field_name)
+                    if (existing) {
+                        return { ...f, value: existing.value !== undefined ? existing.value : f.value, id: existing.id || f.id }
+                    }
+                    return f
+                })
+                invitationData.fields.forEach((ef: any) => {
+                    if (!fields.find(f => f.field_name === ef.field_name)) {
+                        fields.push(ef)
+                    }
+                })
+            }
+        }
+        return fields
+    }, [invitationData])
+
     useEffect(() => {
         if (!tokenValue) {
             setError('This page is broken. Invitation token is missing.')
@@ -53,7 +94,7 @@ const InvitationContent = () => {
                 if (!response.ok || !payload.status) {
                     setError(payload.message || 'Invitation is invalid or has expired.')
                 } else {
-                    setInvitationData(payload.data)
+                    setInvitationData(payload.data); console.log(JSON.stringify(payload.data, null, 2))
                 }
             } catch (err: any) {
                 setError(err.message || 'Failed to fetch invitation details.')
@@ -152,8 +193,8 @@ const InvitationContent = () => {
 
             const dynamicFieldsInput: any[] = []
             
-            if (invitationData?.fields && Array.isArray(invitationData.fields)) {
-                invitationData.fields.forEach((field: FieldConfig) => {
+            if (computedDynamicFields.length > 0) {
+                computedDynamicFields.forEach((field: FieldConfig) => {
                     if (values[field.field_name as keyof CustomerFormSchema] !== undefined) {
                         dynamicFieldsInput.push({
                             field_id: field.id,
@@ -308,9 +349,9 @@ const InvitationContent = () => {
         askConsent: true,
     }
 
-    if (invitationData?.fields && Array.isArray(invitationData.fields)) {
-        invitationData.fields.forEach((field: FieldConfig) => {
-            let val = field.value
+    if (computedDynamicFields.length > 0) {
+        computedDynamicFields.forEach((field: FieldConfig) => {
+            let val = (field as any).value
             if (parsedResumeData && parsedResumeData.fields && parsedResumeData.fields[field.field_name] !== undefined) {
                 val = parsedResumeData.fields[field.field_name]
             }
@@ -376,7 +417,7 @@ const InvitationContent = () => {
 
             <CustomerForm
                 newCustomer
-                dynamicFields={invitationData?.fields || []}
+                dynamicFields={computedDynamicFields}
                 defaultValues={defaultValues}
                 onFormSubmit={handleFormSubmit}
             >

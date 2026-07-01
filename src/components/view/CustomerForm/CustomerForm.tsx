@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { Form } from '@/components/ui/Form'
 import Container from '@/components/shared/Container'
 import BottomStickyBar from '@/components/template/BottomStickyBar'
@@ -32,6 +32,9 @@ export type FieldConfig = {
     field_type: string
     is_required: number | boolean
     validation_regex?: string
+    section?: string
+    value?: string
+    or_group_name?: string
 }
 
 type CustomerFormProps = {
@@ -150,9 +153,17 @@ const CustomerForm = (props: CustomerFormProps) => {
         onFormSubmit,
         defaultValues = {},
         children,
-        dynamicFields = [],
+        dynamicFields: rawDynamicFields = [],
         disableStickyBar = false,
     } = props
+
+    const dynamicFields = rawDynamicFields.map(f => {
+        const isMainField = rawDynamicFields.some(x => String(x.or_group_name) === String(f.id));
+        if (f.or_group_name || isMainField) {
+            return { ...f, is_required: 0 }
+        }
+        return f
+    })
 
     const availableSections = Array.from(new Set(dynamicFields.map(f => f.section || 'Additional Info')))
 
@@ -162,6 +173,85 @@ const CustomerForm = (props: CustomerFormProps) => {
         }
         return availableSections.includes(nav.label)
     })
+
+    const dynamicZodSchema = useMemo(() => {
+        let schema = validationSchema
+        if (dynamicFields && Array.isArray(dynamicFields)) {
+            const dynamicShape: Record<string, any> = {}
+            const seenFieldNames = new Set<string>()
+            const orGroups = new Map<string, string[]>()
+
+            dynamicFields.forEach((f: FieldConfig) => {
+                if (f.section === 'Consent Form') return
+
+                if (seenFieldNames.has(f.field_name)) return // Only define once in schema
+                seenFieldNames.add(f.field_name)
+
+                // If part of an OR group, register it
+                if (f.or_group_name) {
+                    const mainFieldId = String(f.or_group_name)
+                    const group = orGroups.get(mainFieldId) || []
+                    group.push(f.field_name)
+                    orGroups.set(mainFieldId, group)
+                } else {
+                    const myId = String(f.id)
+                    const isMainField = dynamicFields.some((x: FieldConfig) => String(x.or_group_name) === myId)
+                    if (isMainField) {
+                        const group = orGroups.get(myId) || []
+                        group.push(f.field_name)
+                        orGroups.set(myId, group)
+                    }
+                }
+
+                // Override requirement if part of an OR group
+                let isReq = f.is_required;
+                const isMainField = dynamicFields.some((x: FieldConfig) => String(x.or_group_name) === String(f.id))
+                if (f.or_group_name || isMainField) {
+                    isReq = 0;
+                }
+
+                if (f.field_type === 'file') {
+                    if (isReq) {
+                        dynamicShape[f.field_name] = z.any().refine(
+                            (val) => val instanceof File || (Array.isArray(val) && val.length > 0) || (val !== undefined && val !== null && val !== ''),
+                            { message: `${f.field_label} is required` }
+                        )
+                    } else {
+                        dynamicShape[f.field_name] = z.any().optional()
+                    }
+                } else {
+                    if (isReq) {
+                        dynamicShape[f.field_name] = z.string().min(1, `${f.field_label} is required`)
+                    } else {
+                        dynamicShape[f.field_name] = z.string().optional()
+                    }
+                }
+            })
+            if (Object.keys(dynamicShape).length > 0) {
+                schema = validationSchema.extend(dynamicShape).catchall(z.any()).superRefine((data, ctx) => {
+                    // Check dynamically configured OR groups
+                    orGroups.forEach((fieldsInGroup, mainFieldId) => {
+                        if (fieldsInGroup.length > 0) {
+                            const hasValue = fieldsInGroup.some(k => {
+                                const val = data[k];
+                                return val instanceof File || (Array.isArray(val) && val.length > 0) || (typeof val === 'string' && val.trim() !== '') || (val !== undefined && val !== null && val !== '');
+                            });
+                            if (!hasValue) {
+                                const mainFieldConfig = dynamicFields.find((x: FieldConfig) => String(x.id) === mainFieldId);
+                                const friendlyName = mainFieldConfig ? mainFieldConfig.field_label : 'this group';
+                                ctx.addIssue({
+                                    code: z.ZodIssueCode.custom,
+                                    message: `Please provide at least one option for ${friendlyName}`,
+                                    path: [fieldsInGroup[0]]
+                                })
+                            }
+                        }
+                    });
+                }) as any;
+            }
+        }
+        return schema
+    }, [dynamicFields])
 
     const {
         handleSubmit,
@@ -178,7 +268,7 @@ const CustomerForm = (props: CustomerFormProps) => {
             },
             ...defaultValues,
         },
-        resolver: zodResolver(validationSchema),
+        resolver: zodResolver(dynamicZodSchema),
     })
 
     useEffect(() => {
@@ -190,6 +280,116 @@ const CustomerForm = (props: CustomerFormProps) => {
 
     const onSubmit = (values: CustomerFormSchema) => {
         onFormSubmit?.(values)
+    }
+
+    const renderFieldsWithOrGroup = (fieldsToRender: FieldConfig[]) => {
+        const groupedForRender: (FieldConfig | FieldConfig[])[] = []
+        const processedGroupIds = new Set<string>()
+
+        fieldsToRender.forEach(f => {
+            if (f.or_group_name) {
+                const mainFieldId = String(f.or_group_name)
+                if (!processedGroupIds.has(mainFieldId)) {
+                    processedGroupIds.add(mainFieldId)
+                    const mainField = fieldsToRender.find(x => String(x.id) === mainFieldId)
+                    const alternatives = fieldsToRender.filter(x => String(x.or_group_name) === mainFieldId)
+                    if (mainField) {
+                        groupedForRender.push([mainField, ...alternatives])
+                    } else {
+                        groupedForRender.push(alternatives)
+                    }
+                }
+            } else {
+                const myId = String(f.id)
+                const isMainField = fieldsToRender.some(x => String(x.or_group_name) === myId)
+                if (isMainField) {
+                    if (!processedGroupIds.has(myId)) {
+                        processedGroupIds.add(myId)
+                        const alternatives = fieldsToRender.filter(x => String(x.or_group_name) === myId)
+                        groupedForRender.push([f, ...alternatives])
+                    }
+                } else {
+                    groupedForRender.push(f)
+                }
+            }
+        })
+
+        const renderFieldItem = (field: FieldConfig) => (
+            <FormItem
+                key={field.id}
+                label={field.field_label}
+                asterisk={!!field.is_required}
+                invalid={Boolean(errors[field.field_name as keyof CustomerFormSchema])}
+                errorMessage={errors[field.field_name as keyof CustomerFormSchema]?.message as string}
+            >
+                {field.field_type === 'date' ? (
+                    <Controller
+                        name={field.field_name as any}
+                        control={control}
+                        render={({ field: { value, onChange } }) => (
+                            <DatePicker
+                                value={value ? new Date(value as string) : null}
+                                onChange={(date) => {
+                                    onChange(date ? date.toISOString().split('T')[0] : '')
+                                }}
+                                placeholder={`Select ${field.field_label}`}
+                            />
+                        )}
+                    />
+                ) : field.field_type === 'file' ? (
+                    <Controller
+                        name={field.field_name as any}
+                        control={control}
+                        render={({ field: { onChange, value } }) => (
+                            <Upload
+                                draggable
+                                uploadLimit={1}
+                                onChange={(files) => onChange(files[0] || null)}
+                                fileList={value ? [value as any] : []}
+                            >
+                                <div className="text-center">
+                                    <p className="font-semibold">
+                                        <span className="text-gray-800 dark:text-white">
+                                            Drop your file here, or{' '}
+                                        </span>
+                                        <span className="text-blue-500">browse</span>
+                                    </p>
+                                </div>
+                            </Upload>
+                        )}
+                    />
+                ) : (
+                    <Input
+                        type={field.field_type === 'number' ? 'number' : 'text'}
+                        placeholder={`Enter ${field.field_label}`}
+                        {...control.register(field.field_name as any)}
+                    />
+                )}
+            </FormItem>
+        )
+
+        return groupedForRender.map((item, idx) => {
+            if (Array.isArray(item)) {
+                return (
+                    <div key={`group-${idx}`} className="col-span-1 relative rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-5 mt-2 mb-2 flex flex-col gap-4">
+                        {item.map((field, fIdx) => (
+                            <React.Fragment key={field.id}>
+                                {fIdx > 0 && (
+                                    <div className="relative flex items-center">
+                                        <div className="flex-grow border-t border-dashed border-gray-300 dark:border-gray-700"></div>
+                                        <span className="mx-4 flex-shrink-0 text-xs font-bold text-gray-500 tracking-widest bg-white dark:bg-gray-800 px-3 py-1 rounded-full border border-gray-200 dark:border-gray-700">OR</span>
+                                        <div className="flex-grow border-t border-dashed border-gray-300 dark:border-gray-700"></div>
+                                    </div>
+                                )}
+                                <div>{renderFieldItem(field)}</div>
+                            </React.Fragment>
+                        ))}
+                    </div>
+                )
+            } else {
+                return renderFieldItem(item)
+            }
+        })
     }
 
     return (
@@ -245,59 +445,7 @@ const CustomerForm = (props: CustomerFormProps) => {
                                     <h4 className="mb-2">Identity</h4>
                                     <p className="text-sm text-gray-500 mb-6">These details can be skipped and filled by the candidate via email, or you can fill them now.</p>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {dynamicFields.filter(f => f.section === 'Identity').map((field) => (
-                                            <FormItem
-                                                key={field.id}
-                                                label={field.field_label}
-                                                asterisk={!!field.is_required}
-                                                invalid={Boolean(errors[field.field_name as keyof CustomerFormSchema])}
-                                                errorMessage={errors[field.field_name as keyof CustomerFormSchema]?.message as string}
-                                            >
-                                                {field.field_type === 'date' ? (
-                                                    <Controller
-                                                        name={field.field_name as any}
-                                                        control={control}
-                                                        render={({ field: { value, onChange } }) => (
-                                                            <DatePicker
-                                                                value={value ? new Date(value as string) : null}
-                                                                onChange={(date) => {
-                                                                    onChange(date ? date.toISOString().split('T')[0] : '')
-                                                                }}
-                                                                placeholder={`Select ${field.field_label}`}
-                                                            />
-                                                        )}
-                                                    />
-                                                ) : field.field_type === 'file' ? (
-                                                    <Controller
-                                                        name={field.field_name as any}
-                                                        control={control}
-                                                        render={({ field: { onChange, value } }) => (
-                                                            <Upload
-                                                                draggable
-                                                                uploadLimit={1}
-                                                                onChange={(files) => onChange(files[0] || null)}
-                                                                fileList={value ? [value as any] : []}
-                                                            >
-                                                                <div className="text-center">
-                                                                    <p className="font-semibold">
-                                                                        <span className="text-gray-800 dark:text-white">
-                                                                            Drop your file here, or{' '}
-                                                                        </span>
-                                                                        <span className="text-blue-500">browse</span>
-                                                                    </p>
-                                                                </div>
-                                                            </Upload>
-                                                        )}
-                                                    />
-                                                ) : (
-                                                    <Input
-                                                        type={field.field_type === 'number' ? 'number' : 'text'}
-                                                        placeholder={`Enter ${field.field_label}`}
-                                                        {...control.register(field.field_name as any)}
-                                                    />
-                                                )}
-                                            </FormItem>
-                                        ))}
+                                        {renderFieldsWithOrGroup(dynamicFields.filter(f => f.section === 'Identity'))}
                                     </div>
                                 </Card>
                             </div>
@@ -309,59 +457,7 @@ const CustomerForm = (props: CustomerFormProps) => {
                                     <h4 className="mb-2">Employment</h4>
                                     <p className="text-sm text-gray-500 mb-6">These details can be skipped and filled by the candidate via email, or you can fill them now.</p>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {dynamicFields.filter(f => f.section === 'Employment').map((field) => (
-                                            <FormItem
-                                                key={field.id}
-                                                label={field.field_label}
-                                                asterisk={!!field.is_required}
-                                                invalid={Boolean(errors[field.field_name as keyof CustomerFormSchema])}
-                                                errorMessage={errors[field.field_name as keyof CustomerFormSchema]?.message as string}
-                                            >
-                                                {field.field_type === 'date' ? (
-                                                    <Controller
-                                                        name={field.field_name as any}
-                                                        control={control}
-                                                        render={({ field: { value, onChange } }) => (
-                                                            <DatePicker
-                                                                value={value ? new Date(value as string) : null}
-                                                                onChange={(date) => {
-                                                                    onChange(date ? date.toISOString().split('T')[0] : '')
-                                                                }}
-                                                                placeholder={`Select ${field.field_label}`}
-                                                            />
-                                                        )}
-                                                    />
-                                                ) : field.field_type === 'file' ? (
-                                                    <Controller
-                                                        name={field.field_name as any}
-                                                        control={control}
-                                                        render={({ field: { onChange, value } }) => (
-                                                            <Upload
-                                                                draggable
-                                                                uploadLimit={1}
-                                                                onChange={(files) => onChange(files[0] || null)}
-                                                                fileList={value ? [value as any] : []}
-                                                            >
-                                                                <div className="text-center">
-                                                                    <p className="font-semibold">
-                                                                        <span className="text-gray-800 dark:text-white">
-                                                                            Drop your file here, or{' '}
-                                                                        </span>
-                                                                        <span className="text-blue-500">browse</span>
-                                                                    </p>
-                                                                </div>
-                                                            </Upload>
-                                                        )}
-                                                    />
-                                                ) : (
-                                                    <Input
-                                                        type={field.field_type === 'number' ? 'number' : 'text'}
-                                                        placeholder={`Enter ${field.field_label}`}
-                                                        {...control.register(field.field_name as any)}
-                                                    />
-                                                )}
-                                            </FormItem>
-                                        ))}
+                                        {renderFieldsWithOrGroup(dynamicFields.filter(f => f.section === 'Employment'))}
                                     </div>
                                 </Card>
                             </div>
@@ -373,59 +469,7 @@ const CustomerForm = (props: CustomerFormProps) => {
                                     <h4 className="mb-2">Education</h4>
                                     <p className="text-sm text-gray-500 mb-6">These details can be skipped and filled by the candidate via email, or you can fill them now.</p>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {dynamicFields.filter(f => f.section === 'Education').map((field) => (
-                                            <FormItem
-                                                key={field.id}
-                                                label={field.field_label}
-                                                asterisk={!!field.is_required}
-                                                invalid={Boolean(errors[field.field_name as keyof CustomerFormSchema])}
-                                                errorMessage={errors[field.field_name as keyof CustomerFormSchema]?.message as string}
-                                            >
-                                                {field.field_type === 'date' ? (
-                                                    <Controller
-                                                        name={field.field_name as any}
-                                                        control={control}
-                                                        render={({ field: { value, onChange } }) => (
-                                                            <DatePicker
-                                                                value={value ? new Date(value as string) : null}
-                                                                onChange={(date) => {
-                                                                    onChange(date ? date.toISOString().split('T')[0] : '')
-                                                                }}
-                                                                placeholder={`Select ${field.field_label}`}
-                                                            />
-                                                        )}
-                                                    />
-                                                ) : field.field_type === 'file' ? (
-                                                    <Controller
-                                                        name={field.field_name as any}
-                                                        control={control}
-                                                        render={({ field: { onChange, value } }) => (
-                                                            <Upload
-                                                                draggable
-                                                                uploadLimit={1}
-                                                                onChange={(files) => onChange(files[0] || null)}
-                                                                fileList={value ? [value as any] : []}
-                                                            >
-                                                                <div className="text-center">
-                                                                    <p className="font-semibold">
-                                                                        <span className="text-gray-800 dark:text-white">
-                                                                            Drop your file here, or{' '}
-                                                                        </span>
-                                                                        <span className="text-blue-500">browse</span>
-                                                                    </p>
-                                                                </div>
-                                                            </Upload>
-                                                        )}
-                                                    />
-                                                ) : (
-                                                    <Input
-                                                        type={field.field_type === 'number' ? 'number' : 'text'}
-                                                        placeholder={`Enter ${field.field_label}`}
-                                                        {...control.register(field.field_name as any)}
-                                                    />
-                                                )}
-                                            </FormItem>
-                                        ))}
+                                        {renderFieldsWithOrGroup(dynamicFields.filter(f => f.section === 'Education'))}
                                     </div>
                                 </Card>
                             </div>
@@ -449,59 +493,7 @@ const CustomerForm = (props: CustomerFormProps) => {
                                 <Card className="mt-4">
                                     <p className="text-sm text-gray-500 mb-4">These additional details can be skipped and filled by the candidate via email, or you can fill them now.</p>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {dynamicFields.filter(f => (f.section || 'Additional Info') === 'Additional Info').map((field) => (
-                                            <FormItem
-                                                key={field.id}
-                                                label={field.field_label}
-                                                asterisk={!!field.is_required}
-                                                invalid={Boolean(errors[field.field_name as keyof CustomerFormSchema])}
-                                                errorMessage={errors[field.field_name as keyof CustomerFormSchema]?.message as string}
-                                            >
-                                                {field.field_type === 'date' ? (
-                                                    <Controller
-                                                        name={field.field_name as any}
-                                                        control={control}
-                                                        render={({ field: { value, onChange } }) => (
-                                                            <DatePicker
-                                                                value={value ? new Date(value as string) : null}
-                                                                onChange={(date) => {
-                                                                    onChange(date ? date.toISOString().split('T')[0] : '')
-                                                                }}
-                                                                placeholder={`Select ${field.field_label}`}
-                                                            />
-                                                        )}
-                                                    />
-                                                ) : field.field_type === 'file' ? (
-                                                    <Controller
-                                                        name={field.field_name as any}
-                                                        control={control}
-                                                        render={({ field: { onChange, value } }) => (
-                                                            <Upload
-                                                                draggable
-                                                                uploadLimit={1}
-                                                                onChange={(files) => onChange(files[0] || null)}
-                                                                fileList={value ? [value as any] : []}
-                                                            >
-                                                                <div className="text-center">
-                                                                    <p className="font-semibold">
-                                                                        <span className="text-gray-800 dark:text-white">
-                                                                            Drop your file here, or{' '}
-                                                                        </span>
-                                                                        <span className="text-blue-500">browse</span>
-                                                                    </p>
-                                                                </div>
-                                                            </Upload>
-                                                        )}
-                                                    />
-                                                ) : (
-                                                    <Input
-                                                        type={field.field_type === 'number' ? 'number' : 'text'}
-                                                        placeholder={`Enter ${field.field_label}`}
-                                                        {...control.register(field.field_name as any)}
-                                                    />
-                                                )}
-                                            </FormItem>
-                                        ))}
+                                        {renderFieldsWithOrGroup(dynamicFields.filter(f => (f.section || 'Additional Info') === 'Additional Info'))}
                                     </div>
                                 </Card>
                             </div>
@@ -532,59 +524,7 @@ const CustomerForm = (props: CustomerFormProps) => {
 
                                 {dynamicFields.filter(f => f.section === 'Consent Form').length > 0 && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 border-t pt-4">
-                                        {dynamicFields.filter(f => f.section === 'Consent Form').map((field) => (
-                                            <FormItem
-                                                key={field.id}
-                                                label={field.field_label}
-                                                asterisk={!!field.is_required}
-                                                invalid={Boolean(errors[field.field_name as keyof CustomerFormSchema])}
-                                                errorMessage={errors[field.field_name as keyof CustomerFormSchema]?.message as string}
-                                            >
-                                                {field.field_type === 'date' ? (
-                                                    <Controller
-                                                        name={field.field_name as any}
-                                                        control={control}
-                                                        render={({ field: { value, onChange } }) => (
-                                                            <DatePicker
-                                                                value={value ? new Date(value as string) : null}
-                                                                onChange={(date) => {
-                                                                    onChange(date ? date.toISOString().split('T')[0] : '')
-                                                                }}
-                                                                placeholder={`Select ${field.field_label}`}
-                                                            />
-                                                        )}
-                                                    />
-                                                ) : field.field_type === 'file' ? (
-                                                    <Controller
-                                                        name={field.field_name as any}
-                                                        control={control}
-                                                        render={({ field: { onChange, value } }) => (
-                                                            <Upload
-                                                                draggable
-                                                                uploadLimit={1}
-                                                                onChange={(files) => onChange(files[0] || null)}
-                                                                fileList={value ? [value as any] : []}
-                                                            >
-                                                                <div className="text-center">
-                                                                    <p className="font-semibold">
-                                                                        <span className="text-gray-800 dark:text-white">
-                                                                            Drop your file here, or{' '}
-                                                                        </span>
-                                                                        <span className="text-blue-500">browse</span>
-                                                                    </p>
-                                                                </div>
-                                                            </Upload>
-                                                        )}
-                                                    />
-                                                ) : (
-                                                    <Input
-                                                        type={field.field_type === 'number' ? 'number' : 'text'}
-                                                        placeholder={`Enter ${field.field_label}`}
-                                                        {...control.register(field.field_name as any)}
-                                                    />
-                                                )}
-                                            </FormItem>
-                                        ))}
+                                        {renderFieldsWithOrGroup(dynamicFields.filter(f => f.section === 'Consent Form'))}
                                     </div>
                                 )}
                             </Card>

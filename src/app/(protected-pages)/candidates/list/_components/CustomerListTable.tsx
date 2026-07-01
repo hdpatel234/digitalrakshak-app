@@ -172,6 +172,7 @@ const CustomerListTable = ({
     const [isPackageLoading, setIsPackageLoading] = useState(false)
     const [isInviteSubmitting, setIsInviteSubmitting] = useState(false)
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
+    const [inviteConfirmationOpen, setInviteConfirmationOpen] = useState(false)
     const [candidateToDelete, setCandidateToDelete] = useState<Customer | null>(
         null,
     )
@@ -327,9 +328,82 @@ const CustomerListTable = ({
 
     const handleSendInvitation = async (customer: Customer) => {
         setSelectedCandidate(customer)
-        setSelectedPackageIds([])
-        setInviteModalOpen(true)
-        await fetchPackageOptions()
+        if (customer.packageId) {
+            setInviteConfirmationOpen(true)
+        } else {
+            setSelectedPackageIds([])
+            setInviteModalOpen(true)
+            await fetchPackageOptions()
+        }
+    }
+
+    const handleConfirmInvite = async () => {
+        if (!selectedCandidate?.id) {
+            return
+        }
+
+        setIsInviteSubmitting(true)
+        try {
+            const candidateId = Number.parseInt(String(selectedCandidate.id), 10)
+            const packageIds = selectedCandidate.packageId ? [Number(selectedCandidate.packageId)] : []
+
+            if (!Number.isInteger(candidateId)) {
+                toast.push(
+                    <Notification type="danger">
+                        Invalid candidate id.
+                    </Notification>,
+                    { placement: 'top-center' },
+                )
+                return
+            }
+
+            const response = await fetch(
+                `/api/client/candidates/${selectedCandidate.id}/invite`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        candidate_ids: [candidateId],
+                        package_ids: packageIds,
+                    }),
+                },
+            )
+
+            const payload = ((await response.json()) as ApiResponsePayload) || {}
+            const isSuccess =
+                payload.status === true || payload.success === true
+
+            if (!response.ok || !isSuccess) {
+                toast.push(
+                    <Notification type="danger">
+                        {payload.message || 'Failed to send invitation.'}
+                    </Notification>,
+                    { placement: 'top-center' },
+                )
+                return
+            }
+
+            toast.push(
+                <Notification type="success">
+                    {payload.message || 'Invitation sent successfully.'}
+                </Notification>,
+                { placement: 'top-center' },
+            )
+            setInviteConfirmationOpen(false)
+            setSelectedCandidate(null)
+            router.refresh()
+        } catch {
+            toast.push(
+                <Notification type="danger">
+                    Failed to send invitation.
+                </Notification>,
+                { placement: 'top-center' },
+            )
+        } finally {
+            setIsInviteSubmitting(false)
+        }
     }
 
     const handlePackageToggle = (checked: boolean, packageId: string) => {
@@ -667,6 +741,21 @@ const CustomerListTable = ({
                 <p>
                     Are you sure you want to remove this candidate? This action
                     can&apos;t be undone.
+                </p>
+            </ConfirmDialog>
+
+            <ConfirmDialog
+                isOpen={inviteConfirmationOpen}
+                type="info"
+                title="Send Invitation"
+                onClose={() => setInviteConfirmationOpen(false)}
+                onRequestClose={() => setInviteConfirmationOpen(false)}
+                onCancel={() => setInviteConfirmationOpen(false)}
+                onConfirm={handleConfirmInvite}
+            >
+                <p>
+                    Are you sure you want to send the invitation to {selectedCandidate?.name}? 
+                    The package is already assigned.
                 </p>
             </ConfirmDialog>
         </>

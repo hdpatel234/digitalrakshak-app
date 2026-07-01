@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense, useMemo } from 'react'
+import React, { useState, useEffect, Suspense, useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -35,11 +35,11 @@ const validationSchema = z.object({
     lastName: z.string().min(1, 'Last name is required'),
     email: z.string().min(1, 'Email is required').email('Invalid email'),
     phoneNumber: z.string().min(1, 'Phone number is required'),
-    country: z.string().min(1, 'Country is required'),
-    state: z.string().min(1, 'State is required'),
-    city: z.string().min(1, 'City is required'),
-    postcode: z.string().min(1, 'Zip/Postal code is required'),
-    address: z.string().min(1, 'Address is required'),
+    country: z.string().optional(),
+    state: z.string().optional(),
+    city: z.string().optional(),
+    postcode: z.string().optional(),
+    address: z.string().optional(),
 }).catchall(z.any())
 
 type CandidateFormSchema = z.infer<typeof validationSchema>
@@ -52,6 +52,7 @@ type FieldConfig = {
     is_required: number | boolean
     section?: string
     value?: string
+    or_group_name?: string
 }
 
 type SelectOption = {
@@ -228,11 +229,41 @@ const InvitationContent = () => {
         let schema = validationSchema
         if (invitationData?.fields && Array.isArray(invitationData.fields)) {
             const dynamicShape: Record<string, any> = {}
+            const seenFieldNames = new Set<string>()
+            
+            const orGroups = new Map<string, string[]>()
+
             invitationData.fields.forEach((f: FieldConfig) => {
                 if (f.section === 'Consent Form') return
-                
+
+                if (seenFieldNames.has(f.field_name)) return // Only define once in schema
+                seenFieldNames.add(f.field_name)
+
+                // If part of an OR group, register it
+                if (f.or_group_name) {
+                    const mainFieldId = String(f.or_group_name)
+                    const group = orGroups.get(mainFieldId) || []
+                    group.push(f.field_name)
+                    orGroups.set(mainFieldId, group)
+                } else {
+                    const myId = String(f.id)
+                    const isMainField = invitationData.fields.some((x: FieldConfig) => String(x.or_group_name) === myId)
+                    if (isMainField) {
+                        const group = orGroups.get(myId) || []
+                        group.push(f.field_name)
+                        orGroups.set(myId, group)
+                    }
+                }
+
+                // Override requirement if part of an OR group
+                let isReq = f.is_required;
+                const isMainField = invitationData.fields.some((x: FieldConfig) => String(x.or_group_name) === String(f.id))
+                if (f.or_group_name || isMainField) {
+                    isReq = 0;
+                }
+
                 if (f.field_type === 'file') {
-                    if (f.is_required) {
+                    if (isReq) {
                         dynamicShape[f.field_name] = z.any().refine(
                             (val) => val instanceof File || (Array.isArray(val) && val.length > 0) || (val !== undefined && val !== null && val !== ''),
                             { message: `${f.field_label} is required` }
@@ -241,7 +272,7 @@ const InvitationContent = () => {
                         dynamicShape[f.field_name] = z.any().optional()
                     }
                 } else {
-                    if (f.is_required) {
+                    if (isReq) {
                         dynamicShape[f.field_name] = z.string().min(1, `${f.field_label} is required`)
                     } else {
                         dynamicShape[f.field_name] = z.string().optional()
@@ -249,7 +280,26 @@ const InvitationContent = () => {
                 }
             })
             if (Object.keys(dynamicShape).length > 0) {
-                schema = validationSchema.extend(dynamicShape).catchall(z.any()) as any
+                schema = validationSchema.extend(dynamicShape).catchall(z.any()).superRefine((data, ctx) => {
+                    // Check dynamically configured OR groups
+                    orGroups.forEach((fieldsInGroup, mainFieldId) => {
+                        if (fieldsInGroup.length > 0) {
+                            const hasValue = fieldsInGroup.some(k => {
+                                const val = data[k];
+                                return val instanceof File || (Array.isArray(val) && val.length > 0) || (typeof val === 'string' && val.trim() !== '') || (val !== undefined && val !== null && val !== '');
+                            });
+                            if (!hasValue) {
+                                const mainFieldConfig = invitationData.fields.find((x: FieldConfig) => String(x.id) === mainFieldId);
+                                const friendlyName = mainFieldConfig ? mainFieldConfig.field_label : 'this group';
+                                ctx.addIssue({
+                                    code: z.ZodIssueCode.custom,
+                                    message: `Please provide at least one option for ${friendlyName}`,
+                                    path: [fieldsInGroup[0]]
+                                })
+                            }
+                        }
+                    });
+                }) as any;
             }
         }
         return schema
@@ -553,10 +603,16 @@ const InvitationContent = () => {
 
     // Dynamic field grouping by section
     const groupedFields: Record<string, FieldConfig[]> = {}
+    const seenFieldNames = new Set<string>()
+
     if (invitationData?.fields && Array.isArray(invitationData.fields)) {
         invitationData.fields.forEach((field: FieldConfig) => {
             // Ignore Consent Form section for candidate form (it shouldn't be asked)
             if (field.section === 'Consent Form') return
+
+            // Deduplicate fields that appear across multiple services with the same name
+            if (seenFieldNames.has(field.field_name)) return
+            seenFieldNames.add(field.field_name)
 
             let section = field.section
 
@@ -573,6 +629,13 @@ const InvitationContent = () => {
             }
 
             section = section || 'Additional Info'
+
+            // Make PAN and Aadhar related fields optional in UI
+            const nameLower = field.field_name.toLowerCase();
+            const sectionLower = section.toLowerCase();
+            if (nameLower.includes('pan') || sectionLower.includes('pan') || nameLower.includes('aadhar') || sectionLower.includes('aadhar')) {
+                field.is_required = 0;
+            }
 
             if (!groupedFields[section]) {
                 groupedFields[section] = []
@@ -645,7 +708,7 @@ const InvitationContent = () => {
             )} */}
 
             <Form
-                onSubmit={handleSubmit(onFormSubmit)}
+                onSubmit={handleSubmit(onFormSubmit, (errors) => console.log('Form validation errors:', errors))}
                 className="flex flex-col gap-4"
             >
                 {/* Basic Details */}
@@ -702,7 +765,7 @@ const InvitationContent = () => {
                     </div>
                 </Card>
 
-                {/* Address */}
+                {/* Address
                 <Card className="mt-5">
                     <h3 className="mb-4 text-lg font-semibold">Address Details</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6 pb-2">
@@ -816,68 +879,177 @@ const InvitationContent = () => {
                             />
                         </FormItem>
                     </div>
-                </Card>
+                </Card> */}
 
                 {/* Dynamic Sections */}
                 {sortedSections.map((section) => {
                     const fields = groupedFields[section]
+                    
+                    const groupedForRender: (FieldConfig | FieldConfig[])[] = []
+                    const processedGroupIds = new Set<string>()
+
+                    fields.forEach(f => {
+                        if (f.or_group_name) {
+                            const mainFieldId = String(f.or_group_name)
+                            if (!processedGroupIds.has(mainFieldId)) {
+                                processedGroupIds.add(mainFieldId)
+                                const mainField = fields.find(x => String(x.id) === mainFieldId)
+                                const alternatives = fields.filter(x => String(x.or_group_name) === mainFieldId)
+                                if (mainField) {
+                                    groupedForRender.push([mainField, ...alternatives])
+                                } else {
+                                    groupedForRender.push(alternatives)
+                                }
+                            }
+                        } else {
+                            const myId = String(f.id)
+                            const isMainField = fields.some(x => String(x.or_group_name) === myId)
+                            if (isMainField) {
+                                if (!processedGroupIds.has(myId)) {
+                                    processedGroupIds.add(myId)
+                                    const alternatives = fields.filter(x => String(x.or_group_name) === myId)
+                                    groupedForRender.push([f, ...alternatives])
+                                }
+                            } else {
+                                groupedForRender.push(f)
+                            }
+                        }
+                    })
+
+                    console.log("SECTION:", section, "FIELDS:", fields, "GROUPED:", groupedForRender)
+
+                    const renderFieldItem = (field: FieldConfig) => (
+                        <FormItem
+                            key={field.id}
+                            label={field.field_label}
+                            asterisk={!!field.is_required}
+                            invalid={Boolean(errors[field.field_name as keyof CandidateFormSchema])}
+                            errorMessage={errors[field.field_name as keyof CandidateFormSchema]?.message as string}
+                        >
+                            {field.field_type === 'date' ? (
+                                <Controller
+                                    name={field.field_name}
+                                    control={control}
+                                    render={({ field: { value, onChange } }) => (
+                                        <DatePicker
+                                            value={value ? new Date(value) : null}
+                                            onChange={(date) => {
+                                                onChange(date ? date.toISOString().split('T')[0] : '')
+                                            }}
+                                            placeholder={`Select ${field.field_label}`}
+                                        />
+                                    )}
+                                />
+                            ) : field.field_type === 'file' ? (
+                                <Controller
+                                    name={field.field_name}
+                                    control={control}
+                                    render={({ field: { onChange, value } }) => (
+                                        <Upload
+                                            draggable
+                                            uploadLimit={1}
+                                            onChange={(files) => onChange(files[0] || null)}
+                                            fileList={value ? [value] : []}
+                                        >
+                                            <div className="text-center">
+                                                <p className="font-semibold">
+                                                    <span className="text-gray-800 dark:text-white">
+                                                        Drop your file here, or{' '}
+                                                    </span>
+                                                    <span className="text-blue-500">browse</span>
+                                                </p>
+                                            </div>
+                                        </Upload>
+                                    )}
+                                />
+                            ) : field.field_label.toLowerCase().includes('country') || field.field_name.toLowerCase().includes('country') ? (
+                                <Controller
+                                    name={field.field_name}
+                                    control={control}
+                                    render={({ field: { value, onChange } }) => (
+                                        <Select<SelectOption>
+                                            options={countryOptions}
+                                            components={{
+                                                Option: CountrySelectOption,
+                                                Control: CountrySelectControl,
+                                            }}
+                                            placeholder={`Select ${field.field_label}`}
+                                            value={countryOptions.find((option: any) => option.value === value)}
+                                            onChange={(option) => {
+                                                onChange(option?.value || '')
+                                                // Ideally clear state and city here if we knew their exact dynamic names
+                                            }}
+                                        />
+                                    )}
+                                />
+                            ) : field.field_label.toLowerCase().includes('state') || field.field_name.toLowerCase().includes('state') ? (
+                                <Controller
+                                    name={field.field_name}
+                                    control={control}
+                                    render={({ field: { value, onChange } }) => (
+                                        <Select<SelectOption>
+                                            options={stateOptions}
+                                            placeholder={`Select ${field.field_label}`}
+                                            isLoading={isStatesLoading}
+                                            value={stateOptions.find((option: any) => option.value === value)}
+                                            onChange={(option) => {
+                                                onChange(option?.value || '')
+                                            }}
+                                        />
+                                    )}
+                                />
+                            ) : field.field_label.toLowerCase().includes('city') || field.field_name.toLowerCase().includes('city') ? (
+                                <Controller
+                                    name={field.field_name}
+                                    control={control}
+                                    render={({ field: { value, onChange } }) => (
+                                        <Select<SelectOption>
+                                            options={cityOptions}
+                                            placeholder={`Select ${field.field_label}`}
+                                            isLoading={isCitiesLoading}
+                                            value={cityOptions.find((option: any) => option.value === value)}
+                                            onChange={(option) => {
+                                                onChange(option?.value || '')
+                                            }}
+                                        />
+                                    )}
+                                />
+                            ) : (
+                                <Input
+                                    type={field.field_type === 'number' ? 'number' : 'text'}
+                                    placeholder={`Enter ${field.field_label}`}
+                                    {...register(field.field_name)}
+                                />
+                            )}
+                        </FormItem>
+                    )
+
                     return (
                         <Card key={section} className="mt-5">
                             <h3 className="mb-4 text-lg font-semibold">{section}</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6 pb-2">
-                                {fields.map((field) => (
-                                    <FormItem
-                                        key={field.id}
-                                        label={field.field_label}
-                                        asterisk={!!field.is_required}
-                                        invalid={Boolean(errors[field.field_name as keyof CandidateFormSchema])}
-                                        errorMessage={errors[field.field_name as keyof CandidateFormSchema]?.message as string}
-                                    >
-                                        {field.field_type === 'date' ? (
-                                            <Controller
-                                                name={field.field_name}
-                                                control={control}
-                                                render={({ field: { value, onChange } }) => (
-                                                    <DatePicker
-                                                        value={value ? new Date(value) : null}
-                                                        onChange={(date) => {
-                                                            onChange(date ? date.toISOString().split('T')[0] : '')
-                                                        }}
-                                                        placeholder={`Select ${field.field_label}`}
-                                                    />
-                                                )}
-                                            />
-                                        ) : field.field_type === 'file' ? (
-                                            <Controller
-                                                name={field.field_name}
-                                                control={control}
-                                                render={({ field: { onChange, value } }) => (
-                                                    <Upload
-                                                        draggable
-                                                        uploadLimit={1}
-                                                        onChange={(files) => onChange(files[0] || null)}
-                                                        fileList={value ? [value] : []}
-                                                    >
-                                                        <div className="text-center">
-                                                            <p className="font-semibold">
-                                                                <span className="text-gray-800 dark:text-white">
-                                                                    Drop your file here, or{' '}
-                                                                </span>
-                                                                <span className="text-blue-500">browse</span>
-                                                            </p>
-                                                        </div>
-                                                    </Upload>
-                                                )}
-                                            />
-                                        ) : (
-                                            <Input
-                                                type={field.field_type === 'number' ? 'number' : 'text'}
-                                                placeholder={`Enter ${field.field_label}`}
-                                                {...register(field.field_name)}
-                                            />
-                                        )}
-                                    </FormItem>
-                                ))}
+                                {groupedForRender.map((item, idx) => {
+                                    if (Array.isArray(item)) {
+                                        return (
+                                            <div key={`group-${idx}`} className="col-span-1 relative rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-5 mt-2 mb-2 flex flex-col gap-4">
+                                                {item.map((field, fIdx) => (
+                                                    <React.Fragment key={field.id}>
+                                                        {fIdx > 0 && (
+                                                            <div className="relative flex items-center">
+                                                                <div className="flex-grow border-t border-dashed border-gray-300 dark:border-gray-700"></div>
+                                                                <span className="mx-4 flex-shrink-0 text-xs font-bold text-gray-500 tracking-widest bg-white dark:bg-gray-800 px-3 py-1 rounded-full border border-gray-200 dark:border-gray-700">OR</span>
+                                                                <div className="flex-grow border-t border-dashed border-gray-300 dark:border-gray-700"></div>
+                                                            </div>
+                                                        )}
+                                                        <div>{renderFieldItem(field)}</div>
+                                                    </React.Fragment>
+                                                ))}
+                                            </div>
+                                        )
+                                    } else {
+                                        return renderFieldItem(item)
+                                    }
+                                })}
                             </div>
                         </Card>
                     )

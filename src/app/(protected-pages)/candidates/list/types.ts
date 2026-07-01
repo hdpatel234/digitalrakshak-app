@@ -66,6 +66,7 @@ export type Customer = {
     status: string
     employeeId?: string
     package?: string
+    packageId?: number | string | null
     progress?: number
     assignedDate?: string
     personalInfo: PersonalInfo
