@@ -1,7 +1,6 @@
 import Container from '@/components/shared/Container'
 import AdaptiveCard from '@/components/shared/AdaptiveCard'
 import ProductListProvider from './_components/ProductListProvider'
-import ProducListTableTools from './_components/ProducListTableTools'
 import ServiceListGrid from './_components/ServiceListGrid'
 import ProductListSelected from './_components/ProductListSelected'
 import type { PageProps } from '@/@types/common'
@@ -145,7 +144,6 @@ export default async function Page({ searchParams }: PageProps) {
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                             <h3>Services</h3>
                         </div>
-                        <ProducListTableTools />
                         <ServiceListGrid
                             productListTotal={data.total}
                             pageIndex={

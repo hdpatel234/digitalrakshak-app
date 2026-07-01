@@ -27,10 +27,10 @@ const ServiceCard = ({ service }: ServiceCardProps) => {
                     <div className="h-12 w-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
                         <DynamicIcon iconName={service.icon || 'box'} />
                     </div>
-                    <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-1 rounded-full font-medium text-xs flex items-center gap-1">
+                    {/* <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-1 rounded-full font-medium text-xs flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 block"></span>
                         Active
-                    </Badge>
+                    </Badge> */}
                 </div>
 
                 <div className="flex-grow flex flex-col gap-2">
