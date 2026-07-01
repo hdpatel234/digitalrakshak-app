@@ -5,6 +5,7 @@ import * as TablerIcons from 'react-icons/tb'
 import { TbLayersLinked, TbUsers, TbPlus } from 'react-icons/tb'
 import type { PageProps } from '@/@types/common'
 import type { Product } from './types'
+import PackageCardActions from './_components/PackageCardActions'
 
 type PackagesApiResponse = {
     status?: boolean
@@ -249,31 +250,11 @@ export default async function Page({ searchParams }: PageProps) {
                                         </div>
                                     </div>
 
-                                    <div className="flex gap-3 w-full">
-                                        {pkg.availableCandidates === 0 ? (
-                                            <button
-                                                disabled
-                                                className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-gray-400 text-white rounded-lg font-semibold shadow-sm text-sm text-center cursor-not-allowed opacity-70"
-                                            >
-                                                Place order
-                                            </button>
-                                        ) : (
-                                            <Link
-                                                href={`/orders/create?package_id=${pkg.id}`}
-                                                className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition-colors shadow-sm text-sm text-center"
-                                            >
-                                                Place order
-                                            </Link>
-                                        )}
-                                        {isEditable && (
-                                            <Link
-                                                href={`/packages/edit/${pkg.id}`}
-                                                className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm text-sm text-center"
-                                            >
-                                                Edit
-                                            </Link>
-                                        )}
-                                    </div>
+                                    <PackageCardActions 
+                                        pkgId={pkg.id}
+                                        availableCandidates={pkg.availableCandidates}
+                                        isEditable={isEditable}
+                                    />
                                 </div>
                             </div>
                         )
