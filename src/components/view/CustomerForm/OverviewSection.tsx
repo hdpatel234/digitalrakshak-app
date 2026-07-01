@@ -133,6 +133,7 @@ const OverviewSection = ({ control, errors }: OverviewSectionProps) => {
                     <h4 className="mb-6">Contact Details</h4>
                     <FormItem
                         label="Email"
+                        asterisk
                         invalid={Boolean(errors.email)}
                         errorMessage={errors.email?.message}
                     >
@@ -170,7 +171,7 @@ const OverviewSection = ({ control, errors }: OverviewSectionProps) => {
                                             Control: CustomControl,
                                         }}
                                         placeholder=""
-                                        value={dialCodeList.filter(
+                                        value={dialCodeList.find(
                                             (option) => option.dialCode === field.value,
                                         )}
                                         onChange={(option) =>

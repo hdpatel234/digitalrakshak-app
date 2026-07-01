@@ -46,14 +46,14 @@ const validationSchema: ZodType<CustomerFormSchema> = z
     .object({
         firstName: z
             .string()
-            .min(1, { message: 'First name is required' })
-            .refine((value) => /^[A-Za-z\s]+$/.test(value), {
+            .optional()
+            .refine((value) => !value || /^[A-Za-z\s]+$/.test(value), {
                 message: 'First name can contain letters only',
             }),
         lastName: z
             .string()
-            .min(1, { message: 'Last name is required' })
-            .refine((value) => /^[A-Za-z\s]+$/.test(value), {
+            .optional()
+            .refine((value) => !value || /^[A-Za-z\s]+$/.test(value), {
                 message: 'Last name can contain letters only',
             }),
         email: z
@@ -90,21 +90,8 @@ const validationSchema: ZodType<CustomerFormSchema> = z
             .optional(),
         img: z.string(),
         tags: z.array(z.object({ value: z.string(), label: z.string() })),
-        askConsent: z.boolean().refine(val => val === true, {
-            message: 'You must ask for candidate consent',
-        }),
+        askConsent: z.boolean().optional().default(true),
     })
-    .refine(
-        (data) => {
-            if (!data.dialCode && !data.phoneNumber) return true
-            if (data.dialCode && data.phoneNumber) return true
-            return false
-        },
-        {
-            message: 'Both country code and phone number are required if providing contact information',
-            path: ['phoneNumber'],
-        },
-    )
 
 const navigationList = [
     {
@@ -149,12 +136,12 @@ const navigationList = [
         link: 'additional-info',
         icon: <TbInfoCircle />,
     },
-    {
-        label: 'Consent Form',
-        description: 'Sign and approve terms.',
-        link: 'consent-form',
-        icon: <TbFileCheck />,
-    },
+    // {
+    //     label: 'Consent Form',
+    //     description: 'Sign and approve terms.',
+    //     link: 'consent-form',
+    //     icon: <TbFileCheck />,
+    // },
 ]
 
 const CustomerForm = (props: CustomerFormProps) => {
@@ -520,6 +507,7 @@ const CustomerForm = (props: CustomerFormProps) => {
                             </div>
                         )}
 
+                        {false && (
                         <div id="consent-form">
                             <Card>
                                 <h4 className="mb-2">Consent Form</h4>
@@ -601,6 +589,7 @@ const CustomerForm = (props: CustomerFormProps) => {
                                 )}
                             </Card>
                         </div>
+                        )}
                     </div>
                 </div>
             </Container>
