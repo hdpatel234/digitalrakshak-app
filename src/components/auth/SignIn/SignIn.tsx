@@ -95,15 +95,15 @@ const SignIn = ({
 
     return (
         <>
-            <div className="mb-8 flex justify-center">
+            <div className="mb-4 flex justify-center">
                 <Logo
                     type="streamline"
                     mode={mode}
-                    logoWidth={60}
-                    logoHeight={60}
+                    logoWidth={120}
+                    logoHeight={120}
                 />
             </div>
-            <div className="mb-8 text-center">
+            <div className="mb-4 text-center">
                 <h2 className="mb-2 text-2xl font-bold">Welcome Back!</h2>
                 <p className="font-semibold text-gray-500 dark:text-gray-400">
                     Continue using your DigiLocker - MeriPehchaan credentials
@@ -114,17 +114,17 @@ const SignIn = ({
                     <span className="break-all">{digilockerMessage}</span>
                 </Alert>
             )}
-            <div className="mb-6">
+            <div className="mb-4">
                 <Button
                     block
-                    className="bg-[#0B3C5D] hover:bg-[#07263b] text-white border-none py-3.5 h-auto flex items-center justify-center font-semibold rounded-lg shadow-sm transition-all duration-200"
+                    className="bg-white hover:bg-gray-50 text-[#0B3C5D] border border-[#0B3C5D] py-3.5 h-auto flex items-center justify-center font-semibold rounded-lg shadow-sm transition-all duration-200"
                     type="button"
                     onClick={handleDigiLockerSignIn}
                     disabled={isDigilockerLoading || isOAuthCallbackLoading}
                 >
                     {isDigilockerLoading || isOAuthCallbackLoading ? (
                         <div className="flex items-center justify-center h-6">
-                            <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <svg className="animate-spin h-6 w-6 text-[#0B3C5D]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
@@ -132,20 +132,20 @@ const SignIn = ({
                     ) : (
                         <div className="flex items-center justify-center gap-2">
                             <span>Continue with</span>
-                            <DigiLockerIcon className="h-6 w-6 text-white inline-block" />
+                            <DigiLockerIcon className="h-6 w-6 text-[#0B3C5D] inline-block" />
                             <span className="font-bold">DigiLocker</span>
                         </div>
                     )}
                 </Button>
             </div>
-            <div className="flex items-center gap-4 my-6">
+            <div className="flex items-center gap-4 my-4">
                 <div className="border-t border-gray-200 dark:border-gray-800 flex-1" />
                 <span className="text-xs font-semibold text-gray-400 dark:text-gray-500 tracking-wider uppercase">
                     OR
                 </span>
                 <div className="border-t border-gray-200 dark:border-gray-800 flex-1" />
             </div>
-            <div className="mb-6 text-center">
+            <div className="mb-4 text-center">
                 <button
                     type="button"
                     onClick={() => setShowCredentials(!showCredentials)}
@@ -172,7 +172,7 @@ const SignIn = ({
                     <SignInForm
                         setMessage={setMessage}
                         passwordHint={
-                            <div className="mb-7 mt-2">
+                            <div className="mb-2 mt-2">
                                 <ActionLink
                                     href={forgetPasswordUrl}
                                     className="font-semibold heading-text mt-2 underline"
