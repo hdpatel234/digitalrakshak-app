@@ -130,9 +130,19 @@ const ActionColumn = ({ row }: { row: Order }) => {
     }
 
     const onDownloadInvoice = async () => {
+        if (!row.invoiceId) {
+            toast.push(
+                <Notification type="warning" title="Not Found">
+                    Invoice is not generated yet for this order.
+                </Notification>,
+                { placement: 'top-center' }
+            )
+            return
+        }
+        
         try {
             setDownloading(true)
-            const response = await fetch(`/api/client/orders/${row.id}/pdf`, {
+            const response = await fetch(`/api/client/invoices/${row.invoiceId}/pdf`, {
                 method: 'GET',
             })
 
@@ -312,7 +322,7 @@ const OrderListTable = ({
                     const row = props.row.original
                     return (
                         <span className="font-semibold block">
-                            {dayjs.unix(row.date).format('DD/MM/YYYY')}
+                            {dayjs.unix(row.date).format('DD/MM/YYYY hh:mm A')}
                         </span>
                     )
                 },

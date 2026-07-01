@@ -1,11 +1,12 @@
 'use client'
 
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Card from '@/components/ui/Card'
 import Table from '@/components/ui/Table'
 import Checkbox from '@/components/ui/Checkbox'
 import Notification from '@/components/ui/Notification'
 import toast from '@/components/ui/toast'
+import Spinner from '@/components/ui/Spinner'
 import { FormItem } from '@/components/ui/Form'
 import { useOrderFormStore } from '../store/orderFormStore'
 import type { Candidate, FormSectionBaseProps } from '../types'
@@ -30,6 +31,8 @@ const CustomerDetailSection = ({}: CustomerDetailSectionProps) => {
         setSelectedCandidates,
         validationErrors,
     } = useOrderFormStore()
+
+    const [isFetching, setIsFetching] = useState(false)
 
     const selectedPackage = selectedProduct[0]
     const selectedPackageId = selectedPackage?.id || ''
@@ -74,6 +77,7 @@ const CustomerDetailSection = ({}: CustomerDetailSectionProps) => {
     }
 
     const fetchCandidates = useCallback(async (packageId: string) => {
+        setIsFetching(true)
         try {
             const response = await fetch(
                 `/api/client/packages/${packageId}/candidates`,
@@ -116,6 +120,8 @@ const CustomerDetailSection = ({}: CustomerDetailSectionProps) => {
                 { placement: 'top-center' },
             )
             setCandidateList([])
+        } finally {
+            setIsFetching(false)
         }
     }, [setCandidateList])
 
@@ -167,13 +173,20 @@ const CustomerDetailSection = ({}: CustomerDetailSectionProps) => {
                         </div>
                     )}
 
-                    {selectedPackageId && candidateList.length === 0 && (
+                    {selectedPackageId && isFetching && (
+                        <div className="p-8 text-center text-gray-500 flex flex-col items-center justify-center gap-3">
+                            <Spinner size={30} />
+                            <span>Fetching candidates...</span>
+                        </div>
+                    )}
+
+                    {selectedPackageId && !isFetching && candidateList.length === 0 && (
                         <div className="p-8 text-center text-gray-500">
                             No candidates available for this package.
                         </div>
                     )}
 
-                    {selectedPackageId && candidateList.length > 0 && (
+                    {selectedPackageId && !isFetching && candidateList.length > 0 && (
                         <Table compact className="w-full">
                             <THead>
                                 <Tr>
