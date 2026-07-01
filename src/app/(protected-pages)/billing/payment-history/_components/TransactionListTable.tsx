@@ -69,7 +69,7 @@ const TransactionListTable = ({
                     const { invoice, invoiceId } = props.row.original
                     const invoiceNumber = (invoice as any)?.invoice_number
                     return (
-                        <span className="font-bold heading-text block">
+                        <span className="font-bold heading-text block whitespace-nowrap">
                             {invoiceNumber ? `#${invoiceNumber}` : invoiceId || 'N/A'}
                         </span>
                     )
@@ -85,7 +85,7 @@ const TransactionListTable = ({
                         transactionUuid,
                     } = props.row.original
                     return (
-                        <span className="font-bold heading-text block">
+                        <span className="font-bold heading-text block whitespace-nowrap">
                             {gatewayPaymentId ||
                                 gatewayTransactionId ||
                                 transactionUuid ||
@@ -124,18 +124,7 @@ const TransactionListTable = ({
                     )
                 },
             },
-            {
-                header: 'Method',
-                accessorKey: 'paymentMethod',
-                cell: (props) => (
-                    <span className="font-semibold block capitalize">
-                        {props.row.original.paymentMethod ||
-                            (props.row.original.methodType
-                                ?.method_name as string) ||
-                            'N/A'}
-                    </span>
-                ),
-            },
+
             {
                 header: 'Date',
                 accessorKey: 'createdAt',

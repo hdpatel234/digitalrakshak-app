@@ -80,6 +80,10 @@ const normalizeInvoicesData = (data: unknown): InvoicesListData => {
                 updatedBy: Number(record.updated_by || 0),
                 createdAt: String(record.created_at || ''),
                 updatedAt: String(record.updated_at || ''),
+                order: record.order ? {
+                    orderNumber: (record.order as Record<string, unknown>).order_number,
+                    clientOrderNumber: (record.order as Record<string, unknown>).client_order_number
+                } : null,
             } as Invoice
         }),
         total,

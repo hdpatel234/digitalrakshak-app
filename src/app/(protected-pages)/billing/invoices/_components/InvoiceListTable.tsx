@@ -133,7 +133,7 @@ const InvoiceListTable = ({
                 header: 'Invoice',
                 accessorKey: 'invoiceNumber',
                 cell: (props) => (
-                    <span className="font-bold heading-text block">
+                    <span className="font-bold heading-text block whitespace-nowrap">
                         #{props.row.original.invoiceNumber}
                     </span>
                 ),
@@ -142,7 +142,7 @@ const InvoiceListTable = ({
                 header: 'Order',
                 accessorKey: 'order.orderNumber',
                 cell: (props) => (
-                    <span className="font-semibold block">
+                    <span className="font-semibold block whitespace-nowrap">
                         {props.row.original.order?.orderNumber ? `#${props.row.original.order.orderNumber}` : '-'}
                     </span>
                 ),
