@@ -7,6 +7,7 @@ export type Product = {
     availableCandidates: number
     price: number
     services: string[]
+    icon?: string
 }
 
 export type Filter = {

@@ -1,6 +1,7 @@
 import Container from '@/components/shared/Container'
 import { headers } from 'next/headers'
 import Link from 'next/link'
+import * as TablerIcons from 'react-icons/tb'
 import { TbLayersLinked, TbUsers, TbPlus } from 'react-icons/tb'
 import type { PageProps } from '@/@types/common'
 import type { Product } from './types'
@@ -57,6 +58,7 @@ const mapPackage = (item: unknown): Product => {
                 ),
             ) || 0,
         services,
+        icon: typeof record.icon === 'string' ? record.icon : undefined,
     }
 }
 
@@ -172,7 +174,7 @@ export default async function Page({ searchParams }: PageProps) {
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {data.list.map((pkg, index) => {
                         const isAdminPackage = String(pkg.type || '').toLowerCase() === 'admin'
                         const isEditable = !isAdminPackage
@@ -196,7 +198,12 @@ export default async function Page({ searchParams }: PageProps) {
                                         {pkg.name}
                                     </h3>
                                     <div className="bg-indigo-100 dark:bg-indigo-900/30 p-1.5 rounded-md flex-shrink-0 ml-4">
-                                        <TbLayersLinked className="text-indigo-600 dark:text-indigo-400 text-xl" />
+                                        {(() => {
+                                            const IconComponent = (pkg.icon && pkg.icon in TablerIcons) 
+                                                ? TablerIcons[pkg.icon as keyof typeof TablerIcons] 
+                                                : TbLayersLinked;
+                                            return <IconComponent className="text-indigo-600 dark:text-indigo-400 text-xl" />;
+                                        })()}
                                     </div>
                                 </div>
 

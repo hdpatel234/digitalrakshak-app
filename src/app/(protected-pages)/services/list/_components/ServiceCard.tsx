@@ -1,7 +1,7 @@
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import { Product } from '../types'
-import * as LuIcons from 'react-icons/lu'
+import * as TbIcons from 'react-icons/tb'
 
 type ServiceCardProps = {
     service: Product
@@ -14,7 +14,7 @@ const DynamicIcon = ({ iconName, className }: { iconName: string, className?: st
         .join('')
 
     // @ts-ignore
-    const IconComponent = LuIcons[`Lu${capitalizedName}`] || LuIcons.LuBox
+    const IconComponent = TbIcons[`${capitalizedName}`] || TbIcons[iconName] || TbIcons.TbBox
 
     return <IconComponent className={className} size={24} />
 }
