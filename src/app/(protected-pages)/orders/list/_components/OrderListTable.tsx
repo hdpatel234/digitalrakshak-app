@@ -6,6 +6,7 @@ import Tooltip from '@/components/ui/Tooltip'
 import DataTable from '@/components/shared/DataTable'
 import { useOrderListStore } from '../_store/orderListStore'
 import useAppendQueryParams from '@/utils/hooks/useAppendQueryParams'
+import useCurrentSession from '@/utils/hooks/useCurrentSession'
 import { useRouter } from 'next/navigation'
 import Notification from '@/components/ui/Notification'
 import toast from '@/components/ui/toast'
@@ -239,6 +240,10 @@ const OrderListTable = ({
     const statusOptions = useOrderListStore((state) => state.statusOptions)
 
     const { onAppendQueryParams } = useAppendQueryParams()
+    
+    const { session } = useCurrentSession()
+    const dateFormat = session?.config?.dateFormat || session?.config?.date_format || 'DD/MM/YYYY'
+    const timeFormat = session?.config?.timeFormat || session?.config?.time_format || 'hh:mm A'
 
     const statusLabelMap = useMemo(() => {
         const entries = statusOptions.map((option) => [
@@ -321,8 +326,8 @@ const OrderListTable = ({
                 cell: (props) => {
                     const row = props.row.original
                     return (
-                        <span className="font-semibold block">
-                            {dayjs.unix(row.date).format('DD/MM/YYYY hh:mm A')}
+                        <span className="font-semibold block whitespace-nowrap">
+                            {dayjs.unix(row.date).format(`${dateFormat} ${timeFormat}`)}
                         </span>
                     )
                 },
