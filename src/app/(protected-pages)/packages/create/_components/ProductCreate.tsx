@@ -271,6 +271,26 @@ const ProductCreate = () => {
                             invalid={Boolean(servicesError)}
                             errorMessage={servicesError}
                         >
+                            {serviceOptions.length > 0 && (
+                                <div className="flex justify-end mb-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (selectedServiceIds.length === serviceOptions.length) {
+                                                setSelectedServiceIds([])
+                                            } else {
+                                                setSelectedServiceIds(serviceOptions.map((s) => s.id))
+                                            }
+                                            if (servicesError) {
+                                                setServicesError('')
+                                            }
+                                        }}
+                                        className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                                    >
+                                        {selectedServiceIds.length === serviceOptions.length ? 'Deselect All' : 'Select All'}
+                                    </button>
+                                </div>
+                            )}
                             <div className="max-h-[400px] overflow-y-auto border border-gray-100 bg-gray-50/50 dark:border-gray-800 dark:bg-gray-800/50 rounded-xl p-5 shadow-inner">
                                 {serviceLoading && (
                                     <div className="flex items-center justify-center p-8">
@@ -344,35 +364,36 @@ const ProductCreate = () => {
                             </div>
                         </FormItem>
 
-                        <div className="mt-4 px-5 py-4 border border-gray-900 dark:border-white rounded-xl flex justify-between items-center shadow-sm">
-                            <span className="font-semibold text-gray-500 dark:text-gray-400">
-                                Accumulated Per Candidate Cost:
-                            </span>
-                            <span className="font-bold text-xl text-gray-900 dark:text-white">
-                                ₹{accumulatedCost.toFixed(2)}
-                            </span>
-                        </div>
-
                         <BottomStickyBar>
-                            <div className="flex items-center justify-end">
-                                <Button
-                                    className="ltr:mr-3 rtl:ml-3"
-                                    type="button"
-                                    customColorClass={() =>
-                                        'border-error ring-1 ring-error text-error hover:border-error hover:ring-error hover:text-error bg-transparent'
-                                    }
-                                    icon={<TbTrash />}
-                                    onClick={handleDiscard}
-                                >
-                                    Discard
-                                </Button>
-                                <Button
-                                    variant="solid"
-                                    type="submit"
-                                    loading={isSubmiting}
-                                >
-                                    Create Package
-                                </Button>
+                            <div className="flex flex-col gap-4 w-full">
+                                <div className="px-5 py-4 border border-gray-900 dark:border-white rounded-xl flex justify-between items-center shadow-sm bg-white dark:bg-gray-900">
+                                    <span className="font-semibold text-gray-500 dark:text-gray-400">
+                                        Accumulated Per Candidate Cost:
+                                    </span>
+                                    <span className="font-bold text-xl text-gray-900 dark:text-white">
+                                        ₹{accumulatedCost.toFixed(2)}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-end">
+                                    <Button
+                                        className="ltr:mr-3 rtl:ml-3"
+                                        type="button"
+                                        customColorClass={() =>
+                                            'border-error ring-1 ring-error text-error hover:border-error hover:ring-error hover:text-error bg-transparent'
+                                        }
+                                        icon={<TbTrash />}
+                                        onClick={handleDiscard}
+                                    >
+                                        Discard
+                                    </Button>
+                                    <Button
+                                        variant="solid"
+                                        type="submit"
+                                        loading={isSubmiting}
+                                    >
+                                        Create Package
+                                    </Button>
+                                </div>
                             </div>
                         </BottomStickyBar>
                     </Form>
