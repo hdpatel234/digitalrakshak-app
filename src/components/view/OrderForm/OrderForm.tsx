@@ -72,6 +72,13 @@ const OrderForm = (props: OrderFormProps) => {
         },
     })
 
+    const packagePrice = selectedProduct[0]?.price || 0
+    const numCandidates = selectedCandidates.length
+    const subtotal = packagePrice * numCandidates
+    const gstAmount = subtotal * 0.18
+    const totalAmount = subtotal + gstAmount
+
+
     return (
         <div className="flex">
             <Form
@@ -104,10 +111,7 @@ const OrderForm = (props: OrderFormProps) => {
                                             Package Amount
                                         </span>
                                         <span className="font-semibold">
-                                            ₹{''}
-                                            {(
-                                                selectedProduct[0]?.price || 0
-                                            ).toFixed(2)}
+                                            ₹{packagePrice.toFixed(2)}
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between text-sm mt-2">
@@ -115,20 +119,31 @@ const OrderForm = (props: OrderFormProps) => {
                                             Candidates
                                         </span>
                                         <span className="font-semibold">
-                                            {selectedCandidates.length}
+                                            {numCandidates}
                                         </span>
                                     </div>
-                                    <div className="flex items-center justify-between text-base mt-4">
+                                    <div className="flex items-center justify-between text-sm mt-2">
+                                        <span className="text-gray-600 dark:text-gray-300">
+                                            Subtotal
+                                        </span>
                                         <span className="font-semibold">
-                                            Total (incl. GST)
+                                            ₹{subtotal.toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm mt-2">
+                                        <span className="text-gray-600 dark:text-gray-300">
+                                            GST (18%)
+                                        </span>
+                                        <span className="font-semibold">
+                                            ₹{gstAmount.toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-base mt-4 border-t pt-4 dark:border-gray-700">
+                                        <span className="font-semibold">
+                                            Final Total
                                         </span>
                                         <span className="font-bold heading-text">
-                                            ₹{''}
-                                            {(
-                                                (selectedProduct[0]?.price ||
-                                                    0) *
-                                                selectedCandidates.length
-                                            ).toFixed(2)}
+                                            ₹{totalAmount.toFixed(2)}
                                         </span>
                                     </div>
                                     {showValidation && (
