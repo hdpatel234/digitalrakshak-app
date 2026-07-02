@@ -15,7 +15,7 @@ import { useCustomerListStore } from '../_store/customerListStore'
 import useAppendQueryParams from '@/utils/hooks/useAppendQueryParams'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { TbEye, TbSend, TbTrash } from 'react-icons/tb'
+import { TbEye, TbSend, TbTrash, TbDownload } from 'react-icons/tb'
 import type { OnSortParam, ColumnDef, Row } from '@/components/shared/DataTable'
 import type { Customer } from '../types'
 import { HiOutlineUser } from 'react-icons/hi'
@@ -115,15 +115,30 @@ const ActionColumn = ({
     onSendInvitation,
     onViewDetail,
     onDelete,
+    onDownloadReport,
     canSendInvitation,
+    canDownloadReport,
 }: {
     onSendInvitation: () => void
     onViewDetail: () => void
     onDelete: () => void
+    onDownloadReport: () => void
     canSendInvitation: boolean
+    canDownloadReport: boolean
 }) => {
     return (
         <div className="flex items-center gap-3">
+            {canDownloadReport && (
+                <Tooltip title="Download Report">
+                    <div
+                        className={`text-xl cursor-pointer select-none font-semibold text-blue-500`}
+                        role="button"
+                        onClick={onDownloadReport}
+                    >
+                        <TbDownload />
+                    </div>
+                </Tooltip>
+            )}
             {canSendInvitation && (
                 <Tooltip title="Send Invitation">
                     <div
@@ -251,6 +266,53 @@ const CustomerListTable = ({
             toast.push(
                 <Notification type="danger">
                     Failed to remove candidate.
+                </Notification>,
+                { placement: 'top-center' },
+            )
+        }
+    }
+
+    const handleDownloadReport = async (customer: Customer) => {
+        try {
+            const response = await fetch(`/api/client/candidates/${customer.id}/report`, {
+                method: 'GET',
+            })
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}))
+                toast.push(
+                    <Notification type="danger">
+                        {errorData.message || 'Failed to download report.'}
+                    </Notification>,
+                    { placement: 'top-center' },
+                )
+                return
+            }
+
+            const blob = await response.blob()
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.style.display = 'none'
+            a.href = url
+            
+            let filename = `candidate_report_${customer.id}.pdf`
+            const contentDisposition = response.headers.get('Content-Disposition')
+            if (contentDisposition && contentDisposition.indexOf('filename=') !== -1) {
+                const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(contentDisposition)
+                if (matches != null && matches[1]) { 
+                    filename = matches[1].replace(/['"]/g, '')
+                }
+            }
+            
+            a.download = filename
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            a.remove()
+        } catch {
+            toast.push(
+                <Notification type="danger">
+                    Failed to download report.
                 </Notification>,
                 { placement: 'top-center' },
             )
@@ -579,10 +641,18 @@ const CustomerListTable = ({
                         onDelete={() =>
                             handleOpenDeleteConfirmation(props.row.original)
                         }
+                        onDownloadReport={() =>
+                            handleDownloadReport(props.row.original)
+                        }
                         canSendInvitation={
                             String(props.row.original.status || '')
                                 .trim()
                                 .toLowerCase() === 'created'
+                        }
+                        canDownloadReport={
+                            String(props.row.original.status || '')
+                                .trim()
+                                .toLowerCase() === 'completed'
                         }
                     />
                 ),
