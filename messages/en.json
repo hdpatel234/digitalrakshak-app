@@ -64,6 +64,7 @@
             "verificationStatus": "Verification Status",
             "verificationInProgress": "In Progress",
             "verificationCompleted": "Completed",
+            "verificationInsufficiency": "Insfficinecy",
             "verificationReports": "Reports",
             "verificationTracking": "Tracking"
         },

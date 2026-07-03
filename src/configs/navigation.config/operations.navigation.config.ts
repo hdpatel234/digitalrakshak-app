@@ -204,6 +204,16 @@ const operationsNavigationConfig: NavigationTree[] = [
                         authority: [ADMIN, USER],
                         subMenu: [],
                     },
+                    {
+                        key: 'concepts.verificationStatus.verificationInsufficiency',
+                        path: `/verification-status/Insufficiency`,
+                        title: 'Insufficiency',
+                        translateKey: 'nav.conceptsVerificationStatus.verificationInsufficiency',
+                        icon: 'verificationCompleted',
+                        type: NAV_ITEM_TYPE_ITEM,
+                        authority: [ADMIN, USER],
+                        subMenu: [],
+                    },
                 ],
             },
 
