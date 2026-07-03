@@ -1,0 +1,86 @@
+type PersonalInfo = {
+    location: string
+    title: string
+    birthday: string
+    phoneNumber: string
+    dialCode: string
+    address: string
+    postcode: string
+    city: string
+    state: string
+    country: string
+    facebook: string
+    twitter: string
+    pinterest: string
+    linkedIn: string
+}
+
+type OrderHistory = {
+    id: string
+    item: string
+    status: string
+    amount: number
+    date: number
+}
+
+type PaymentMethod = {
+    cardHolderName: string
+    cardType: string
+    expMonth: string
+    expYear: string
+    last4Number: string
+    primary: boolean
+}
+
+type Subscription = {
+    plan: string
+    status: string
+    billing: string
+    nextPaymentDate: number
+    amount: number
+}
+
+export type CandidateService = {
+    id: string | number
+    service_id?: string | number
+    service_name?: string
+    status?: string
+    [key: string]: any
+}
+
+export type GetCustomersListResponse = {
+    list: Customer[]
+    total: number
+}
+
+export type Filter = {
+    status: string
+}
+
+export type StatusOption = {
+    key: string
+    name: string
+}
+
+export type Customer = {
+    id: string
+    name: string
+    firstName: string
+    lastName: string
+    email: string
+    img: string
+    role: string
+    lastOnline: number
+    status: string
+    employeeId?: string
+    package?: string
+    packageId?: number | string | null
+    progress?: number
+    assignedDate?: string
+    personalInfo: PersonalInfo
+    orderHistory: OrderHistory[]
+    paymentMethod: PaymentMethod[]
+    subscription: Subscription[]
+    totalSpending: number
+    candidateServices: CandidateService[]
+}
