@@ -236,6 +236,7 @@ const OpenTicket = () => {
                                     control={control}
                                     render={({ field }) => (
                                         <Select
+                                            instanceId="department-select"
                                             placeholder="Select department"
                                             options={departments}
                                             isLoading={isLoadingDepartments}
@@ -261,6 +262,7 @@ const OpenTicket = () => {
                                     control={control}
                                     render={({ field }) => (
                                         <Select
+                                            instanceId="priority-select"
                                             placeholder="Select priority"
                                             options={priorities}
                                             isLoading={isLoadingPriorities}
@@ -287,6 +289,7 @@ const OpenTicket = () => {
                                     control={control}
                                     render={({ field }) => (
                                         <Select
+                                            instanceId="order-select"
                                             placeholder="Select order"
                                             options={orders}
                                             isLoading={isLoadingOrders}
