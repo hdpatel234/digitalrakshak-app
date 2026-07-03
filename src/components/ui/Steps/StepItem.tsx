@@ -52,32 +52,33 @@ const StepItem = (props: StepItemProps) => {
         `step-item step-item-${status}`,
         vertical && 'step-item-vertical',
         className,
+        !vertical && 'relative',
     )
 
     const stepWrapperClass = classNames(
-        'step-item-wrapper',
+        'step-item-wrapper relative z-10 bg-white dark:bg-gray-800 pr-4',
         onStepChange && 'step-clickable',
     )
 
     const stepIconClass = classNames(
         `step-item-icon step-item-icon-${status}`,
-        status === COMPLETE && `bg-primary text-white`,
+        status === COMPLETE && `bg-gray-900 text-white`,
         status === ERROR && `step-item-icon-error`,
         status === IN_PROGRESS &&
-            `text-primary dark:text-gray-100 border-primary step-item-icon-current`,
+            `text-gray-900 dark:text-gray-100 border-gray-900 step-item-icon-current`,
     )
 
     const stepConnectClass = classNames(
         'step-connect',
         title ? 'step-title' : '',
-        vertical ? 'step-connect-vertical' : '',
-        status === COMPLETE ? `bg-primary` : `inactive`,
+        vertical ? 'step-connect-vertical' : 'absolute top-1/2 -translate-y-1/2 left-0 z-0',
+        status === COMPLETE ? `bg-gray-900` : `inactive`,
     )
 
     const stepTitleClass = classNames(
         'step-item-title',
         status === ERROR && `step-item-title-error`,
-        onStepChange && status !== ERROR && `hover:text-primary`,
+        onStepChange && status !== ERROR && `hover:text-gray-900`,
     )
 
     const handleStepChange = () => {

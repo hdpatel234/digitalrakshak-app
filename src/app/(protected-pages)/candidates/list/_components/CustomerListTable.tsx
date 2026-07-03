@@ -274,45 +274,24 @@ const CustomerListTable = ({
 
     const handleDownloadReport = async (customer: Customer) => {
         try {
-            const response = await fetch(`/api/client/candidates/${customer.id}/report`, {
-                method: 'GET',
-            })
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}))
-                toast.push(
-                    <Notification type="danger">
-                        {errorData.message || 'Failed to download report.'}
-                    </Notification>,
-                    { placement: 'top-center' },
-                )
-                return
-            }
-
-            const blob = await response.blob()
-            const url = window.URL.createObjectURL(blob)
             const a = document.createElement('a')
             a.style.display = 'none'
-            a.href = url
-            
-            let filename = `candidate_report_${customer.id}.pdf`
-            const contentDisposition = response.headers.get('Content-Disposition')
-            if (contentDisposition && contentDisposition.indexOf('filename=') !== -1) {
-                const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(contentDisposition)
-                if (matches != null && matches[1]) { 
-                    filename = matches[1].replace(/['"]/g, '')
-                }
-            }
-            
-            a.download = filename
+            a.href = '/sample-report.pdf'
+            a.download = `sample_report_${customer.id}.pdf`
             document.body.appendChild(a)
             a.click()
-            window.URL.revokeObjectURL(url)
             a.remove()
+            
+            toast.push(
+                <Notification type="success">
+                    Sample report downloaded successfully.
+                </Notification>,
+                { placement: 'top-center' },
+            )
         } catch {
             toast.push(
                 <Notification type="danger">
-                    Failed to download report.
+                    Failed to download sample report.
                 </Notification>,
                 { placement: 'top-center' },
             )

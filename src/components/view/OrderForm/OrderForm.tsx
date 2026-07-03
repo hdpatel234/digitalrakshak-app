@@ -12,6 +12,7 @@ import Navigator from './components/Navigator'
 import { useOrderFormStore } from './store/orderFormStore'
 import isEmpty from 'lodash/isEmpty'
 import { useForm } from 'react-hook-form'
+import { useSession } from 'next-auth/react'
 import type { ReactNode } from 'react'
 import type { OrderFormSchema, SelectedProduct } from './types'
 import type { CommonProps } from '@/@types/common'
@@ -42,6 +43,8 @@ const OrderForm = (props: OrderFormProps) => {
         selectedCandidates,
         paymentProviderId,
     } = useOrderFormStore()
+
+    const { data: session } = useSession()
 
     useEffect(() => {
         if (defaultProducts) {
@@ -75,7 +78,8 @@ const OrderForm = (props: OrderFormProps) => {
     const packagePrice = selectedProduct[0]?.price || 0
     const numCandidates = selectedCandidates.length
     const subtotal = packagePrice * numCandidates
-    const gstAmount = subtotal * 0.18
+    const gstPercentage = Number((session?.config as Record<string, string>)?.gst_percentage || 18)
+    const gstAmount = subtotal * (gstPercentage / 100)
     const totalAmount = subtotal + gstAmount
 
 
@@ -132,7 +136,7 @@ const OrderForm = (props: OrderFormProps) => {
                                     </div>
                                     <div className="flex items-center justify-between text-sm mt-2">
                                         <span className="text-gray-600 dark:text-gray-300">
-                                            GST (18%)
+                                            GST ({gstPercentage}%)
                                         </span>
                                         <span className="font-semibold">
                                             ₹{gstAmount.toFixed(2)}
