@@ -158,11 +158,7 @@ const CustomerForm = (props: CustomerFormProps) => {
     } = props
 
     const dynamicFields = rawDynamicFields.map(f => {
-        const isMainField = rawDynamicFields.some(x => String(x.or_group_name) === String(f.id));
-        if (f.or_group_name || isMainField) {
-            return { ...f, is_required: 0 }
-        }
-        return f
+        return { ...f, is_required: 0 }
     })
 
     const availableSections = Array.from(new Set(dynamicFields.map(f => f.section || 'Additional Info')))
@@ -228,26 +224,7 @@ const CustomerForm = (props: CustomerFormProps) => {
                 }
             })
             if (Object.keys(dynamicShape).length > 0) {
-                schema = validationSchema.extend(dynamicShape).catchall(z.any()).superRefine((data, ctx) => {
-                    // Check dynamically configured OR groups
-                    orGroups.forEach((fieldsInGroup, mainFieldId) => {
-                        if (fieldsInGroup.length > 0) {
-                            const hasValue = fieldsInGroup.some(k => {
-                                const val = data[k];
-                                return val instanceof File || (Array.isArray(val) && val.length > 0) || (typeof val === 'string' && val.trim() !== '') || (val !== undefined && val !== null && val !== '');
-                            });
-                            if (!hasValue) {
-                                const mainFieldConfig = dynamicFields.find((x: FieldConfig) => String(x.id) === mainFieldId);
-                                const friendlyName = mainFieldConfig ? mainFieldConfig.field_label : 'this group';
-                                ctx.addIssue({
-                                    code: z.ZodIssueCode.custom,
-                                    message: `Please provide at least one option for ${friendlyName}`,
-                                    path: [fieldsInGroup[0]]
-                                })
-                            }
-                        }
-                    });
-                }) as any;
+                schema = validationSchema.extend(dynamicShape).catchall(z.any()) as any;
             }
         }
         return schema

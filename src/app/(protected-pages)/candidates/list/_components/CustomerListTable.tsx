@@ -274,24 +274,47 @@ const CustomerListTable = ({
 
     const handleDownloadReport = async (customer: Customer) => {
         try {
-            const a = document.createElement('a')
-            a.style.display = 'none'
-            a.href = '/sample-report.pdf'
-            a.download = `sample_report_${customer.id}.pdf`
-            document.body.appendChild(a)
-            a.click()
-            a.remove()
+            const response = await fetch(`/api/client/candidates/${customer.id}/report`);
+            
+            if (!response.ok) {
+                let errorMsg = 'Failed to download report.';
+                try {
+                    const errJson = await response.json();
+                    if (errJson.message) errorMsg = errJson.message;
+                } catch {
+                    // ignore
+                }
+                toast.push(
+                    <Notification type="danger">
+                        {errorMsg}
+                    </Notification>,
+                    { placement: 'top-center' },
+                )
+                return;
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `candidate_report_${customer.id}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
             
             toast.push(
                 <Notification type="success">
-                    Sample report downloaded successfully.
+                    Report downloaded successfully.
                 </Notification>,
                 { placement: 'top-center' },
             )
         } catch {
             toast.push(
                 <Notification type="danger">
-                    Failed to download sample report.
+                    Failed to download report.
                 </Notification>,
                 { placement: 'top-center' },
             )
