@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { FiPlus } from "react-icons/fi";
+import { FiPlus, FiShoppingCart, FiBox } from "react-icons/fi";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
 
@@ -130,9 +130,25 @@ const DashboardHeader = ({
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-                <Link href="/candidates/create">
+                <Link href="/orders/create">
                     <Button
                         variant="default"
+                        icon={<FiShoppingCart className="w-4 h-4" />}
+                    >
+                        Create Order
+                    </Button>
+                </Link>
+                <Link href="/packages/create">
+                    <Button
+                        variant="default"
+                        icon={<FiBox className="w-4 h-4" />}
+                    >
+                        Create Package
+                    </Button>
+                </Link>
+                <Link href="/candidates/create">
+                    <Button
+                        variant="solid"
                         icon={<FiPlus className="w-4 h-4" />}
                     >
                         New Candidate
