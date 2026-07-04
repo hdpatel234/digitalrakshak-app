@@ -195,15 +195,14 @@ const ColumnsLayout = (
                                                             subNav.translateKey,
                                                             subNav.title,
                                                         )}
-                                                        description={t(
-                                                            subNav.meta
-                                                                ?.description
-                                                                ?.translateKey ||
-                                                                '',
-                                                            subNav.meta
-                                                                ?.description
-                                                                ?.label || '',
-                                                        )}
+                                                        description={
+                                                            subNav.meta?.description?.translateKey
+                                                                ? t(
+                                                                      subNav.meta.description.translateKey,
+                                                                      subNav.meta?.description?.label || '',
+                                                                  )
+                                                                : subNav.meta?.description?.label || ''
+                                                        }
                                                         active={
                                                             subNav.key ===
                                                             routeKey
@@ -250,11 +249,14 @@ const ColumnsLayout = (
                                             )
                                         }
                                         title={t(nav.translateKey, nav.title)}
-                                        description={t(
-                                            nav.meta?.description
-                                                ?.translateKey || '',
-                                            nav.meta?.description?.label || '',
-                                        )}
+                                        description={
+                                            nav.meta?.description?.translateKey
+                                                ? t(
+                                                      nav.meta.description.translateKey,
+                                                      nav.meta?.description?.label || '',
+                                                  )
+                                                : nav.meta?.description?.label || ''
+                                        }
                                         active={nav.key === routeKey}
                                         onClick={onDropdownClose}
                                     />
@@ -392,13 +394,12 @@ const TabLayout = ({
                                                     )}
                                                 </div>
                                                 <div className="text-xs truncate">
-                                                    {t(
-                                                        nav.meta?.description
-                                                            ?.translateKey ||
-                                                            '',
-                                                        nav.meta?.description
-                                                            ?.label || '',
-                                                    )}
+                                                    {nav.meta?.description?.translateKey
+                                                        ? t(
+                                                              nav.meta.description.translateKey,
+                                                              nav.meta?.description?.label || '',
+                                                          )
+                                                        : nav.meta?.description?.label || ''}
                                                 </div>
                                             </div>
                                         </MenuItem>
