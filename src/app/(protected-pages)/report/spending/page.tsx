@@ -26,14 +26,13 @@ async function getSpendingData(): Promise<SpendingData | null> {
         return null
     }
 
-    const url = new URL('/api/client/reports/spending', `${protocol}://${host}`)
+    const url = new URL('/api/client/reports/spending', 'http://localhost')
     
     try {
-        const cookie = headerStore.get('cookie') || ''
-        const response = await fetch(url.toString(), {
+        const { internalServerFetch } = await import('@/utils/serverFetch')
+        const response = await internalServerFetch(url.pathname + url.search, undefined, {
             method: 'GET',
             cache: 'no-store',
-            headers: cookie ? { cookie } : undefined,
         })
         const payload = await response.json()
         if (payload?.status) {

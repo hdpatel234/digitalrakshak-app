@@ -224,51 +224,20 @@ const getCandidatesFromInternalApi = async (
 ): Promise<CandidateListData> => {
     const pageIndex = toNumber(params.pageIndex, 1) || 1
     const pageSize = toNumber(params.pageSize, 10) || 10
-    const headerStore = await headers()
-    const host =
-        headerStore.get('x-forwarded-host') || headerStore.get('host') || ''
-    const protocol =
-        headerStore.get('x-forwarded-proto') ||
-        (process.env.NODE_ENV === 'development' ? 'http' : 'https')
-
-    if (!host) {
-        return {
-            list: [],
-            total: 0,
-            totalPages: 0,
-            nextPage: null,
-            limit: pageSize,
-            statusList: [],
-        }
-    }
-
-    // Use localhost to bypass Cloudflare for internal server-to-server requests
-    const internalPort = process.env.PORT || 3030;
-    const url = new URL('/api/client/candidates', `http://127.0.0.1:${internalPort}`)
-
-    Object.entries(params).forEach(([key, value]) => {
-        if (typeof value === 'string' && value.trim()) {
-            url.searchParams.set(key, value)
-        }
-    })
-
+    
     // Keep compatibility with external API naming for pagination/search.
-    url.searchParams.set('page', String(pageIndex))
-    url.searchParams.set('limit', String(pageSize))
-    const query = url.searchParams.get('query')
-    if (query && !url.searchParams.get('search')) {
-        url.searchParams.set('search', query)
+    const queryParams: Record<string, string> = { ...params as Record<string, string> };
+    queryParams.page = String(pageIndex);
+    queryParams.limit = String(pageSize);
+    if (queryParams.query && !queryParams.search) {
+        queryParams.search = queryParams.query;
     }
 
     try {
-        const cookie = headerStore.get('cookie') || ''
-        const response = await fetch(url.toString(), {
+        const { internalServerFetch } = await import('@/utils/serverFetch')
+        const response = await internalServerFetch('/api/client/candidates', queryParams, {
             method: 'GET',
             cache: 'no-store',
-            headers: {
-                ...(cookie ? { cookie } : {}),
-                host: host, // Pass original host for internal routing
-            },
         })
 
         console.log('response', response)

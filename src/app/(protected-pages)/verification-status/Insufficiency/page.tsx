@@ -245,7 +245,7 @@ const getCandidatesFromInternalApi = async (
         }
     }
 
-    const url = new URL('/api/client/candidates', `${protocol}://${host}`)
+    const url = new URL('/api/client/candidates', 'http://localhost')
 
     Object.entries(params).forEach(([key, value]) => {
         if (typeof value === 'string' && value.trim()) {
@@ -263,11 +263,10 @@ const getCandidatesFromInternalApi = async (
     }
 
     try {
-        const cookie = headerStore.get('cookie') || ''
-        const response = await fetch(url.toString(), {
+        const { internalServerFetch } = await import('@/utils/serverFetch')
+        const response = await internalServerFetch(url.pathname + url.search, undefined, {
             method: 'GET',
             cache: 'no-store',
-            headers: cookie ? { cookie } : undefined,
         })
 
         const payload =

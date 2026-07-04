@@ -80,7 +80,7 @@ const getServicesFromInternalApi = async (
 
     const pageIndex = toNumber(params.pageIndex, 1) || 1
     const pageSize = toNumber(params.pageSize, 10) || 10
-    const url = new URL('/api/client/services', `${protocol}://${host}`)
+    const url = new URL('/api/client/services', 'http://localhost')
 
     Object.entries(params).forEach(([key, value]) => {
         if (
@@ -113,11 +113,10 @@ const getServicesFromInternalApi = async (
     }
 
     try {
-        const cookie = headerStore.get('cookie') || ''
-        const response = await fetch(url.toString(), {
+        const { internalServerFetch } = await import('@/utils/serverFetch')
+        const response = await internalServerFetch(url.pathname + url.search, undefined, {
             method: 'GET',
             cache: 'no-store',
-            headers: cookie ? { cookie } : undefined,
         })
 
         const payload = ((await response.json()) as ServicesApiResponse) || {}

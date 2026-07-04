@@ -124,7 +124,7 @@ const getTransactionsFromInternalApi = async (
 
     const pageIndex = Number(params.pageIndex) || 1
     const pageSize = Number(params.pageSize) || 10
-    const url = new URL('/api/client/billing/transactions', `${protocol}://${host}`)
+    const url = new URL('/api/client/billing/transactions', 'http://localhost')
 
     if (typeof params.search === 'string' && params.search.trim()) {
         url.searchParams.set('search', params.search.trim())
@@ -147,11 +147,10 @@ const getTransactionsFromInternalApi = async (
     url.searchParams.set('limit', String(pageSize))
 
     try {
-        const cookie = headerStore.get('cookie') || ''
-        const response = await fetch(url.toString(), {
+        const { internalServerFetch } = await import('@/utils/serverFetch')
+        const response = await internalServerFetch('/api/client/billing/transactions' + url.search, undefined, {
             method: 'GET',
             cache: 'no-store',
-            headers: cookie ? { cookie } : undefined,
         })
 
         const payload = ((await response.json()) as TransactionsApiResponse) || {}

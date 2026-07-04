@@ -153,7 +153,7 @@ const getTicketsFromInternalApi = async (
 
     const pageIndex = toNumber(params.pageIndex, 1) || 1
     const pageSize = toNumber(params.pageSize, 10) || 10
-    const url = new URL('/api/client/tickets', `${protocol}://${host}`)
+    const url = new URL('/api/client/tickets', 'http://localhost')
 
     if (typeof params.query === 'string' && params.query.trim()) {
         url.searchParams.set('search', params.query.trim())
@@ -183,11 +183,10 @@ const getTicketsFromInternalApi = async (
     url.searchParams.set('limit', String(pageSize))
 
     try {
-        const cookie = headerStore.get('cookie') || ''
-        const response = await fetch(url.toString(), {
+        const { internalServerFetch } = await import('@/utils/serverFetch')
+        const response = await internalServerFetch(url.pathname + url.search, undefined, {
             method: 'GET',
             cache: 'no-store',
-            headers: cookie ? { cookie } : undefined,
         })
 
         const payload = ((await response.json()) as TicketsApiResponse) || {}
