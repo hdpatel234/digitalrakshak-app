@@ -242,7 +242,9 @@ const getCandidatesFromInternalApi = async (
         }
     }
 
-    const url = new URL('/api/client/candidates', `${protocol}://${host}`)
+    // Use localhost to bypass Cloudflare for internal server-to-server requests
+    const internalPort = process.env.PORT || 3030;
+    const url = new URL('/api/client/candidates', `http://127.0.0.1:${internalPort}`)
 
     Object.entries(params).forEach(([key, value]) => {
         if (typeof value === 'string' && value.trim()) {
@@ -263,7 +265,10 @@ const getCandidatesFromInternalApi = async (
         const response = await fetch(url.toString(), {
             method: 'GET',
             cache: 'no-store',
-            headers: cookie ? { cookie } : undefined,
+            headers: {
+                ...(cookie ? { cookie } : {}),
+                host: host, // Pass original host for internal routing
+            },
         })
 
         console.log('response', response)
