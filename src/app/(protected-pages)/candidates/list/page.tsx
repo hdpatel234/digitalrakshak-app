@@ -283,7 +283,8 @@ const getCandidatesFromInternalApi = async (
         }
 
         return normalizeCandidateListData(payload.data, pageSize)
-    } catch {
+    } catch (error) {
+        console.error('[Server API Error] fetching candidates/list failed:', error)
         return {
             list: [],
             total: 0,
