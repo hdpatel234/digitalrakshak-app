@@ -197,21 +197,30 @@ export default {
                 return token
             }
 
-            if (trigger === 'update' && session?.user) {
-                const updatedUser = session.user as {
-                    name?: string | null
-                    email?: string | null
-                    image?: string | null
-                    avatar?: string | null
+            if (trigger === 'update' && session) {
+                if (session.user) {
+                    const updatedUser = session.user as {
+                        name?: string | null
+                        email?: string | null
+                        image?: string | null
+                        avatar?: string | null
+                    }
+
+                    token.name = updatedUser.name ?? token.name
+                    token.email = updatedUser.email ?? token.email
+                    token.picture =
+                        updatedUser.avatar ??
+                        updatedUser.image ??
+                        (token.picture as string | undefined) ??
+                        null
                 }
 
-                token.name = updatedUser.name ?? token.name
-                token.email = updatedUser.email ?? token.email
-                token.picture =
-                    updatedUser.avatar ??
-                    updatedUser.image ??
-                    (token.picture as string | undefined) ??
-                    null
+                if (session.config) {
+                    token.config = {
+                        ...((token.config as Record<string, string>) || {}),
+                        ...session.config,
+                    }
+                }
 
                 return token
             }

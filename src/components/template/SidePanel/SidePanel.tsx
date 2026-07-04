@@ -17,16 +17,16 @@ const _SidePanel = (props: SidePanelProps) => {
 
     const t = useTranslation('header')
 
-    const [isOpen, setIsOpen] = useState(false)
-
     const direction = useTheme((state) => state.direction)
+    const panelExpand = useTheme((state) => state.panelExpand)
+    const setPanelExpand = useTheme((state) => state.setPanelExpand)
 
     const openPanel = () => {
-        setIsOpen(true)
+        setPanelExpand(true)
     }
 
     const closePanel = () => {
-        setIsOpen(false)
+        setPanelExpand(false)
 
         if (document) {
             const bodyClassList = document.body.classList
@@ -47,7 +47,7 @@ const _SidePanel = (props: SidePanelProps) => {
             </div>
             <Drawer
                 title={t('displaySettings.displaySettings')}
-                isOpen={isOpen}
+                isOpen={panelExpand}
                 placement={direction === 'rtl' ? 'left' : 'right'}
                 width={375}
                 onClose={closePanel}

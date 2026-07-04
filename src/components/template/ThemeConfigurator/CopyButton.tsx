@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSession } from 'next-auth/react'
 import Notification from '@/components/ui/Notification'
 import Button from '@/components/ui/Button'
 import toast from '@/components/ui/toast'
@@ -54,6 +55,7 @@ const CopyButton = ({
     const setSideNavCollapse = useTheme((state) => state.setSideNavCollapse)
     const setPanelExpand = useTheme((state) => state.setPanelExpand)
     const { setSession } = useCurrentSession()
+    const { update } = useSession()
     const t = useTranslation('header')
     const [isSaving, setIsSaving] = useState(false)
 
@@ -178,6 +180,8 @@ const CopyButton = ({
                     ...configFromApi,
                 },
             }))
+
+            await update({ config: configFromApi })
 
             showNotification(
                 'success',

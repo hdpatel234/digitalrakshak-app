@@ -23,7 +23,6 @@ const DirectionSwitcher = ({
 
     const onDirChange = (val: Direction) => {
         setDirection(val)
-        callBackClose?.()
     }
 
     return (
