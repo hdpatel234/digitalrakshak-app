@@ -73,7 +73,7 @@ const mapCandidateToCustomer = (item: unknown, index: number): Customer => {
     const status = String(record.status ?? 'active').toLowerCase()
 
     const packageName = String(record.package_name ?? record.package ?? '-')
-    const packageId = record.package_id ?? record.packageId ?? null
+    const packageId = (record.package_id ?? record.packageId ?? null) as number | string | null
     const progress = toNumber(record.progress ?? record.completion, 0)
     
     let assignedDateStr = String(record.created_at ?? record.createdAt ?? record.assigned_date ?? record.assignedDate ?? '');

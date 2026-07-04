@@ -187,6 +187,7 @@ const CustomerListTable = ({
     const [isPackageLoading, setIsPackageLoading] = useState(false)
     const [isInviteSubmitting, setIsInviteSubmitting] = useState(false)
     const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false)
+    const [isDeleting, setIsDeleting] = useState(false)
     const [inviteConfirmationOpen, setInviteConfirmationOpen] = useState(false)
     const [candidateToDelete, setCandidateToDelete] = useState<Customer | null>(
         null,
@@ -229,6 +230,7 @@ const CustomerListTable = ({
             return
         }
 
+        setIsDeleting(true)
         try {
             const response = await fetch(`/api/client/candidates/${candidateToDelete.id}`, {
                 method: 'DELETE',
@@ -269,6 +271,8 @@ const CustomerListTable = ({
                 </Notification>,
                 { placement: 'top-center' },
             )
+        } finally {
+            setIsDeleting(false)
         }
     }
 
@@ -809,6 +813,8 @@ const CustomerListTable = ({
                 onRequestClose={handleCloseDeleteConfirmation}
                 onCancel={handleCloseDeleteConfirmation}
                 onConfirm={handleConfirmDelete}
+                confirmButtonProps={{ loading: isDeleting, disabled: isDeleting }}
+                cancelButtonProps={{ disabled: isDeleting }}
             >
                 <p>
                     Are you sure you want to remove this candidate? This action
