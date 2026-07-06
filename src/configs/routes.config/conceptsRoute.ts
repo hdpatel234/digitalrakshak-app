@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 import { ADMIN, USER } from '@/constants/roles.constant'
+import { USER_PERMISSIONS } from '@/constants/permissions.constant'
 import type { Routes } from '@/@types/routes'
 
 const conceptsRoute: Routes = {
@@ -7,6 +8,7 @@ const conceptsRoute: Routes = {
     '/candidates/list': {
         key: 'concepts.candidates.candidateList',
         authority: [ADMIN, USER],
+        permissions: [USER_PERMISSIONS.CANDIDATES_LIST],
         meta: {
             pageContainerType: 'contained',
         }
@@ -14,11 +16,13 @@ const conceptsRoute: Routes = {
     '/candidates/create': {
         key: 'concepts.candidates.candidateCreate',
         authority: [ADMIN, USER],
+        permissions: [USER_PERMISSIONS.CANDIDATES_CREATE],
         meta: {}
     },
     '/candidates/import': {
         key: 'concepts.candidates.candidateImport',
         authority: [ADMIN, USER],
+        permissions: [USER_PERMISSIONS.CANDIDATES_IMPORT],
         meta: {}
     },
 
@@ -44,6 +48,7 @@ const conceptsRoute: Routes = {
     '/invitations/all': {
         key: 'concepts.invitations.invitationsAll',
         authority: [ADMIN, USER],
+        permissions: [USER_PERMISSIONS.INVITATIONS_LIST],
         meta: {
             pageContainerType: 'contained',
         }
@@ -52,6 +57,7 @@ const conceptsRoute: Routes = {
     '/invitations/completed': {
         key: 'concepts.invitations.invitationsCompleted',
         authority: [ADMIN, USER],
+        permissions: [USER_PERMISSIONS.INVITATIONS_COMPLETED],
         meta: {
             pageContainerType: 'contained',
         }
@@ -68,6 +74,7 @@ const conceptsRoute: Routes = {
     '/invitations/expired': {
         key: 'concepts.invitations.invitationsExpired',
         authority: [ADMIN, USER],
+        permissions: [USER_PERMISSIONS.INVITATIONS_EXPIRED],
         meta: {
             pageContainerType: 'contained',
         }
@@ -86,6 +93,7 @@ const conceptsRoute: Routes = {
     '/verification-status/in-progress': {
         key: 'concepts.verificationStatus.verificationInProgress',
         authority: [ADMIN, USER],
+        permissions: [USER_PERMISSIONS.VERIFICATION_IN_PROGRESS],
         meta: {
             pageContainerType: 'contained',
         }
@@ -93,6 +101,7 @@ const conceptsRoute: Routes = {
     '/verification-status/completed': {
         key: 'concepts.verificationStatus.verificationCompleted',
         authority: [ADMIN, USER],
+        permissions: [USER_PERMISSIONS.VERIFICATION_COMPLETED],
         meta: {
             pageContainerType: 'contained',
         }
@@ -116,6 +125,7 @@ const conceptsRoute: Routes = {
     '/packages/list': {
         key: 'concepts.packages.packagesList',
         authority: [ADMIN, USER],
+        permissions: [USER_PERMISSIONS.PACKAGES_LIST],
         meta: {
             pageContainerType: 'contained',
         }
@@ -123,6 +133,7 @@ const conceptsRoute: Routes = {
     '/packages/create': {
         key: 'concepts.packages.packagesCreate',
         authority: [ADMIN, USER],
+        permissions: [USER_PERMISSIONS.PACKAGES_CREATE],
         meta: {
             pageContainerType: 'contained',
         }
@@ -148,6 +159,7 @@ const conceptsRoute: Routes = {
     '/services/list': {
         key: 'concepts.services.serviceList',
         authority: [ADMIN, USER],
+        permissions: [USER_PERMISSIONS.SERVICES_LIST],
         meta: {
             pageContainerType: 'contained',
         }
@@ -176,6 +188,7 @@ const conceptsRoute: Routes = {
     '/orders/list': {
         key: 'concepts.orders.ordersList',
         authority: [ADMIN, USER],
+        permissions: [USER_PERMISSIONS.ORDERS_LIST],
         meta: {
             pageContainerType: 'contained',
         }
@@ -183,6 +196,7 @@ const conceptsRoute: Routes = {
     '/orders/create': {
         key: 'concepts.orders.ordersCreate',
         authority: [ADMIN, USER],
+        permissions: [USER_PERMISSIONS.ORDERS_CREATE],
         meta: {
             header: {
                 title: 'Create order',

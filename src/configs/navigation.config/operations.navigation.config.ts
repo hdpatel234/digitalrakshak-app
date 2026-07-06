@@ -3,6 +3,7 @@ import {
     NAV_ITEM_TYPE_ITEM,
     NAV_ITEM_TYPE_COLLAPSE,
 } from '@/constants/navigation.constant'
+import { USER_PERMISSIONS } from '@/constants/permissions.constant'
 import { ADMIN, USER } from '@/constants/roles.constant'
 import type { NavigationTree } from '@/@types/navigation'
 
@@ -40,6 +41,7 @@ const operationsNavigationConfig: NavigationTree[] = [
                         icon: 'customerList',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
+                        permissions: [USER_PERMISSIONS.CANDIDATES_LIST],
                         subMenu: [],
                     },
                     {
@@ -50,6 +52,7 @@ const operationsNavigationConfig: NavigationTree[] = [
                         icon: 'customerCreate',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
+                        permissions: [USER_PERMISSIONS.CANDIDATES_CREATE],
                         subMenu: [],
                     },
                     {
@@ -60,6 +63,7 @@ const operationsNavigationConfig: NavigationTree[] = [
                         icon: 'customerImport',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
+                        permissions: [USER_PERMISSIONS.CANDIDATES_IMPORT],
                         subMenu: [],
                     },
                 ],
@@ -83,6 +87,7 @@ const operationsNavigationConfig: NavigationTree[] = [
                         icon: 'customerList',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
+                        permissions: [USER_PERMISSIONS.INVITATIONS_LIST],
                         subMenu: [],
                     },
                     {
@@ -93,6 +98,7 @@ const operationsNavigationConfig: NavigationTree[] = [
                         icon: 'customerImport',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
+                        permissions: [USER_PERMISSIONS.INVITATIONS_COMPLETED],
                         subMenu: [],
                     },
                     {
@@ -103,6 +109,7 @@ const operationsNavigationConfig: NavigationTree[] = [
                         icon: 'customerImport',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
+                        permissions: [USER_PERMISSIONS.INVITATIONS_EXPIRED],
                         subMenu: [],
                     }
                 ],
@@ -126,6 +133,7 @@ const operationsNavigationConfig: NavigationTree[] = [
                         icon: 'orderList',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
+                        permissions: [USER_PERMISSIONS.ORDERS_LIST],
                         subMenu: [],
                     },
                     {
@@ -136,6 +144,7 @@ const operationsNavigationConfig: NavigationTree[] = [
                         icon: 'orderCreate',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
+                        permissions: [USER_PERMISSIONS.ORDERS_CREATE],
                         subMenu: [],
                     },
                 ],
@@ -159,6 +168,7 @@ const operationsNavigationConfig: NavigationTree[] = [
                         icon: 'productList',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
+                        permissions: [USER_PERMISSIONS.PACKAGES_LIST],
                         subMenu: [],
                     },
                     {
@@ -169,6 +179,7 @@ const operationsNavigationConfig: NavigationTree[] = [
                         icon: 'productCreate',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
+                        permissions: [USER_PERMISSIONS.PACKAGES_CREATE],
                         subMenu: [],
                     },
                 ],
@@ -192,6 +203,7 @@ const operationsNavigationConfig: NavigationTree[] = [
                         icon: 'verificationInProgress',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
+                        permissions: [USER_PERMISSIONS.VERIFICATION_IN_PROGRESS],
                         subMenu: [],
                     },
                     {
@@ -202,6 +214,7 @@ const operationsNavigationConfig: NavigationTree[] = [
                         icon: 'verificationCompleted',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
+                        permissions: [USER_PERMISSIONS.VERIFICATION_COMPLETED],
                         subMenu: [],
                     },
                     {
@@ -235,6 +248,7 @@ const operationsNavigationConfig: NavigationTree[] = [
                         icon: '',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
+                        permissions: [USER_PERMISSIONS.SERVICES_LIST],
                         subMenu: [],
                     },
                 ],

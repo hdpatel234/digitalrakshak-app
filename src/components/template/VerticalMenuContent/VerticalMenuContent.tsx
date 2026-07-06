@@ -24,6 +24,7 @@ export interface VerticalMenuContentProps {
     direction?: Direction
     translationSetup: boolean
     userAuthority: string[]
+    userPermissions?: string[]
 }
 
 const { MenuGroup } = Menu
@@ -39,6 +40,7 @@ const VerticalMenuContent = (props: VerticalMenuContentProps) => {
         direction = themeConfig.direction,
         translationSetup,
         userAuthority,
+        userPermissions = [],
     } = props
 
     const translationPlaceholder = (key: string, fallback?: string) => {
@@ -86,6 +88,7 @@ const VerticalMenuContent = (props: VerticalMenuContentProps) => {
                                 renderAsIcon={cascade <= 0}
                                 showIcon={cascade <= 0}
                                 userAuthority={userAuthority}
+                                userPermissions={userPermissions}
                                 showTitle={
                                     collapsed
                                         ? cascade >= 1
@@ -107,6 +110,7 @@ const VerticalMenuContent = (props: VerticalMenuContentProps) => {
                                 dotIndent={nextCascade >= MAX_CASCADE_LEVEL}
                                 renderAsIcon={nextCascade <= 1}
                                 userAuthority={userAuthority}
+                                userPermissions={userPermissions}
                                 t={t}
                                 onLinkClick={onMenuItemClick}
                             >
@@ -123,6 +127,8 @@ const VerticalMenuContent = (props: VerticalMenuContentProps) => {
                             <AuthorityCheck
                                 userAuthority={userAuthority}
                                 authority={nav.authority}
+                                userPermissions={userPermissions}
+                                permissions={nav.permissions}
                             >
                                 <MenuGroup
                                     key={nav.key}

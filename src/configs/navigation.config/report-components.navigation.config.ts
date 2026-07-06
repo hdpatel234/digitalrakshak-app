@@ -2,6 +2,7 @@ import {
     NAV_ITEM_TYPE_TITLE,
     NAV_ITEM_TYPE_ITEM,
 } from '@/constants/navigation.constant'
+import { USER_PERMISSIONS } from '@/constants/permissions.constant'
 import { ADMIN, USER } from '@/constants/roles.constant'
 import type { NavigationTree } from '@/@types/navigation'
 
@@ -29,6 +30,7 @@ const reportComponentNavigationConfig: NavigationTree[] = [
                 icon: 'spendingReport',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [ADMIN, USER],
+                permissions: [USER_PERMISSIONS.REPORT_SPENDING_REPORT],
                 meta: {},
                 subMenu: [],
             },
@@ -40,6 +42,7 @@ const reportComponentNavigationConfig: NavigationTree[] = [
                 icon: 'ordersReport',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [ADMIN, USER],
+                permissions: [USER_PERMISSIONS.REPORT_ORDER_REPORT],
                 meta: {},
                 subMenu: [],
             },
@@ -51,6 +54,7 @@ const reportComponentNavigationConfig: NavigationTree[] = [
                 icon: 'verificationReport',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [ADMIN, USER],
+                permissions: [USER_PERMISSIONS.REPORT_VERIFICATION_REPORT],
                 meta: {},
                 subMenu: [],
             },
@@ -62,6 +66,7 @@ const reportComponentNavigationConfig: NavigationTree[] = [
                 icon: 'exportData',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [ADMIN, USER],
+                permissions: [USER_PERMISSIONS.REPORT_EXPORT_DATA],
                 meta: {},
                 subMenu: [],
             }

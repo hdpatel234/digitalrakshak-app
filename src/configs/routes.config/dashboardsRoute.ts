@@ -1,10 +1,12 @@
 import { ADMIN, USER } from '@/constants/roles.constant'
+import { USER_PERMISSIONS } from '@/constants/permissions.constant'
 import type { Routes } from '@/@types/routes'
 
 const dashboardsRoute: Routes = {
     '/dashboard': {
         key: 'dashboard.index',
         authority: [ADMIN, USER],
+        permissions: [USER_PERMISSIONS.DASHBOARD_STATS],
         meta: {
             pageContainerType: 'contained',
         },

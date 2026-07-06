@@ -7,7 +7,9 @@ import Input from '@/components/ui/Input'
 import Select, { Option as DefaultOption } from '@/components/ui/Select'
 import Avatar from '@/components/ui/Avatar'
 import { Form, FormItem } from '@/components/ui/Form'
+import Checkbox from '@/components/ui/Checkbox'
 import NumericInput from '@/components/shared/NumericInput'
+import { PERMISSION_GROUPS } from '@/constants/permissions.constant'
 import { components } from 'react-select'
 import type { ControlProps, OptionProps } from 'react-select'
 import useSWR from 'swr'
@@ -27,6 +29,7 @@ type FormSchema = {
     email: string
     dialCode?: string
     phoneNumber?: string
+    permissions: string[]
 }
 
 type CountryOption = {
@@ -64,18 +67,20 @@ type TeamMemberApiResponse = {
         email: string
         phone_code: string
         phone: string | number
+        permissions?: Array<{ name: string }>
     }
 }
 
 const validationSchema: ZodType<FormSchema> = z.object({
-    firstName: z.string().optional(),
-    lastName: z.string().optional(),
+    firstName: z.string().min(1, { message: 'First name required' }),
+    lastName: z.string().min(1, { message: 'Last name required' }),
     email: z
         .string()
         .min(1, { message: 'Email required' })
         .email({ message: 'Invalid email' }),
     dialCode: z.string().optional(),
     phoneNumber: z.string().optional(),
+    permissions: z.array(z.string()).min(1, { message: 'At least one permission is required' }),
 })
 
 const CustomSelectOption = (
@@ -163,6 +168,7 @@ const AddTeamMemberForm = ({ userId }: { userId?: string }) => {
             email: '',
             dialCode: '',
             phoneNumber: '',
+            permissions: [],
         },
     })
 
@@ -175,6 +181,7 @@ const AddTeamMemberForm = ({ userId }: { userId?: string }) => {
                 email: u.email || '',
                 dialCode: u.phone_code || '',
                 phoneNumber: u.phone ? String(u.phone) : '',
+                permissions: u.permissions?.map((p) => p.name) || [],
             })
         }
     }, [userData, reset])
@@ -187,6 +194,7 @@ const AddTeamMemberForm = ({ userId }: { userId?: string }) => {
                 email: values.email,
                 phone_code: values.dialCode || '',
                 phone: values.phoneNumber || '',
+                permissions: values.permissions,
             }
 
             let response;
@@ -341,6 +349,41 @@ const AddTeamMemberForm = ({ userId }: { userId?: string }) => {
                             )}
                         />
                     </FormItem>
+                </div>
+
+                <div className="mb-6">
+                    <h4 className="mb-4 flex items-center gap-2">
+                        Permissions
+                        {errors.permissions && (
+                            <span className="text-red-500 text-sm font-normal">
+                                {errors.permissions.message}
+                            </span>
+                        )}
+                    </h4>
+                    <Controller
+                        name="permissions"
+                        control={control}
+                        render={({ field }) => (
+                            <Checkbox.Group
+                                value={field.value}
+                                onChange={(val) => field.onChange(val as string[])}
+                                className="flex flex-col gap-6"
+                            >
+                                {Object.entries(PERMISSION_GROUPS).map(([groupName, permissions]) => (
+                                    <div key={groupName} className="flex flex-col gap-2">
+                                        <h5 className="text-base font-semibold">{groupName}</h5>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                                            {permissions.map((perm) => (
+                                                <Checkbox key={perm.value} value={perm.value}>
+                                                    {perm.label}
+                                                </Checkbox>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </Checkbox.Group>
+                        )}
+                    />
                 </div>
 
                 <div className="flex justify-end gap-3">

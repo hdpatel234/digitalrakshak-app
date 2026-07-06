@@ -14,6 +14,7 @@ type HorizontalMenuContentProps = {
     direction?: Direction
     translationSetup?: boolean
     userAuthority: string[]
+    userPermissions?: string[]
 }
 
 const HorizontalMenuContent = (props: HorizontalMenuContentProps) => {
@@ -22,6 +23,7 @@ const HorizontalMenuContent = (props: HorizontalMenuContentProps) => {
         navigationTree = [],
         translationSetup,
         userAuthority,
+        userPermissions = [],
     } = props
 
     const translationPlaceholder = (key: string, fallback?: string) => {
@@ -40,6 +42,8 @@ const HorizontalMenuContent = (props: HorizontalMenuContentProps) => {
                     key={nav.key}
                     userAuthority={userAuthority}
                     authority={nav.authority}
+                    userPermissions={userPermissions}
+                    permissions={nav.permissions}
                 >
                     {nav.subMenu.length > 0 ? (
                         <HorizontalMenuDropdown
@@ -69,6 +73,7 @@ const HorizontalMenuContent = (props: HorizontalMenuContentProps) => {
                                     routeKey={routeKey}
                                     routeParentKey={activedRoute?.parentKey}
                                     userAuthority={userAuthority}
+                                    userPermissions={userPermissions}
                                     onDropdownClose={handleDropdownClose}
                                 />
                             )}

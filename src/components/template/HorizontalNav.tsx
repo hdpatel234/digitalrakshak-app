@@ -27,6 +27,7 @@ const HorizontalNav = ({
             navigationTree={navigationTree}
             routeKey={currentRouteKey}
             userAuthority={session?.user?.authority || []}
+            userPermissions={session?.user?.permissions || []}
             translationSetup={translationSetup}
         />
     )

@@ -2,6 +2,7 @@ import {
     NAV_ITEM_TYPE_TITLE,
     NAV_ITEM_TYPE_ITEM,
 } from '@/constants/navigation.constant'
+import { USER_PERMISSIONS } from '@/constants/permissions.constant'
 import { ADMIN, USER } from '@/constants/roles.constant'
 import type { NavigationTree } from '@/@types/navigation'
 
@@ -29,6 +30,7 @@ const supportComponentNavigationConfig: NavigationTree[] = [
                 icon: 'myTickets',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [ADMIN, USER],
+                permissions: [USER_PERMISSIONS.SUPPORT_MY_TICKETS],
                 meta: {},
                 subMenu: [],
             },
@@ -40,6 +42,7 @@ const supportComponentNavigationConfig: NavigationTree[] = [
                 icon: 'openTicket',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [ADMIN, USER],
+                permissions: [USER_PERMISSIONS.SUPPORT_OPEN_TICKET],
                 meta: {},
                 subMenu: [],
             },

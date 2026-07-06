@@ -17,6 +17,7 @@ interface CollapsedItemProps extends CommonProps {
     t: TranslationFn
     renderAsIcon?: boolean
     userAuthority: string[]
+    userPermissions?: string[]
     currentKey?: string
     parentKeys?: string[]
 }
@@ -28,6 +29,7 @@ interface DefaultItemProps {
     t: TranslationFn
     indent?: boolean
     userAuthority: string[]
+    userPermissions?: string[]
     showIcon?: boolean
     showTitle?: boolean
 }
@@ -41,11 +43,12 @@ const CollapsedItem = ({
     renderAsIcon,
     onLinkClick,
     userAuthority,
+    userPermissions,
     t,
     currentKey
 }: CollapsedItemProps) => {
     return (
-        <AuthorityCheck userAuthority={userAuthority} authority={nav.authority}>
+        <AuthorityCheck userAuthority={userAuthority} authority={nav.authority} userPermissions={userPermissions} permissions={nav.permissions}>
             {renderAsIcon ? (
                 <Tooltip
                     title={t(nav.translateKey, nav.title)}
@@ -87,11 +90,12 @@ const DefaultItem = (props: DefaultItemProps) => {
         indent,
         showIcon = true,
         userAuthority,
+        userPermissions,
         t,
     } = props
 
     return (
-        <AuthorityCheck userAuthority={userAuthority} authority={nav.authority}>
+        <AuthorityCheck userAuthority={userAuthority} authority={nav.authority} userPermissions={userPermissions} permissions={nav.permissions}>
             <MenuItem key={nav.key} eventKey={nav.key} dotIndent={indent}>
                 <Link
                     href={nav.path}
@@ -121,6 +125,7 @@ const VerticalSingleMenuItem = ({
     indent,
     renderAsIcon,
     userAuthority,
+    userPermissions,
     showIcon,
     showTitle,
     t,
@@ -137,6 +142,7 @@ const VerticalSingleMenuItem = ({
                     direction={direction}
                     renderAsIcon={renderAsIcon}
                     userAuthority={userAuthority}
+                    userPermissions={userPermissions}
                     t={t}
                     onLinkClick={onLinkClick}
                 >
@@ -144,6 +150,7 @@ const VerticalSingleMenuItem = ({
                         nav={nav}
                         sideCollapsed={sideCollapsed}
                         userAuthority={userAuthority}
+                        userPermissions={userPermissions}
                         showIcon={showIcon}
                         showTitle={showTitle}
                         t={t}
@@ -155,6 +162,7 @@ const VerticalSingleMenuItem = ({
                     nav={nav}
                     sideCollapsed={sideCollapsed}
                     userAuthority={userAuthority}
+                    userPermissions={userPermissions}
                     showIcon={showIcon}
                     showTitle={showTitle}
                     indent={indent}

@@ -76,6 +76,7 @@ const MobileNav = ({
                             navigationTree={navigationTree}
                             routeKey={currentRouteKey}
                             userAuthority={session?.user?.authority || []}
+                            userPermissions={session?.user?.permissions || []}
                             translationSetup={translationSetup}
                             direction={direction}
                             onMenuItemClick={handleDrawerClose}

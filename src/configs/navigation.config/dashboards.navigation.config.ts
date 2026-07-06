@@ -3,6 +3,7 @@ import {
     NAV_ITEM_TYPE_TITLE,
     NAV_ITEM_TYPE_ITEM,
 } from '@/constants/navigation.constant'
+import { USER_PERMISSIONS } from '@/constants/permissions.constant'
 import { ADMIN, USER } from '@/constants/roles.constant'
 import type { NavigationTree } from '@/@types/navigation'
 
@@ -15,6 +16,7 @@ const dashboardsNavigationConfig: NavigationTree[] = [
         icon: 'dashboard',
         type: NAV_ITEM_TYPE_ITEM,
         authority: [ADMIN, USER],
+        permissions: [USER_PERMISSIONS.DASHBOARD_STATS],
         meta: {
             horizontalMenu: {
                 layout: 'default',

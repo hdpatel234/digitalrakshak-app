@@ -25,6 +25,7 @@ interface LayoutProps extends CommonProps {
     routeKey: string
     routeParentKey?: string
     userAuthority: string[]
+    userPermissions?: string[]
 }
 
 interface HorizontalMenuDropdownContentProps extends LayoutProps {
@@ -148,6 +149,7 @@ const ColumnsLayout = (
         showColumnTitle = true,
         routeKey,
         userAuthority,
+        userPermissions,
     } = props
     const hasSubMenuItems = navigationTree.some((nav) => nav.subMenu.length > 0)
 
@@ -167,6 +169,8 @@ const ColumnsLayout = (
                                     key={nav.key}
                                     userAuthority={userAuthority}
                                     authority={nav.authority}
+                                    userPermissions={userPermissions}
+                                    permissions={nav.permissions}
                                 >
                                     <div className="max-w-[250px]">
                                         {showColumnTitle && (
@@ -179,6 +183,8 @@ const ColumnsLayout = (
                                                 key={subNav.key}
                                                 userAuthority={userAuthority}
                                                 authority={subNav.authority}
+                                                userPermissions={userPermissions}
+                                                permissions={subNav.permissions}
                                             >
                                                 <div key={subNav.key}>
                                                     <MenuLink
@@ -238,6 +244,8 @@ const ColumnsLayout = (
                                     key={nav.key}
                                     userAuthority={userAuthority}
                                     authority={nav.authority}
+                                    userPermissions={userPermissions}
+                                    permissions={nav.permissions}
                                 >
                                     <MenuLink
                                         key={nav.key}
@@ -277,6 +285,7 @@ const DefaultLayout = ({
     onDropdownClose,
     routeKey,
     userAuthority,
+    userPermissions,
 }: LayoutProps) => {
     const renderNavigation = (navTree: NavigationTree[], cascade: number) => {
         const nextCascade = cascade + 1
@@ -288,6 +297,8 @@ const DefaultLayout = ({
                         key={nav.key}
                         userAuthority={userAuthority}
                         authority={nav.authority}
+                        userPermissions={userPermissions}
+                        permissions={nav.permissions}
                     >
                         <ul>
                             {nav.type === NAV_ITEM_TYPE_ITEM && (
@@ -341,6 +352,7 @@ const TabLayout = ({
     columns,
     routeKey,
     userAuthority,
+    userPermissions,
     routeParentKey,
 }: LayoutProps & { columns: 1 | 2 | 3 | 4 | 5 }) => {
     const [activeKey, setActiveKey] = useState(
@@ -359,6 +371,8 @@ const TabLayout = ({
                                 key={nav.key}
                                 userAuthority={userAuthority}
                                 authority={nav.authority}
+                                userPermissions={userPermissions}
+                                permissions={nav.permissions}
                             >
                                 <div className="min-w-[250px]">
                                     <div key={nav.key}>
@@ -431,6 +445,8 @@ const TabLayout = ({
                                     key={nav.key}
                                     userAuthority={userAuthority}
                                     authority={nav.authority}
+                                    userPermissions={userPermissions}
+                                    permissions={nav.permissions}
                                 >
                                     <HorizontalMenuNavLink
                                         path={nav.path}

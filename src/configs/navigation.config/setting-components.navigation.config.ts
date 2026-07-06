@@ -3,6 +3,7 @@ import {
     NAV_ITEM_TYPE_ITEM,
     NAV_ITEM_TYPE_COLLAPSE,
 } from '@/constants/navigation.constant'
+import { USER_PERMISSIONS } from '@/constants/permissions.constant'
 import { ADMIN, USER } from '@/constants/roles.constant'
 import type { NavigationTree } from '@/@types/navigation'
 
@@ -30,6 +31,7 @@ const settingComponentNavigationConfig: NavigationTree[] = [
                 icon: 'companyProfile',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [ADMIN, USER],
+                permissions: [USER_PERMISSIONS.SETTINGS_COMPANY_PROFILE],
                 meta: {},
                 subMenu: [],
             },
@@ -51,6 +53,7 @@ const settingComponentNavigationConfig: NavigationTree[] = [
                         icon: 'teamMembers',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
+                        permissions: [USER_PERMISSIONS.SETTINGS_TEAM_MEMBERS_LIST],
                         meta: {},
                         subMenu: [],
                     },
@@ -62,6 +65,7 @@ const settingComponentNavigationConfig: NavigationTree[] = [
                         icon: 'addMember',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
+                        permissions: [USER_PERMISSIONS.SETTINGS_TEAM_MEMBERS_ADD],
                         meta: {},
                         subMenu: [],
                     },
@@ -75,6 +79,7 @@ const settingComponentNavigationConfig: NavigationTree[] = [
                 icon: 'apiKeys',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [ADMIN, USER],
+                permissions: [USER_PERMISSIONS.SETTINGS_API_KEYS],
                 meta: {},
                 subMenu: [],
             },
@@ -86,6 +91,7 @@ const settingComponentNavigationConfig: NavigationTree[] = [
                 icon: 'webhooks',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [ADMIN, USER],
+                permissions: [USER_PERMISSIONS.SETTINGS_WEBHOOKS],
                 meta: {},
                 subMenu: [],
             }

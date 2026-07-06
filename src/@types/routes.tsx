@@ -19,6 +19,7 @@ export interface Meta {
 export type Route = {
     key: string
     authority: string[]
+    permissions?: string[]
     dynamicRoute?: boolean
     meta?: Meta
 }
