@@ -1,4 +1,6 @@
 import Container from '@/components/shared/Container'
+import AdaptiveCard from '@/components/shared/AdaptiveCard'
+import Button from '@/components/ui/Button'
 import { headers } from 'next/headers'
 import Link from 'next/link'
 import * as TablerIcons from 'react-icons/tb'
@@ -155,26 +157,23 @@ export default async function Page({ searchParams }: PageProps) {
 
     return (
         <Container>
-            <div className="max-w-7xl mx-auto w-full pb-8">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                            Verification packages
-                        </h2>
-                        <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base">
-                            Reusable bundles of services. Assign one to every candidate at invitation time.
-                        </p>
+            <AdaptiveCard>
+                <div className="flex flex-col gap-4">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                        <div>
+                            <h3>Verification packages</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base">
+                                Reusable bundles of services. Assign one to every candidate at invitation time.
+                            </p>
+                        </div>
+                        <Link href="/packages/create">
+                            <Button variant="solid" icon={<TbPlus className="text-xl" />}>
+                                Create package
+                            </Button>
+                        </Link>
                     </div>
-                    <Link
-                        href="/packages/create"
-                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors shadow-sm whitespace-nowrap text-sm"
-                    >
-                        <TbPlus className="text-lg" />
-                        Create package
-                    </Link>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                     {data.list.map((pkg, index) => {
                         const isAdminPackage = String(pkg.type || '').toLowerCase() === 'admin'
                         const isEditable = !isAdminPackage
@@ -274,7 +273,8 @@ export default async function Page({ searchParams }: PageProps) {
                         </span>
                     </Link>
                 </div>
-            </div>
+                </div>
+            </AdaptiveCard>
         </Container>
     )
 }
