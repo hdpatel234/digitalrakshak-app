@@ -53,13 +53,13 @@ const PostLoginLayout = ({ children }: CommonProps) => {
     const route = queryRoute(pathname)
 
     return (
-        <RoutePermissionGuard>
-            <Layout
-                layoutType={route?.meta?.layout ? route?.meta?.layout : layoutType}
-            >
+        <Layout
+            layoutType={route?.meta?.layout ? route?.meta?.layout : layoutType}
+        >
+            <RoutePermissionGuard>
                 <PageContainer {...route?.meta}>{children}</PageContainer>
-            </Layout>
-        </RoutePermissionGuard>
+            </RoutePermissionGuard>
+        </Layout>
     )
 }
 

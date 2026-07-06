@@ -8,7 +8,7 @@ const Page = () => {
         <Container className="h-full">
             <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] px-4">
                 <div className="max-w-md w-full text-center space-y-8">
-                    <div className="relative w-full aspect-square max-w-[300px] mx-auto">
+                    {/* <div className="relative w-full aspect-square max-w-[300px] mx-auto">
                         <Image
                             src="/img/others/access_denied.png"
                             alt="Access Denied"
@@ -16,8 +16,8 @@ const Page = () => {
                             className="object-contain"
                             priority
                         />
-                    </div>
-                    
+                    </div> */}
+
                     <div className="space-y-4">
                         <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
                             Access Denied
