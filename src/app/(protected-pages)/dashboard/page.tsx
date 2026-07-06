@@ -25,26 +25,26 @@ export default async function Page() {
                 <div className="flex flex-col gap-4">
                     <DashboardHeader userName={userName} userAuthority={userAuthority} userPermissions={userPermissions} />
                     
-                    <AuthorityCheck userAuthority={userAuthority} authority={[ADMIN, USER]} userPermissions={userPermissions} permissions={[USER_PERMISSIONS.DASHBOARD_STATS]}>
+                    <AuthorityCheck authority={[ADMIN, USER]} permissions={[USER_PERMISSIONS.DASHBOARD_STATS]}>
                         <DashboardStats />
                     </AuthorityCheck>
                     
-                    <AuthorityCheck userAuthority={userAuthority} authority={[ADMIN, USER]} userPermissions={userPermissions} permissions={[USER_PERMISSIONS.DASHBOARD_VERIFICATION_TREND]}>
+                    <AuthorityCheck authority={[ADMIN, USER]} permissions={[USER_PERMISSIONS.DASHBOARD_VERIFICATION_TREND]}>
                         <VerificationTrendChart />
                     </AuthorityCheck>
                     
-                    <AuthorityCheck userAuthority={userAuthority} authority={[ADMIN, USER]} userPermissions={userPermissions} permissions={[USER_PERMISSIONS.DASHBOARD_RECENT_ACTIVITY]}>
+                    <AuthorityCheck authority={[ADMIN, USER]} permissions={[USER_PERMISSIONS.DASHBOARD_RECENT_ACTIVITY]}>
                         <RecentActivity />
                     </AuthorityCheck>
                     
-                    <AuthorityCheck userAuthority={userAuthority} authority={[ADMIN, USER]} userPermissions={userPermissions} permissions={[USER_PERMISSIONS.DASHBOARD_SERVICE_USAGE, USER_PERMISSIONS.REPORT_SPENDING_REPORT]}>
+                    <AuthorityCheck authority={[ADMIN, USER]} permissions={[USER_PERMISSIONS.DASHBOARD_SERVICE_USAGE, USER_PERMISSIONS.REPORT_SPENDING_REPORT]}>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            <AuthorityCheck userAuthority={userAuthority} authority={[ADMIN, USER]} userPermissions={userPermissions} permissions={[USER_PERMISSIONS.DASHBOARD_SERVICE_USAGE]}>
+                            <AuthorityCheck authority={[ADMIN, USER]} permissions={[USER_PERMISSIONS.DASHBOARD_SERVICE_USAGE]}>
                                 <div className="lg:col-span-2">
                                     <ServiceUsageChart />
                                 </div>
                             </AuthorityCheck>
-                            <AuthorityCheck userAuthority={userAuthority} authority={[ADMIN, USER]} userPermissions={userPermissions} permissions={[USER_PERMISSIONS.REPORT_SPENDING_REPORT]}>
+                            <AuthorityCheck authority={[ADMIN, USER]} permissions={[USER_PERMISSIONS.REPORT_SPENDING_REPORT]}>
                                 <div>
                                     <MonthSpend />
                                 </div>
@@ -52,12 +52,12 @@ export default async function Page() {
                         </div>
                     </AuthorityCheck>
                     
-                    <AuthorityCheck userAuthority={userAuthority} authority={[ADMIN, USER]} userPermissions={userPermissions} permissions={[USER_PERMISSIONS.DASHBOARD_ACTIVE_PACKAGES, USER_PERMISSIONS.DASHBOARD_LATEST_CANDIDATES]}>
+                    <AuthorityCheck authority={[ADMIN, USER]} permissions={[USER_PERMISSIONS.DASHBOARD_ACTIVE_PACKAGES, USER_PERMISSIONS.DASHBOARD_LATEST_CANDIDATES]}>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <AuthorityCheck userAuthority={userAuthority} authority={[ADMIN, USER]} userPermissions={userPermissions} permissions={[USER_PERMISSIONS.DASHBOARD_ACTIVE_PACKAGES]}>
+                            <AuthorityCheck authority={[ADMIN, USER]} permissions={[USER_PERMISSIONS.DASHBOARD_ACTIVE_PACKAGES]}>
                                 <ActivePackages />
                             </AuthorityCheck>
-                            <AuthorityCheck userAuthority={userAuthority} authority={[ADMIN, USER]} userPermissions={userPermissions} permissions={[USER_PERMISSIONS.DASHBOARD_LATEST_CANDIDATES]}>
+                            <AuthorityCheck authority={[ADMIN, USER]} permissions={[USER_PERMISSIONS.DASHBOARD_LATEST_CANDIDATES]}>
                                 <LatestCandidates />
                             </AuthorityCheck>
                         </div>
