@@ -109,8 +109,8 @@ const getInvoicesFromInternalApi = async (
     const pageSize = Number(params.pageSize) || 10
     const url = new URL('/api/client/invoices', 'http://localhost')
 
-    if (typeof params.query === 'string' && params.query.trim()) {
-        url.searchParams.set('search', params.query.trim())
+    if (typeof params.search === 'string' && params.search.trim()) {
+        url.searchParams.set('search', params.search.trim())
     }
 
     if (typeof params.date_from === 'string' && params.date_from.trim()) {
