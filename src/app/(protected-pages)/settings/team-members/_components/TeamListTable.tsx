@@ -43,12 +43,23 @@ const statusColor: Record<
 }
 
 const NameColumn = ({ row }: { row: TeamMember }) => {
+    const initials = `${row.first_name?.[0] || ''}${row.last_name?.[0] || ''}`.toUpperCase()
     return (
-        <div className="flex items-center gap-2">
-            <Avatar shape="circle" size={30} src={row.avatar || ''} />
-            <span className="font-bold heading-text">
-                {row.first_name} {row.last_name}
-            </span>
+        <div className="flex items-center">
+            <Avatar 
+                shape="circle" 
+                size={40} 
+                src={row.avatar?.trim() ? row.avatar : undefined}
+                className={!row.avatar?.trim() ? "bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-100 font-semibold text-sm" : ""}
+            >
+                {!row.avatar?.trim() && initials}
+            </Avatar>
+            <div className="ml-3 rtl:mr-3 flex flex-col">
+                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                    {row.first_name || '-'} {row.last_name || ''}
+                </span>
+                <span className="text-xs text-gray-500">{row.email || '-'}</span>
+            </div>
         </div>
     )
 }
@@ -153,46 +164,39 @@ const TeamListTable = ({
     const columns: ColumnDef<TeamMember>[] = useMemo(
         () => [
             {
-                header: 'Name',
+                header: 'MEMBER',
                 accessorKey: 'first_name',
                 cell: (props) => <NameColumn row={props.row.original} />,
             },
             {
-                header: 'Email',
-                accessorKey: 'email',
-                cell: (props) => {
-                    const { email } = props.row.original
-                    return <span className="font-semibold">{email}</span>
-                },
-            },
-            {
-                header: 'Phone',
+                header: 'PHONE',
                 accessorKey: 'phone',
                 cell: (props) => {
                     const { phone, phone_code } = props.row.original
+                    if (!phone) return <span className="text-gray-600 dark:text-gray-400">-</span>
                     return (
-                        <span className="font-semibold">
-                            {phone_code} {phone}
+                        <span className="text-gray-800 dark:text-gray-200 font-medium">
+                            {phone_code ? `${phone_code} ` : ''}{phone}
                         </span>
                     )
                 },
             },
             {
-                header: 'Last Login',
+                header: 'LAST LOGIN',
                 accessorKey: 'last_login_at',
                 cell: (props) => {
                     const { last_login_at } = props.row.original
                     return (
-                        <span className="font-semibold">
+                        <span className="text-gray-600 dark:text-gray-400">
                             {last_login_at
                                 ? dayjs(last_login_at).format('DD/MM/YYYY HH:mm')
-                                : 'Never'}
+                                : '-'}
                         </span>
                     )
                 },
             },
             {
-                header: 'Status',
+                header: 'STATUS',
                 accessorKey: 'is_active',
                 cell: (props) => {
                     const { is_active } = props.row.original
@@ -200,18 +204,20 @@ const TeamListTable = ({
                         statusColor[String(is_active)] || statusColor['0']
 
                     return (
-                        <Tag className={style.bgClass}>
-                            <span
-                                className={`capitalize font-semibold ${style.textClass}`}
-                            >
-                                {style.label}
-                            </span>
-                        </Tag>
+                        <div className="flex items-center">
+                            <Tag className={style.bgClass}>
+                                <span
+                                    className={`capitalize font-semibold ${style.textClass}`}
+                                >
+                                    {style.label}
+                                </span>
+                            </Tag>
+                        </div>
                     )
                 },
             },
             {
-                header: () => <span className="block text-center">Actions</span>,
+                header: 'ACTIONS',
                 id: 'action',
                 accessorKey: 'id',
                 cell: (props) => <ActionColumn row={props.row.original} />,
