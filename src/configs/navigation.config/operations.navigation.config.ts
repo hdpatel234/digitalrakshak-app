@@ -225,6 +225,7 @@ const operationsNavigationConfig: NavigationTree[] = [
                         icon: 'verificationCompleted',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
+                        permissions: [USER_PERMISSIONS.VERIFICATION_INSUFFICIENCY],
                         subMenu: [],
                     },
                 ],

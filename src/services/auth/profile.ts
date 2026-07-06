@@ -14,3 +14,10 @@ export async function apiUpdateProfile<T = unknown>(data: FormData) {
         data,
     })
 }
+
+export async function apiGetPermissions<T = string[]>() {
+    return ApiService.fetchDataWithAxios<{ status: boolean; message: string; data: T }>({
+        url: '/auth/permissions',
+        method: 'get',
+    })
+}
