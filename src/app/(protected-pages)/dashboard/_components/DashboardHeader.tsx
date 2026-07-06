@@ -4,6 +4,9 @@ import React, { useEffect, useState } from "react";
 import { FiShoppingCart, FiBox, FiUserPlus } from "react-icons/fi";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
+import AuthorityCheck from '@/components/shared/AuthorityCheck';
+import { USER_PERMISSIONS } from '@/constants/permissions.constant';
+import { ADMIN, USER } from '@/constants/roles.constant';
 
 type GreetingData = {
     title: string;
@@ -279,10 +282,14 @@ const getGreeting = (): GreetingData => {
 
 interface DashboardHeaderProps {
     userName?: string;
+    userAuthority?: string[];
+    userPermissions?: string[];
 }
 
 const DashboardHeader = ({
     userName = "User",
+    userAuthority = [],
+    userPermissions = [],
 }: DashboardHeaderProps) => {
     const [greeting, setGreeting] = useState<GreetingData>({
         title: "Welcome",
@@ -306,30 +313,53 @@ const DashboardHeader = ({
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-                <Link href="/orders/create">
-                    <Button
-                        variant="default"
-                        icon={<FiShoppingCart className="w-4 h-4" />}
-                    >
-                        Place Order
-                    </Button>
-                </Link>
-                <Link href="/packages/create">
-                    <Button
-                        variant="default"
-                        icon={<FiBox className="w-4 h-4" />}
-                    >
-                        Create Package
-                    </Button>
-                </Link>
-                <Link href="/candidates/create">
-                    <Button
-                        variant="default"
-                        icon={<FiUserPlus className="w-4 h-4" />}
-                    >
-                        New Candidate
-                    </Button>
-                </Link>
+                <AuthorityCheck
+                    userAuthority={userAuthority}
+                    authority={[ADMIN, USER]}
+                    userPermissions={userPermissions}
+                    permissions={[USER_PERMISSIONS.ORDERS_CREATE]}
+                >
+                    <Link href="/orders/create">
+                        <Button
+                            variant="default"
+                            icon={<FiShoppingCart className="w-4 h-4" />}
+                        >
+                            Place Order
+                        </Button>
+                    </Link>
+                </AuthorityCheck>
+                
+                <AuthorityCheck
+                    userAuthority={userAuthority}
+                    authority={[ADMIN, USER]}
+                    userPermissions={userPermissions}
+                    permissions={[USER_PERMISSIONS.PACKAGES_CREATE]}
+                >
+                    <Link href="/packages/create">
+                        <Button
+                            variant="default"
+                            icon={<FiBox className="w-4 h-4" />}
+                        >
+                            Create Package
+                        </Button>
+                    </Link>
+                </AuthorityCheck>
+                
+                <AuthorityCheck
+                    userAuthority={userAuthority}
+                    authority={[ADMIN, USER]}
+                    userPermissions={userPermissions}
+                    permissions={[USER_PERMISSIONS.CANDIDATES_CREATE]}
+                >
+                    <Link href="/candidates/create">
+                        <Button
+                            variant="default"
+                            icon={<FiUserPlus className="w-4 h-4" />}
+                        >
+                            New Candidate
+                        </Button>
+                    </Link>
+                </AuthorityCheck>
             </div>
         </div>
     );

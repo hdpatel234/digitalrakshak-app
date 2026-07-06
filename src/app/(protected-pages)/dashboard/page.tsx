@@ -18,7 +18,7 @@ export default async function Page() {
         <Container>
             <DashboardProvider>
                 <div className="flex flex-col gap-4">
-                    <DashboardHeader userName={userName} />
+                    <DashboardHeader userName={userName} userAuthority={session?.user?.authority || []} userPermissions={session?.user?.permissions || []} />
                     <DashboardStats />
                     
                     <VerificationTrendChart />
