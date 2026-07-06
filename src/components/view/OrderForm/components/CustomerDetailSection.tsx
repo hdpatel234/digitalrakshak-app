@@ -1,6 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
+import { TbUsers, TbPlus } from 'react-icons/tb'
 import Card from '@/components/ui/Card'
 import Checkbox from '@/components/ui/Checkbox'
 import Notification from '@/components/ui/Notification'
@@ -190,8 +192,21 @@ const CustomerDetailSection = ({}: CustomerDetailSectionProps) => {
                     )}
 
                     {selectedPackageId && !isFetching && candidateList.length === 0 && (
-                        <div className="p-8 text-center border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm text-gray-500">
-                            No candidates available for this package.
+                        <div className="p-10 text-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 flex flex-col items-center justify-center gap-4">
+                            <div className="bg-indigo-100 dark:bg-indigo-900/30 p-4 rounded-full text-indigo-600 dark:text-indigo-400">
+                                <TbUsers className="text-4xl" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">No candidates available</h3>
+                                <p className="text-gray-500 dark:text-gray-400 text-sm max-w-sm mx-auto">
+                                    There are currently no candidates added for the <strong>{selectedPackage?.name}</strong> package. You need to invite a candidate first before placing an order.
+                                </p>
+                            </div>
+                            <Link href={`/candidates/create?package_id=${selectedPackageId}`}>
+                                <Button variant="solid" type="button" icon={<TbPlus />}>
+                                    Add Candidate
+                                </Button>
+                            </Link>
                         </div>
                     )}
 

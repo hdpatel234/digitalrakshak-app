@@ -10,7 +10,7 @@ import Dialog from '@/components/ui/Dialog'
 import Checkbox from '@/components/ui/Checkbox'
 import Radio from '@/components/ui/Radio'
 import { TbTrash, TbPlus, TbSend } from 'react-icons/tb'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import type { CustomerFormSchema } from '@/components/view/CustomerForm'
 import { apiCreateCandidate, apiSendCandidateInvite } from '@/services/client/candidates'
 import type { AxiosError } from 'axios'
@@ -60,12 +60,17 @@ const CustomerEdit = () => {
         'create',
     )
     const [packageOptions, setPackageOptions] = useState<PackageOption[]>([])
-    const [selectedPackageIds, setSelectedPackageIds] = useState<string[]>([])
+    const searchParams = useSearchParams()
+    const urlPackageId = searchParams?.get('package_id')
+    
+    const [selectedPackageIds, setSelectedPackageIds] = useState<string[]>(
+        urlPackageId ? [urlPackageId] : []
+    )
     const [pendingInviteValues, setPendingInviteValues] =
         useState<CustomerFormSchema | null>(null)
     const [dynamicFields, setDynamicFields] = useState<any[]>([])
     const [isFieldsLoading, setIsFieldsLoading] = useState(false)
-    const [isPackageSelectionModalOpen, setIsPackageSelectionModalOpen] = useState(true)
+    const [isPackageSelectionModalOpen, setIsPackageSelectionModalOpen] = useState(!urlPackageId)
     const [selectedServices, setSelectedServices] = useState<any[]>([])
 
     const mapPackageOption = (item: unknown): PackageOption => {
