@@ -187,8 +187,8 @@ const ProductSelectSection = () => {
                             ]
                             const baseTheme = colorThemes[index % colorThemes.length]
                             const themeClass = isSelected 
-                                ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-600 ring-2 ring-indigo-600'
-                                : `${baseTheme} hover:border-indigo-400 hover:shadow-md`
+                                ? 'bg-primary-subtle border-primary ring-2 ring-primary'
+                                : `${baseTheme} hover:border-primary hover:shadow-md`
 
                             return (
                                 <div
@@ -200,12 +200,12 @@ const ProductSelectSection = () => {
                                         <h3 className="text-lg text-gray-900 dark:text-white">
                                             {pkg.name}
                                         </h3>
-                                        <div className="bg-indigo-100 dark:bg-indigo-900/30 p-1.5 rounded-md flex-shrink-0 ml-4">
+                                        <div className="bg-primary/10 dark:bg-primary/20 p-1.5 rounded-md flex-shrink-0 ml-4">
                                             {(() => {
                                                 const IconComponent = (pkg.icon && pkg.icon in TablerIcons) 
                                                     ? TablerIcons[pkg.icon as keyof typeof TablerIcons] 
                                                     : TbLayersLinked;
-                                                return <IconComponent className="text-indigo-600 dark:text-indigo-400 text-xl font-normal" />;
+                                                return <IconComponent className="text-primary text-xl font-normal" />;
                                             })()}
                                         </div>
                                     </div>
