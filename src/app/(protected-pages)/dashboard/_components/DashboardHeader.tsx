@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { FiPlus, FiShoppingCart, FiBox } from "react-icons/fi";
+import { FiShoppingCart, FiBox, FiUserPlus } from "react-icons/fi";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
 
@@ -135,7 +135,7 @@ const DashboardHeader = ({
                         variant="default"
                         icon={<FiShoppingCart className="w-4 h-4" />}
                     >
-                        Create Order
+                        Place Order
                     </Button>
                 </Link>
                 <Link href="/packages/create">
@@ -148,8 +148,8 @@ const DashboardHeader = ({
                 </Link>
                 <Link href="/candidates/create">
                     <Button
-                        variant="solid"
-                        icon={<FiPlus className="w-4 h-4" />}
+                        variant="default"
+                        icon={<FiUserPlus className="w-4 h-4" />}
                     >
                         New Candidate
                     </Button>
