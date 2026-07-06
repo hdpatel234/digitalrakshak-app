@@ -7,6 +7,7 @@ import DataTable from '@/components/shared/DataTable'
 import Avatar from '@/components/ui/Avatar'
 import { useTeamListStore } from '../_store/teamListStore'
 import useAppendQueryParams from '@/utils/hooks/useAppendQueryParams'
+import useCurrentSession from '@/utils/hooks/useCurrentSession'
 import { TbPencil, TbTrash } from 'react-icons/tb'
 import dayjs from 'dayjs'
 import type { OnSortParam, ColumnDef } from '@/components/shared/DataTable'
@@ -161,6 +162,10 @@ const TeamListTable = ({
 
     const { onAppendQueryParams } = useAppendQueryParams()
 
+    const { session } = useCurrentSession()
+    const dateFormat = session?.config?.dateFormat || session?.config?.date_format || 'DD/MM/YYYY'
+    const timeFormat = session?.config?.timeFormat || session?.config?.time_format || 'hh:mm A'
+
     const columns: ColumnDef<TeamMember>[] = useMemo(
         () => [
             {
@@ -176,7 +181,7 @@ const TeamListTable = ({
                     if (!phone) return <span className="text-gray-600 dark:text-gray-400">-</span>
                     return (
                         <span className="text-gray-800 dark:text-gray-200 font-medium">
-                            {phone_code ? `${phone_code} ` : ''}{phone}
+                            {phone_code ? `+${phone_code.replace(/^\+/, '')}` : ''}{phone}
                         </span>
                     )
                 },
@@ -189,7 +194,7 @@ const TeamListTable = ({
                     return (
                         <span className="text-gray-600 dark:text-gray-400">
                             {last_login_at
-                                ? dayjs(last_login_at).format('DD/MM/YYYY HH:mm')
+                                ? dayjs(last_login_at).format(`${dateFormat} ${timeFormat}`)
                                 : '-'}
                         </span>
                     )
@@ -223,7 +228,7 @@ const TeamListTable = ({
                 cell: (props) => <ActionColumn row={props.row.original} />,
             },
         ],
-        [],
+        [dateFormat, timeFormat],
     )
 
     const handlePaginationChange = (page: number) => {
