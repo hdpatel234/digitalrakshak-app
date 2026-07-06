@@ -16,9 +16,8 @@ const TeamListTableTools = () => {
     }
 
     return (
-        <div className="flex flex-col md:flex-row md:items-center gap-2">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
             <DebouceInput
-                className="w-full md:w-[320px]"
                 placeholder="Search"
                 suffix={<TbSearch className="text-lg" />}
                 onChange={handleInputChange}

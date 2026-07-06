@@ -15,7 +15,6 @@ const TeamListActionTools = () => {
         <div className="flex flex-col md:flex-row gap-3">
             <Button
                 variant="solid"
-                size="sm"
                 icon={<TbPlus className="text-xl" />}
                 onClick={onAddMember}
             >
