@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { apiGetPermissions } from '@/services/auth/profile'
 import { protectedRoutes } from '@/configs/routes.config/routes.config'
 import useCurrentSession from '@/utils/hooks/useCurrentSession'
-import AccessDeniedPage from '@/app/(protected-pages)/access-denied/page'
+import AccessDenied from '@/components/shared/AccessDenied'
 import Loading from '@/components/shared/Loading'
 
 export default function RoutePermissionGuard({ children }: { children: React.ReactNode }) {
@@ -85,7 +85,7 @@ export default function RoutePermissionGuard({ children }: { children: React.Rea
     }
 
     if (!hasAccess) {
-        return <AccessDeniedPage />
+        return <AccessDenied />
     }
 
     return <>{children}</>

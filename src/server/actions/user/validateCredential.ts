@@ -150,7 +150,7 @@ export const validateCredentialWithResponse = async (
 
     if (!userId || !userName || !user.email) {
         console.error('Auth API user fields are incomplete', {
-            endpoint,
+            endpoint: isSso ? '/auth/me' : '/auth/login',
             hasUserId: Boolean(userId),
             hasUserName: Boolean(userName),
             hasEmail: Boolean(user.email),
