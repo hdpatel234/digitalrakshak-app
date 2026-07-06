@@ -1,3 +1,7 @@
+process.on('unhandledRejection', (reason) => {
+  console.error('UNHANDLED_REJECTION_CAUGHT:', reason);
+});
+
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin();
