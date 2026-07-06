@@ -7,6 +7,8 @@ export type Product = {
     img: string
     price: number
     stock: number
+    services?: string[]
+    icon?: string
 }
 
 export type Products = Product[]

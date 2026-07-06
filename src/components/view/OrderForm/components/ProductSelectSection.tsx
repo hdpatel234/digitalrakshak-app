@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Card from '@/components/ui/Card'
 import { FormItem } from '@/components/ui/Form'
 import { TbLayersLinked, TbUsers } from 'react-icons/tb'
+import * as TablerIcons from 'react-icons/tb'
 import { useOrderFormStore } from '../store/orderFormStore'
 import Notification from '@/components/ui/Notification'
 import toast from '@/components/ui/toast'
@@ -49,6 +50,15 @@ const ProductSelectSection = () => {
             10,
         )
 
+        const rawServices = Array.isArray(record.services) ? record.services : []
+        const services = rawServices.map(s => {
+            if (s && typeof s === 'object') {
+                const svc = s as Record<string, unknown>
+                return String(svc.service_name || svc.name || '')
+            }
+            return String(s)
+        }).filter(Boolean)
+
         if (!id || !name) {
             return null
         }
@@ -62,6 +72,8 @@ const ProductSelectSection = () => {
             stock: Number.isInteger(availableCandidates)
                 ? availableCandidates
                 : 0,
+            services,
+            icon: typeof record.icon === 'string' ? record.icon : undefined,
         }
     }
 
@@ -185,17 +197,37 @@ const ProductSelectSection = () => {
                                     className={`rounded-xl border p-5 shadow-sm flex flex-col h-full cursor-pointer transition-all ${themeClass}`}
                                 >
                                     <div className="flex justify-between items-start mb-2">
-                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                                        <h3 className="text-lg text-gray-900 dark:text-white">
                                             {pkg.name}
                                         </h3>
                                         <div className="bg-indigo-100 dark:bg-indigo-900/30 p-1.5 rounded-md flex-shrink-0 ml-4">
-                                            <TbLayersLinked className="text-indigo-600 dark:text-indigo-400 text-xl" />
+                                            {(() => {
+                                                const IconComponent = (pkg.icon && pkg.icon in TablerIcons) 
+                                                    ? TablerIcons[pkg.icon as keyof typeof TablerIcons] 
+                                                    : TbLayersLinked;
+                                                return <IconComponent className="text-indigo-600 dark:text-indigo-400 text-xl font-normal" />;
+                                            })()}
                                         </div>
                                     </div>
                                     
-                                    <p className="text-xs text-gray-500 mb-6">Code: {pkg.productCode}</p>
+                                    <p className="text-xs text-gray-500 mb-5">Code: {pkg.productCode}</p>
+
+                                    <div className="border-b border-gray-200/60 dark:border-gray-700/60 w-full mb-4"></div>
+
+                                    {pkg.services && pkg.services.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 mb-6">
+                                            {pkg.services.map((service, index) => (
+                                                <span
+                                                    key={index}
+                                                    className="inline-flex px-2.5 py-1 text-xs rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 shadow-sm"
+                                                >
+                                                    {service}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
                                     
-                                    <div className="mt-auto flex justify-between items-center pt-4 border-t border-gray-200/60 dark:border-gray-700/60">
+                                    <div className="mt-auto flex justify-between items-center pt-4 border-t border-transparent dark:border-transparent">
                                         <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 text-sm">
                                             <TbUsers className="text-base" />
                                             <span>{pkg.stock} candidates</span>
