@@ -7,10 +7,12 @@ import Google from 'next-auth/providers/google'
 
 import type { SignInCredential } from '@/@types/auth'
 
-class BackendCredentialsSignin extends CredentialsSignin {
+class BackendCredentialsSignin extends Error {
+    code: string
     constructor(message: string) {
         super(message)
         this.code = message
+        this.name = 'CredentialsSignin'
     }
 }
 
