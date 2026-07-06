@@ -1,3 +1,4 @@
+"use client"
 import { useState, useMemo, useContext, useCallback, useEffect } from 'react'
 import classNames from '@/utils/classNames'
 import RadioGroupContext from './context'

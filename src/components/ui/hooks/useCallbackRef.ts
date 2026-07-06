@@ -1,3 +1,4 @@
+"use client"
 import { useRef, useEffect, useMemo } from 'react'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

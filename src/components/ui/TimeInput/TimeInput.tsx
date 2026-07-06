@@ -1,3 +1,4 @@
+"use client"
 import { useState, useRef } from 'react'
 import useUniqueId from '../hooks/useUniqueId'
 import useMergedRef from '../hooks/useMergeRef'

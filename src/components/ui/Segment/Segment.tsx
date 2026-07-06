@@ -1,3 +1,4 @@
+"use client"
 import { useMemo } from 'react'
 import classNames from '../utils/classNames'
 import { SegmentContextProvider } from './context'

@@ -1,5 +1,4 @@
-'use client'
-
+"use client"
 import { createContext, useContext } from 'react'
 import type { TypeAttributes } from '../@types/common'
 

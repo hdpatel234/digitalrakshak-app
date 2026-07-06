@@ -1,3 +1,4 @@
+"use client"
 import { useCallback } from 'react'
 import type { CommonProps } from '../@types/common'
 

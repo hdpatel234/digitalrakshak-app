@@ -1,3 +1,4 @@
+"use client"
 import dayjs from 'dayjs'
 import localizedFormat from 'dayjs/plugin/localizedFormat'
 import { Input } from '../Input'
