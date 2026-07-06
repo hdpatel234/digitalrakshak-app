@@ -243,6 +243,10 @@ const navigationIcon: NavigationIcons = {
     teamMembers: <PiUsersDuotone />,
     apiKeys: <PiKeyDuotone />,
     webhooks: <PiWebhooksLogoDuotone />,           
+    ticket: <PiLifebuoyDuotone />,
+    tickets: <PiChatCenteredDuotone />,
+    supportTicket: <PiLifebuoyDuotone />,
+    supportTickets: <PiChatCenteredDuotone />,
 }
 
 export default navigationIcon
