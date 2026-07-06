@@ -6,15 +6,17 @@ import { apiGetPermissions } from '@/services/auth/profile'
 import { protectedRoutes } from '@/configs/routes.config/routes.config'
 import useCurrentSession from '@/utils/hooks/useCurrentSession'
 import AccessDeniedPage from '@/app/(protected-pages)/access-denied/page'
+import Loading from '@/components/shared/Loading'
 
 export default function RoutePermissionGuard({ children }: { children: React.ReactNode }) {
     const pathname = usePathname()
     const { session, setSession } = useCurrentSession()
 
-    const [hasAccess, setHasAccess] = useState(true)
+    const [hasAccess, setHasAccess] = useState<boolean | null>(null)
 
     useEffect(() => {
         const checkPermission = async () => {
+            setHasAccess(null)
             try {
                 // Fetch latest permissions
                 const response = await apiGetPermissions()
@@ -73,6 +75,14 @@ export default function RoutePermissionGuard({ children }: { children: React.Rea
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pathname, setSession])
+
+    if (hasAccess === null) {
+        return (
+            <div className="flex flex-auto flex-col h-[100vh]">
+                <Loading loading={true} />
+            </div>
+        )
+    }
 
     if (!hasAccess) {
         return <AccessDeniedPage />

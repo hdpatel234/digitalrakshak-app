@@ -15,6 +15,7 @@ const supportComponentNavigationConfig: NavigationTree[] = [
         icon: 'support',
         type: NAV_ITEM_TYPE_TITLE,
         authority: [ADMIN, USER],
+        permissions: [USER_PERMISSIONS.SUPPORT_MY_TICKETS, USER_PERMISSIONS.SUPPORT_OPEN_TICKET],
         meta: {
             horizontalMenu: {
                 layout: 'columns',
