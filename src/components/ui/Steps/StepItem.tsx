@@ -57,6 +57,7 @@ const StepItem = (props: StepItemProps) => {
 
     const stepWrapperClass = classNames(
         'step-item-wrapper relative z-10 bg-white dark:bg-gray-800 pr-4',
+        !vertical && stepNumber && stepNumber > 1 && 'pl-4',
         onStepChange && 'step-clickable',
     )
 

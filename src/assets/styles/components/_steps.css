@@ -24,11 +24,11 @@
     @apply text-lg rounded-full w-9 h-9 flex items-center justify-center font-semibold;
 
     &.step-item-icon-pending {
-      @apply border-2 border-gray-300 dark:border-gray-600;
+      @apply border border-gray-300 dark:border-gray-600;
     }
 
     &.step-item-icon-current {
-      @apply border-2;
+      @apply border;
     }
   }
 
@@ -45,7 +45,7 @@
   }
 
   .step-item-icon-error {
-    @apply border-2 border-red-500 text-red-500;
+    @apply border border-red-500 text-red-500;
   }
 
   .step-clickable {
