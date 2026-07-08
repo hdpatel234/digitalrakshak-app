@@ -1,10 +1,14 @@
 'use client'
 
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { HiOutlineOfficeBuilding } from 'react-icons/hi'
+import { TbPlus } from 'react-icons/tb'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
+import Upload from '@/components/ui/Upload'
+import Avatar from '@/components/ui/Avatar'
 import { Form, FormItem } from '@/components/ui/Form'
 import useSWR from 'swr'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -23,6 +27,7 @@ type FormSchema = {
     client_id?: number
     company_name: string
     contact_person: string
+    logo?: string
     email: string
     phone: string
     gst_number: string
@@ -70,6 +75,7 @@ type CompanyApiResponse = {
         id: number
         company_name: string
         contact_person?: string
+        logo?: string
         email: string
         phone?: string
         gst_number?: string
@@ -97,10 +103,13 @@ const validationSchema = z.object({
     state_id: z.string().optional(),
     city_id: z.string().optional(),
     pincode: z.string().optional(),
+    logo: z.string().optional(),
 })
 
 const CompanyProfileForm = () => {
     const router = useRouter()
+    const [logoFile, setLogoFile] = useState<File | null>(null)
+    const [removeLogo, setRemoveLogo] = useState(false)
 
     const { data: companyData, isLoading } = useSWR<CompanyApiResponse>(
         '/api/client/settings/company',
@@ -142,6 +151,7 @@ const CompanyProfileForm = () => {
         defaultValues: {
             company_name: '',
             contact_person: '',
+            logo: '',
             email: '',
             phone: '',
             gst_number: '',
@@ -200,6 +210,7 @@ const CompanyProfileForm = () => {
                 client_id: u.id,
                 company_name: u.company_name || '',
                 contact_person: u.contact_person || '',
+                logo: u.logo || '',
                 email: u.email || '',
                 phone: u.phone ? String(u.phone) : '',
                 gst_number: u.gst_number || '',
@@ -213,24 +224,47 @@ const CompanyProfileForm = () => {
         }
     }, [companyData, reset])
 
+    const beforeUpload = (files: FileList | null) => {
+        let valid: string | boolean = true
+        const allowedFileType = ['image/jpeg', 'image/png']
+        if (files) {
+            const fileArray = Array.from(files)
+            for (const file of fileArray) {
+                if (!allowedFileType.includes(file.type)) {
+                    valid = 'Please upload a .jpeg or .png file!'
+                }
+            }
+        }
+        return valid
+    }
+
     const onFormSubmit = async (values: FormSchema) => {
         try {
-            const submitData = {
-                client_id: values.client_id,
-                company_name: values.company_name,
-                contact_person: values.contact_person,
-                email: values.email,
-                phone: values.phone,
-                gst_number: values.gst_number,
-                pan_number: values.pan_number,
-                address: values.address,
-                country_id: values.country_id ? Number(values.country_id) : null,
-                state_id: values.state_id ? Number(values.state_id) : null,
-                city_id: values.city_id ? Number(values.city_id) : null,
-                pincode: values.pincode,
+            const formData = new FormData()
+            
+            if (values.client_id) formData.append('client_id', String(values.client_id))
+            formData.append('company_name', values.company_name)
+            formData.append('contact_person', values.contact_person || '')
+            formData.append('email', values.email)
+            formData.append('phone', values.phone || '')
+            formData.append('gst_number', values.gst_number || '')
+            formData.append('pan_number', values.pan_number || '')
+            formData.append('address', values.address || '')
+            
+            if (values.country_id) formData.append('country_id', values.country_id)
+            if (values.state_id) formData.append('state_id', values.state_id)
+            if (values.city_id) formData.append('city_id', values.city_id)
+            
+            formData.append('pincode', values.pincode || '')
+            
+            formData.append('_method', 'PUT')
+            
+            formData.append('remove_logo', removeLogo ? 'true' : 'false')
+            if (logoFile) {
+                formData.append('logo', logoFile)
             }
 
-            const response = await apiUpdateCompany<{ status: boolean; message?: string }, typeof submitData>(submitData)
+            const response = await apiUpdateCompany<{ status: boolean; message?: string }, FormData>(formData)
 
             if (!response?.status) {
                 throw new Error(response?.message || `Failed to update company details`)
@@ -241,6 +275,9 @@ const CompanyProfileForm = () => {
                     Company details updated successfully.
                 </Notification>
             )
+
+            setLogoFile(null)
+            setRemoveLogo(false)
 
             router.refresh()
         } catch (error) {
@@ -258,6 +295,15 @@ const CompanyProfileForm = () => {
             <AdaptiveCard className="h-full w-full">
                 {/* Title */}
                 <Skeleton className="mb-6" height={28} width={180} />
+
+                {/* Logo */}
+                <div className="flex items-center gap-4 mb-8">
+                    <Skeleton variant="circle" height={90} width={90} />
+                    <div className="flex items-center gap-2">
+                        <Skeleton height={38} width={120} />
+                        <Skeleton height={38} width={120} />
+                    </div>
+                </div>
 
                 {/* Row 1: Company Name + Contact Person */}
                 <div className="grid md:grid-cols-2 gap-4 mb-4">
@@ -323,6 +369,61 @@ const CompanyProfileForm = () => {
         <AdaptiveCard className="h-full w-full">
             <h3 className="mb-6">Company Profile</h3>
             <Form onSubmit={handleSubmit(onFormSubmit)}>
+                <div className="mb-8">
+                    <Controller
+                        name="logo"
+                        control={control}
+                        render={({ field }) => (
+                            <div className="flex items-center gap-4">
+                                <Avatar
+                                    size={90}
+                                    className="border-4 border-white bg-gray-100 text-gray-300 shadow-lg"
+                                    icon={<HiOutlineOfficeBuilding />}
+                                    src={field.value || ''}
+                                />
+                                <div className="flex items-center gap-2">
+                                    <Upload
+                                        showList={false}
+                                        uploadLimit={1}
+                                        beforeUpload={beforeUpload}
+                                        onChange={(files) => {
+                                            if (files.length > 0) {
+                                                setLogoFile(files[0])
+                                                setRemoveLogo(false)
+                                                field.onChange(
+                                                    URL.createObjectURL(
+                                                        files[0],
+                                                    ),
+                                                )
+                                            }
+                                        }}
+                                    >
+                                        <Button
+                                            variant="solid"
+                                            size="sm"
+                                            type="button"
+                                            icon={<TbPlus />}
+                                        >
+                                            Upload Logo
+                                        </Button>
+                                    </Upload>
+                                    <Button
+                                        size="sm"
+                                        type="button"
+                                        onClick={() => {
+                                            setLogoFile(null)
+                                            setRemoveLogo(true)
+                                            field.onChange('')
+                                        }}
+                                    >
+                                        Remove Logo
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    />
+                </div>
+
                 <div className="grid md:grid-cols-2 gap-4">
                     <FormItem
                         label="Company Name"

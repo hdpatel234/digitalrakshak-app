@@ -7,12 +7,12 @@ export async function apiGetCompany<T>() {
     })
 }
 
-export async function apiUpdateCompany<T, U extends Record<string, unknown>>(
+export async function apiUpdateCompany<T, U = Record<string, unknown> | FormData>(
     data: U,
 ) {
     return ApiService.fetchDataWithAxios<T>({
         url: '/client/settings/company',
-        method: 'put',
+        method: 'post', // Changed to POST with _method=PUT in data to support file uploads in Laravel
         data,
     })
 }
