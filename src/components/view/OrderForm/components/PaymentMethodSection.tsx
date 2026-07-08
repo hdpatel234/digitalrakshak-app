@@ -346,8 +346,8 @@ const PaymentMethodSection = ({}: PaymentMethodSectionProps) => {
                                 key={option.value}
                                 className={`flex flex-col items-center justify-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                                     paymentMethodId === option.value
-                                        ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400'
-                                        : 'border-gray-200 dark:border-gray-700 hover:border-indigo-600 dark:hover:border-indigo-500'
+                                        ? 'border-primary bg-primary-subtle text-primary ring-2 ring-primary'
+                                        : 'border-gray-200 dark:border-gray-700 hover:border-primary hover:shadow-md'
                                 }`}
                                 onClick={() => {
                                     setPaymentMethodId(option.value)
@@ -383,8 +383,8 @@ const PaymentMethodSection = ({}: PaymentMethodSectionProps) => {
                                     key={option.value}
                                     className={`flex flex-col items-center justify-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
                                         paymentProviderId === option.value
-                                            ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400'
-                                            : 'border-gray-200 dark:border-gray-700 hover:border-indigo-600 dark:hover:border-indigo-500'
+                                            ? 'border-primary bg-primary-subtle text-primary ring-2 ring-primary'
+                                            : 'border-gray-200 dark:border-gray-700 hover:border-primary hover:shadow-md'
                                     }`}
                                     onClick={() => setPaymentProviderId(option.value)}
                                 >

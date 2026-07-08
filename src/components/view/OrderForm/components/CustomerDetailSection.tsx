@@ -193,7 +193,7 @@ const CustomerDetailSection = ({}: CustomerDetailSectionProps) => {
 
                     {selectedPackageId && !isFetching && candidateList.length === 0 && (
                         <div className="p-10 text-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 flex flex-col items-center justify-center gap-4">
-                            <div className="bg-indigo-100 dark:bg-indigo-900/30 p-4 rounded-full text-indigo-600 dark:text-indigo-400">
+                            <div className="bg-primary/10 dark:bg-primary/20 p-4 rounded-full text-primary">
                                 <TbUsers className="text-4xl" />
                             </div>
                             <div>
@@ -221,7 +221,7 @@ const CustomerDetailSection = ({}: CustomerDetailSectionProps) => {
                                 return (
                                     <div 
                                         key={candidate.id}
-                                        className={`flex items-start p-4 border rounded-xl cursor-pointer transition-all ${isSelected ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/20 ring-1 ring-indigo-500' : 'border-gray-200 dark:border-gray-700 hover:border-indigo-300 hover:shadow-md bg-white dark:bg-gray-800'}`}
+                                        className={`flex items-start p-4 border rounded-xl cursor-pointer transition-all ${isSelected ? 'border-primary bg-primary-subtle ring-1 ring-primary' : 'border-gray-200 dark:border-gray-700 hover:border-primary hover:shadow-md bg-white dark:bg-gray-800'}`}
                                         onClick={() => {
                                             if (!isSelected) {
                                                 setSelectedCandidates([...selectedCandidates, candidate])
