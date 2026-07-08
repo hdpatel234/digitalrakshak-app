@@ -19,7 +19,7 @@ const settingComponentNavigationConfig: NavigationTree[] = [
         meta: {
             horizontalMenu: {
                 layout: 'columns',
-                columns: 4,
+                columns: 1,
             },
         },
         subMenu: [
