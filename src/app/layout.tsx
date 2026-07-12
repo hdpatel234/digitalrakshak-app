@@ -19,6 +19,7 @@ import {
 } from '@/constants/theme.constant'
 import presetThemeSchemaConfig from '@/configs/preset-theme-schema.config'
 import { getLocale, getMessages } from 'next-intl/server'
+import NextTopLoader from 'nextjs-toploader'
 import type { ReactNode } from 'react'
 import type { Direction, LayoutType, Mode, Theme } from '@/@types/theme'
 import '@/assets/styles/app.css'
@@ -63,15 +64,15 @@ export default async function RootLayout({
             : (theme.direction as Direction)
     const layoutType =
         sessionConfig?.layout &&
-        validLayouts.some((layout) => layout === sessionConfig.layout)
+            validLayouts.some((layout) => layout === sessionConfig.layout)
             ? (sessionConfig.layout as LayoutType)
             : sessionConfig
-              ? LAYOUT_TOP_BAR_CLASSIC
-              : (theme.layout.type as LayoutType)
+                ? LAYOUT_TOP_BAR_CLASSIC
+                : (theme.layout.type as LayoutType)
     const themeSchema =
         sessionConfig &&
-        sessionConfig.theme &&
-        sessionConfig.theme in presetThemeSchemaConfig
+            sessionConfig.theme &&
+            sessionConfig.theme in presetThemeSchemaConfig
             ? sessionConfig.theme
             : theme.themeSchema
 
@@ -95,6 +96,7 @@ export default async function RootLayout({
                 suppressHydrationWarning
             >
                 <body suppressHydrationWarning>
+                    <NextTopLoader color="var(--primary)" showSpinner={false} />
                     <LocaleProvider locale={locale} messages={messages}>
                         <ThemeProvider locale={locale} theme={resolvedTheme}>
                             <NavigationProvider navigationTree={navigationTree}>
