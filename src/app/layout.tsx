@@ -62,10 +62,12 @@ export default async function RootLayout({
             ? (sessionConfig.direction as Direction)
             : (theme.direction as Direction)
     const layoutType =
-        sessionConfig &&
+        sessionConfig?.layout &&
         validLayouts.some((layout) => layout === sessionConfig.layout)
             ? (sessionConfig.layout as LayoutType)
-            : (theme.layout.type as LayoutType)
+            : sessionConfig
+              ? LAYOUT_TOP_BAR_CLASSIC
+              : (theme.layout.type as LayoutType)
     const themeSchema =
         sessionConfig &&
         sessionConfig.theme &&
