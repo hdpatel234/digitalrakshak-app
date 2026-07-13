@@ -1,60 +1,60 @@
 export const USER_PERMISSIONS = {
     // Dashboard
-    DASHBOARD_STATS: 'dashboard.stats',
-    DASHBOARD_VERIFICATION_TREND: 'dashboard.verification_trend',
-    DASHBOARD_RECENT_ACTIVITY: 'dashboard.recent_activity',
-    DASHBOARD_SERVICE_USAGE: 'dashboard.service_usage',
-    DASHBOARD_ACTIVE_PACKAGES: 'dashboard.active_packages',
-    DASHBOARD_LATEST_CANDIDATES: 'dashboard.latest_candidates',
-    
+    DASHBOARD_STATS: 'client.dashboard.stats',
+    DASHBOARD_VERIFICATION_TREND: 'client.dashboard.verification_trend',
+    DASHBOARD_RECENT_ACTIVITY: 'client.dashboard.recent_activity',
+    DASHBOARD_SERVICE_USAGE: 'client.dashboard.service_usage',
+    DASHBOARD_ACTIVE_PACKAGES: 'client.dashboard.active_packages',
+    DASHBOARD_LATEST_CANDIDATES: 'client.dashboard.latest_candidates',
+
     // Candidates
-    CANDIDATES_LIST: 'candidates.list',
-    CANDIDATES_CREATE: 'candidates.create',
-    CANDIDATES_IMPORT: 'candidates.import',
-    CANDIDATES_VIEW: 'candidates.view',
-    CANDIDATES_DELETE: 'candidates.delete',
-    
+    CANDIDATES_LIST: 'client.candidates.list',
+    CANDIDATES_CREATE: 'client.candidates.create',
+    CANDIDATES_IMPORT: 'client.candidates.import',
+    CANDIDATES_VIEW: 'client.candidates.view',
+    CANDIDATES_DELETE: 'client.candidates.delete',
+
     // Invitations
-    INVITATIONS_LIST: 'invitations.list',
-    INVITATIONS_COMPLETED: 'invitations.completed',
-    INVITATIONS_EXPIRED: 'invitations.expired',
-    
+    INVITATIONS_LIST: 'client.invitations.list',
+    INVITATIONS_COMPLETED: 'client.invitations.completed',
+    INVITATIONS_EXPIRED: 'client.invitations.expired',
+
     // Orders
-    ORDERS_LIST: 'orders.list',
-    ORDERS_CREATE: 'orders.create',
-    
+    ORDERS_LIST: 'client.orders.list',
+    ORDERS_CREATE: 'client.orders.create',
+
     // Packages
-    PACKAGES_LIST: 'packages.list',
-    PACKAGES_CREATE: 'packages.create',
-    
+    PACKAGES_LIST: 'client.packages.list',
+    PACKAGES_CREATE: 'client.packages.create',
+
     // Verification
-    VERIFICATION_IN_PROGRESS: 'verification.in_progress',
-    VERIFICATION_COMPLETED: 'verification.completed',
-    VERIFICATION_INSUFFICIENCY: 'verification.insufficiency',
-    
+    VERIFICATION_IN_PROGRESS: 'client.verification.in_progress',
+    VERIFICATION_COMPLETED: 'client.verification.completed',
+    VERIFICATION_INSUFFICIENCY: 'client.verification.insufficiency',
+
     // Services
-    SERVICES_LIST: 'services.list',
-    
+    SERVICES_LIST: 'client.services.list',
+
     // Billing
-    BILLING_INVOICES: 'billing.invoices',
-    BILLING_PAYMENT_HISTORY: 'billing.payment_history',
-    
+    BILLING_INVOICES: 'client.billing.invoices',
+    BILLING_PAYMENT_HISTORY: 'client.billing.payment_history',
+
     // Support
-    SUPPORT_MY_TICKETS: 'support.my_tickets',
-    SUPPORT_OPEN_TICKET: 'support.open_ticket',
-    
+    SUPPORT_MY_TICKETS: 'client.support.my_tickets',
+    SUPPORT_OPEN_TICKET: 'client.support.open_ticket',
+
     // Reports
-    REPORT_SPENDING_REPORT: 'report.spending_report',
-    REPORT_ORDER_REPORT: 'report.order_report',
-    REPORT_VERIFICATION_REPORT: 'report.verification_report',
-    REPORT_EXPORT_DATA: 'report.export_data',
-    
+    REPORT_SPENDING_REPORT: 'client.report.spending_report',
+    REPORT_ORDER_REPORT: 'client.report.order_report',
+    REPORT_VERIFICATION_REPORT: 'client.report.verification_report',
+    REPORT_EXPORT_DATA: 'client.report.export_data',
+
     // Settings
-    SETTINGS_TEAM_MEMBERS_LIST: 'settings.team_members_list',
-    SETTINGS_TEAM_MEMBERS_ADD: 'settings.team_members_add',
-    SETTINGS_COMPANY_PROFILE: 'settings.company_profile',
-    SETTINGS_API_KEYS: 'settings.api_keys',
-    SETTINGS_WEBHOOKS: 'settings.webhooks',
+    SETTINGS_TEAM_MEMBERS_LIST: 'client.settings.team_members_list',
+    SETTINGS_TEAM_MEMBERS_ADD: 'client.settings.team_members_add',
+    SETTINGS_COMPANY_PROFILE: 'client.settings.company_profile',
+    SETTINGS_API_KEYS: 'client.settings.api_keys',
+    SETTINGS_WEBHOOKS: 'client.settings.webhooks',
 } as const
 
 export type UserPermission = typeof USER_PERMISSIONS[keyof typeof USER_PERMISSIONS]
