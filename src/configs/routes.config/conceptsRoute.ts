@@ -396,21 +396,6 @@ const conceptsRoute: Routes = {
         key: 'concepts.orders.orderDetails',
         authority: [ADMIN, USER],
         meta: {
-            header: {
-                contained: true,
-                title: lazy(
-                    () =>
-                        import(
-                            '@/app/(protected-pages)/concepts/orders/order-details/[id]/_components/OrderDetailHeader'
-                        ),
-                ),
-                extraHeader: lazy(
-                    () =>
-                        import(
-                            '@/app/(protected-pages)/concepts/orders/order-details/[id]/_components/OrderDetailHeaderExtra'
-                        ),
-                ),
-            },
             pageContainerType: 'contained',
         },
         dynamicRoute: true,
