@@ -76,13 +76,13 @@ export default function RoutePermissionGuard({ children }: { children: React.Rea
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pathname, setSession])
 
-    if (hasAccess === null) {
-        return (
-            <div className="flex flex-auto flex-col h-[100vh]">
-                <Loading loading={true} />
-            </div>
-        )
-    }
+    // if (hasAccess === null) {
+    //     return (
+    //         <div className="flex flex-auto flex-col h-[100vh]">
+    //             <Loading loading={true} />
+    //         </div>
+    //     )
+    // }
 
     if (!hasAccess) {
         return <AccessDenied />
