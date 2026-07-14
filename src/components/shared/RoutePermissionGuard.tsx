@@ -7,6 +7,8 @@ import { protectedRoutes } from '@/configs/routes.config/routes.config'
 import useCurrentSession from '@/utils/hooks/useCurrentSession'
 import AccessDenied from '@/components/shared/AccessDenied'
 import Loading from '@/components/shared/Loading'
+import PageContainer from '@/components/template/PageContainer'
+import AdaptiveCard from '@/components/shared/AdaptiveCard'
 
 export default function RoutePermissionGuard({ children }: { children: React.ReactNode }) {
     const pathname = usePathname()
@@ -76,15 +78,19 @@ export default function RoutePermissionGuard({ children }: { children: React.Rea
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pathname, setSession])
 
-    // if (hasAccess === null) {
-    //     return (
-    //         <div className="flex flex-auto flex-col h-[100vh]">
-    //             <Loading loading={true} />
-    //         </div>
-    //     )
-    // }
+    if (hasAccess === null) {
+        return (
+            <PageContainer>
+                <AdaptiveCard>
+                    <div className="py-6">
+                        <Loading loading={true} />
+                    </div>
+                </AdaptiveCard>
+            </PageContainer>
+        )
+    }
 
-    if (!hasAccess) {
+    if (hasAccess === false) {
         return <AccessDenied />
     }
 
