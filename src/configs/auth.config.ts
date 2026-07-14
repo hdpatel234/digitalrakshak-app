@@ -204,6 +204,7 @@ export default {
                         email?: string | null
                         image?: string | null
                         avatar?: string | null
+                        permissions?: string[]
                     }
 
                     token.name = updatedUser.name ?? token.name
@@ -213,6 +214,10 @@ export default {
                         updatedUser.image ??
                         (token.picture as string | undefined) ??
                         null
+                    
+                    if (updatedUser.permissions) {
+                        token.permissions = updatedUser.permissions
+                    }
                 }
 
                 if (session.config) {

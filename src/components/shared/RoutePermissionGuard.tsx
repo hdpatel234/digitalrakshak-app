@@ -1,94 +1,65 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { apiGetPermissions } from '@/services/auth/profile'
 import { protectedRoutes } from '@/configs/routes.config/routes.config'
 import useCurrentSession from '@/utils/hooks/useCurrentSession'
 import AccessDenied from '@/components/shared/AccessDenied'
-import Loading from '@/components/shared/Loading'
-import PageContainer from '@/components/template/PageContainer'
-import AdaptiveCard from '@/components/shared/AdaptiveCard'
 
 export default function RoutePermissionGuard({ children }: { children: React.ReactNode }) {
     const pathname = usePathname()
     const { session, setSession } = useCurrentSession()
 
-    const [hasAccess, setHasAccess] = useState<boolean | null>(null)
+    // 1. Synchronous Access Check
+    const routeMeta = protectedRoutes[pathname]
+    let hasAccess = true
 
+    if (pathname && pathname !== '/access-denied' && routeMeta && routeMeta.permissions && routeMeta.permissions.length > 0) {
+        const sessionPermissions = session?.user?.permissions || []
+        hasAccess = routeMeta.permissions.some((perm) => sessionPermissions.includes(perm))
+    }
+
+    // 2. Background Permission Sync
     useEffect(() => {
-        const checkPermission = async () => {
-            setHasAccess(null)
+        const syncPermissions = async () => {
             try {
-                // Fetch latest permissions
                 const response = await apiGetPermissions()
-                let latestPermissions: string[] = []
-
+                
                 if (response && response.status) {
-                    latestPermissions = response.data || []
-
-                    // Update session with latest permissions
-                    setSession((prev) => prev ? {
-                        ...prev,
-                        user: {
-                            ...(prev.user || {}),
-                            permissions: latestPermissions
+                    const latestPermissions = response.data || []
+                    
+                    setSession((prev) => {
+                        if (!prev) return null;
+                        
+                        const currentPermissions = prev.user?.permissions || []
+                        const isDifferent = latestPermissions.length !== currentPermissions.length || 
+                                            !latestPermissions.every(p => currentPermissions.includes(p)) ||
+                                            !currentPermissions.every(p => latestPermissions.includes(p));
+                        
+                        if (isDifferent) {
+                            return {
+                                ...prev,
+                                user: {
+                                    ...(prev.user || {}),
+                                    permissions: latestPermissions
+                                }
+                            }
                         }
-                    } : null)
-                } else {
-                    // Fallback to existing permissions in session if fetch fails or is invalid
-                    latestPermissions = session?.user?.permissions || []
+                        
+                        return prev; // If identical, return exactly the same object to prevent re-renders
+                    })
                 }
-
-                const routeMeta = protectedRoutes[pathname]
-
-                // If no permissions required, allow access
-                if (!routeMeta || !routeMeta.permissions || routeMeta.permissions.length === 0) {
-                    setHasAccess(true)
-                    return
-                }
-
-                // Check if user has at least one of the required permissions
-                const hasPermission = routeMeta.permissions.some((perm) => latestPermissions.includes(perm))
-
-                setHasAccess(hasPermission)
             } catch (error) {
-                console.error('Failed to check permissions', error)
-
-                // On error, check against the existing session permissions
-                const routeMeta = protectedRoutes[pathname]
-                const existingPermissions = session?.user?.permissions || []
-
-                if (routeMeta && routeMeta.permissions && routeMeta.permissions.length > 0) {
-                    const hasPermission = routeMeta.permissions.some((perm) => existingPermissions.includes(perm))
-                    setHasAccess(hasPermission)
-                } else {
-                    setHasAccess(true)
-                }
-            } finally {
-                // Done checking
+                console.error('Failed to background sync permissions', error)
             }
         }
 
         if (pathname && pathname !== '/access-denied') {
-            checkPermission()
-        } else {
-            setHasAccess(true)
+            syncPermissions()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pathname, setSession])
-
-    if (hasAccess === null) {
-        return (
-            <PageContainer>
-                <AdaptiveCard>
-                    <div className="py-6">
-                        <Loading loading={true} />
-                    </div>
-                </AdaptiveCard>
-            </PageContainer>
-        )
-    }
 
     if (hasAccess === false) {
         return <AccessDenied />
