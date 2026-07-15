@@ -182,6 +182,7 @@ export default function Page() {
         <TransactionListProvider
             transactionList={data.list}
             statusOptions={data.statusList}
+            loading={loading}
         >
             <Container>
                 <AdaptiveCard>

@@ -8,11 +8,13 @@ import type { CommonProps } from '@/@types/common'
 interface TransactionListProviderProps extends CommonProps {
     transactionList: Transactions
     statusOptions?: StatusOption[]
+    loading?: boolean
 }
 
 const TransactionListProvider = ({
     transactionList,
     statusOptions = [],
+    loading,
     children,
 }: TransactionListProviderProps) => {
     const setTransactionList = useTransactionListStore((state) => state.setTransactionList)
@@ -28,9 +30,9 @@ const TransactionListProvider = ({
         setTransactionList(transactionList)
         setStatusOptions(statusOptions)
 
-        setInitialLoading(false)
+        setInitialLoading(loading ?? false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [transactionList, statusOptions])
+    }, [transactionList, statusOptions, loading])
 
     return <>{children}</>
 }
