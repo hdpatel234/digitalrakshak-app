@@ -9,12 +9,14 @@ interface OrderListProviderProps extends CommonProps {
     orderList: Orders
     statusOptions?: StatusOption[]
     paymentMethodOptions?: PaymentMethodOption[]
+    loading?: boolean
 }
 
 const OrderListProvider = ({
     orderList,
     statusOptions = [],
     paymentMethodOptions = [],
+    loading,
     children,
 }: OrderListProviderProps) => {
     const setOrderList = useOrderListStore((state) => state.setOrderList)
@@ -34,9 +36,9 @@ const OrderListProvider = ({
         setStatusOptions(statusOptions)
         setPaymentMethodOptions(paymentMethodOptions)
 
-        setInitialLoading(false)
+        setInitialLoading(loading ?? false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [orderList, statusOptions, paymentMethodOptions])
+    }, [orderList, statusOptions, paymentMethodOptions, loading])
 
     return <>{children}</>
 }

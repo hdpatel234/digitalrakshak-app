@@ -7,10 +7,12 @@ import type { CommonProps } from '@/@types/common'
 
 interface CustomerListProviderProps extends CommonProps {
     customerList: Customer[]
+    loading?: boolean
 }
 
 const CustomerListProvider = ({
     customerList,
+    loading,
     children,
 }: CustomerListProviderProps) => {
     const setCustomerList = useCustomerListStore(
@@ -23,10 +25,9 @@ const CustomerListProvider = ({
 
     useEffect(() => {
         setCustomerList(customerList)
-
-        setInitialLoading(false)
+        setInitialLoading(loading ?? false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [customerList])
+    }, [customerList, loading])
 
     return <>{children}</>
 }

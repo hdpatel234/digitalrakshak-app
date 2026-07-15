@@ -2,7 +2,7 @@
 import Container from '@/components/shared/Container'
 import AdaptiveCard from '@/components/shared/AdaptiveCard'
 import Button from '@/components/ui/Button'
-import Loading from '@/components/shared/Loading'
+import Skeleton from '@/components/ui/Skeleton'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -162,8 +162,7 @@ export default function Page() {
 
     return (
         <Container>
-            <Loading loading={loading}>
-                <AdaptiveCard>
+            <AdaptiveCard>
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                         <div>
@@ -180,108 +179,136 @@ export default function Page() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                    {data.list.map((pkg, index) => {
-                        const isAdminPackage = String(pkg.type || '').toLowerCase() === 'admin'
-                        const isEditable = !isAdminPackage
-
-                        // Cycle through some light background tints for the cards to match the design
-                        const colorThemes = [
-                            'bg-blue-50/50 border-blue-200 dark:bg-blue-900/10 dark:border-blue-800/30',
-                            'bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700',
-                            'bg-orange-50/50 border-orange-200 dark:bg-orange-900/10 dark:border-orange-800/30',
-                            'bg-emerald-50/50 border-emerald-200 dark:bg-emerald-900/10 dark:border-emerald-800/30',
-                        ]
-                        const themeClass = colorThemes[index % colorThemes.length]
-
-                        return (
-                            <div
-                                key={pkg.id}
-                                className={`rounded-xl border p-5 shadow-sm flex flex-col h-full ${themeClass}`}
-                            >
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                                        {pkg.name}
-                                    </h3>
-                                    <div className="bg-indigo-100 dark:bg-indigo-900/30 p-1.5 rounded-md flex-shrink-0 ml-4">
-                                        {(() => {
-                                            const IconComponent = (pkg.icon && pkg.icon in TablerIcons) 
-                                                ? TablerIcons[pkg.icon as keyof typeof TablerIcons] 
-                                                : TbLayersLinked;
-                                            return <IconComponent className="text-indigo-600 dark:text-indigo-400 text-xl" />;
-                                        })()}
+                        {loading && data.list.length === 0 ? (
+                            Array.from({ length: 4 }).map((_, index) => (
+                                <div
+                                    key={`skeleton-${index}`}
+                                    className="rounded-xl border p-5 shadow-sm flex flex-col h-full bg-white dark:bg-gray-800"
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <Skeleton width="60%" height={24} />
+                                        <Skeleton variant="circle" width={32} height={32} />
                                     </div>
-                                </div>
-
-                                {pkg.description && pkg.description !== '-' && (
-                                    <p className="text-gray-500 dark:text-gray-400 mb-5 text-sm">
-                                        {pkg.description}
-                                    </p>
-                                )}
-
-                                <div className="border-b border-gray-200/60 dark:border-gray-700/60 w-full mb-4"></div>
-
-                                {pkg.services && pkg.services.length > 0 && (
+                                    <Skeleton width="100%" height={16} className="mt-2" />
+                                    <Skeleton width="80%" height={16} className="mt-1 mb-5" />
+                                    <div className="border-b border-gray-200/60 dark:border-gray-700/60 w-full mb-4"></div>
                                     <div className="flex flex-wrap gap-2 mb-6">
-                                        {pkg.services.map((service, index) => (
-                                            <span
-                                                key={index}
-                                                className="inline-flex px-2.5 py-1 text-xs rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 shadow-sm"
-                                            >
-                                                {service}
-                                            </span>
-                                        ))}
+                                        <Skeleton width={80} height={26} />
+                                        <Skeleton width={100} height={26} />
+                                        <Skeleton width={90} height={26} />
                                     </div>
-                                )}
-
-                                <div className="mt-auto">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 text-sm">
-                                            <TbUsers className="text-base" />
-                                            <span>{pkg.availableCandidates} candidates</span>
+                                    <div className="mt-auto">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <Skeleton width={100} height={20} />
+                                            <Skeleton width={80} height={24} />
                                         </div>
-                                        <div className="text-right">
-                                            <span className="text-lg font-bold text-gray-900 dark:text-white">
-                                                {new Intl.NumberFormat('en-IN', {
-                                                    style: 'currency',
-                                                    currency: 'INR',
-                                                    minimumFractionDigits: 0,
-                                                    maximumFractionDigits: 0,
-                                                }).format(pkg.price)}
-                                            </span>
-                                            <span className="text-sm text-gray-500 dark:text-gray-400 font-medium ml-1">
-                                                /candidate
-                                            </span>
-                                        </div>
+                                        <Skeleton width="100%" height={40} />
                                     </div>
-
-                                    <PackageCardActions 
-                                        pkgId={pkg.id}
-                                        availableCandidates={pkg.availableCandidates}
-                                        isEditable={isEditable}
-                                    />
                                 </div>
-                            </div>
-                        )
-                    })}
+                            ))
+                        ) : (
+                            data.list.map((pkg, index) => {
+                                const isAdminPackage = String(pkg.type || '').toLowerCase() === 'admin'
+                                const isEditable = !isAdminPackage
 
-                    <Link
-                        href="/packages/create"
-                        className="flex flex-col items-center justify-center py-12 px-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl text-gray-500 dark:text-gray-400 hover:border-indigo-400 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-all group min-h-[300px]"
-                    >
-                        <div className="bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-full mb-3">
-                            <TbPlus className="text-2xl text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform" />
-                        </div>
-                        <span className="font-bold text-gray-900 dark:text-white mb-1">
-                            Create new package
-                        </span>
-                        <span className="text-sm">
-                            Click here to select services and compose a workflow
-                        </span>
-                    </Link>
+                                // Cycle through some light background tints for the cards to match the design
+                                const colorThemes = [
+                                    'bg-blue-50/50 border-blue-200 dark:bg-blue-900/10 dark:border-blue-800/30',
+                                    'bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700',
+                                    'bg-orange-50/50 border-orange-200 dark:bg-orange-900/10 dark:border-orange-800/30',
+                                    'bg-emerald-50/50 border-emerald-200 dark:bg-emerald-900/10 dark:border-emerald-800/30',
+                                ]
+                                const themeClass = colorThemes[index % colorThemes.length]
+
+                                return (
+                                    <div
+                                        key={pkg.id}
+                                        className={`rounded-xl border p-5 shadow-sm flex flex-col h-full ${themeClass}`}
+                                    >
+                                        <div className="flex justify-between items-start mb-2">
+                                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                                                {pkg.name}
+                                            </h3>
+                                            <div className="bg-indigo-100 dark:bg-indigo-900/30 p-1.5 rounded-md flex-shrink-0 ml-4">
+                                                {(() => {
+                                                    const IconComponent = (pkg.icon && pkg.icon in TablerIcons) 
+                                                        ? TablerIcons[pkg.icon as keyof typeof TablerIcons] 
+                                                        : TbLayersLinked;
+                                                    return <IconComponent className="text-indigo-600 dark:text-indigo-400 text-xl" />;
+                                                })()}
+                                            </div>
+                                        </div>
+
+                                        {pkg.description && pkg.description !== '-' && (
+                                            <p className="text-gray-500 dark:text-gray-400 mb-5 text-sm">
+                                                {pkg.description}
+                                            </p>
+                                        )}
+
+                                        <div className="border-b border-gray-200/60 dark:border-gray-700/60 w-full mb-4"></div>
+
+                                        {pkg.services && pkg.services.length > 0 && (
+                                            <div className="flex flex-wrap gap-2 mb-6">
+                                                {pkg.services.map((service, index) => (
+                                                    <span
+                                                        key={index}
+                                                        className="inline-flex px-2.5 py-1 text-xs rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 shadow-sm"
+                                                    >
+                                                        {service}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        <div className="mt-auto">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 text-sm">
+                                                    <TbUsers className="text-base" />
+                                                    <span>{pkg.availableCandidates} candidates</span>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="text-lg font-bold text-gray-900 dark:text-white">
+                                                        {new Intl.NumberFormat('en-IN', {
+                                                            style: 'currency',
+                                                            currency: 'INR',
+                                                            minimumFractionDigits: 0,
+                                                            maximumFractionDigits: 0,
+                                                        }).format(pkg.price)}
+                                                    </span>
+                                                    <span className="text-sm text-gray-500 dark:text-gray-400 font-medium ml-1">
+                                                        /candidate
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <PackageCardActions 
+                                                pkgId={pkg.id}
+                                                availableCandidates={pkg.availableCandidates}
+                                                isEditable={isEditable}
+                                            />
+                                        </div>
+                                    </div>
+                                )
+                            })
+                        )}
+
+                        <Link
+                            href="/packages/create"
+                            className="flex flex-col items-center justify-center py-12 px-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl text-gray-500 dark:text-gray-400 hover:border-indigo-400 dark:hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-all group min-h-[300px]"
+                        >
+                            <div className="bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-full mb-3">
+                                <TbPlus className="text-2xl text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform" />
+                            </div>
+                            <span className="font-bold text-gray-900 dark:text-white mb-1">
+                                Create new package
+                            </span>
+                            <span className="text-sm">
+                                Click here to select services and compose a workflow
+                            </span>
+                        </Link>
+                    </div>
                 </div>
-                </div>
-                </AdaptiveCard>
-            </Loading>
+            </AdaptiveCard>
         </Container>
     )
 }
