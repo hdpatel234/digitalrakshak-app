@@ -7,6 +7,7 @@ import OrderListTableTools from './_components/OrderListTableTools'
 import OrderListProvider from './_components/OrderListProvider'
 import type { PageProps } from '@/@types/common'
 import type { Order, StatusOption, PaymentMethodOption } from './types'
+import Loading from '@/components/shared/Loading'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import dayjs from 'dayjs'
@@ -375,22 +376,24 @@ export default function Page() {
             paymentMethodOptions={data.paymentMethods}
         >
             <Container>
-                <AdaptiveCard>
-                    <div className="flex flex-col gap-4">
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                            <h3>Orders</h3>
-                            <OrderListActionTools />
+                <Loading loading={loading}>
+                    <AdaptiveCard>
+                        <div className="flex flex-col gap-4">
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                                <h3>Orders</h3>
+                                <OrderListActionTools />
+                            </div>
+                            <OrderListTableTools />
+                            <OrderListTable
+                                orderListTotal={data.total}
+                                pageIndex={
+                                    parseInt(params.pageIndex as string) || 1
+                                }
+                                pageSize={parseInt(params.pageSize as string) || 10}
+                            />
                         </div>
-                        <OrderListTableTools />
-                        <OrderListTable
-                            orderListTotal={data.total}
-                            pageIndex={
-                                parseInt(params.pageIndex as string) || 1
-                            }
-                            pageSize={parseInt(params.pageSize as string) || 10}
-                        />
-                    </div>
-                </AdaptiveCard>
+                    </AdaptiveCard>
+                </Loading>
             </Container>
         </OrderListProvider>
     )

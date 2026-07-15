@@ -3,6 +3,7 @@ import CustomerListProvider from './_components/CustomerListProvider'
 import type { PageProps } from '@/@types/common'
 import ClientContent from './_components/ClientContent'
 import type { Customer, StatusOption } from './types'
+import Loading from '@/components/shared/Loading'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
@@ -291,7 +292,9 @@ export default function Page() {
 
     return (
         <CustomerListProvider customerList={data.list}>
-            <ClientContent data={data} params={params} />
+            <Loading loading={loading}>
+                <ClientContent data={data} params={params} />
+            </Loading>
         </CustomerListProvider>
     )
 }

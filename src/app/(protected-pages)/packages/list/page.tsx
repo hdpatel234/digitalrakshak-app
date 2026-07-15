@@ -2,6 +2,7 @@
 import Container from '@/components/shared/Container'
 import AdaptiveCard from '@/components/shared/AdaptiveCard'
 import Button from '@/components/ui/Button'
+import Loading from '@/components/shared/Loading'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -161,7 +162,8 @@ export default function Page() {
 
     return (
         <Container>
-            <AdaptiveCard>
+            <Loading loading={loading}>
+                <AdaptiveCard>
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                         <div>
@@ -278,7 +280,8 @@ export default function Page() {
                     </Link>
                 </div>
                 </div>
-            </AdaptiveCard>
+                </AdaptiveCard>
+            </Loading>
         </Container>
     )
 }
