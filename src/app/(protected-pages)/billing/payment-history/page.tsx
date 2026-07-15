@@ -139,7 +139,7 @@ const getTransactionsFromClientApi = async (
     url.searchParams.set('limit', String(pageSize))
 
     try {
-        const response = await fetch('/api/client/billing/transactions' + url.search + (undefined && undefined !== "undefined" ? "?" + new URLSearchParams(undefined as any).toString() : ""), {
+        const response = await fetch('/api/client/billing/transactions' + url.search, {
             method: 'GET',
             cache: 'no-store',
         })
@@ -170,7 +170,7 @@ export default function Page() {
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true)
-            
+            const params = Object.fromEntries(searchParams.entries())
             const result = await getTransactionsFromClientApi(params)
             setData(result)
             setLoading(false)
@@ -193,9 +193,9 @@ export default function Page() {
                         <TransactionListTable
                             transactionListTotal={data.total}
                             pageIndex={
-                                parseInt(params.pageIndex as string) || 1
+                                parseInt(searchParams.get('pageIndex') as string) || 1
                             }
-                            pageSize={parseInt(params.pageSize as string) || 10}
+                            pageSize={parseInt(searchParams.get('pageSize') as string) || 10}
                         />
                     </div>
                 </AdaptiveCard>
