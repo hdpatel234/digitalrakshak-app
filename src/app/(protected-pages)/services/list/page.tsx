@@ -1,10 +1,13 @@
+"use client"
 import Container from '@/components/shared/Container'
 import AdaptiveCard from '@/components/shared/AdaptiveCard'
 import ProductListProvider from './_components/ProductListProvider'
 import ServiceListGrid from './_components/ServiceListGrid'
 import ProductListSelected from './_components/ProductListSelected'
+import Skeleton from '@/components/ui/Skeleton'
 import type { PageProps } from '@/@types/common'
-import { headers } from 'next/headers'
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import type { Product } from './types'
 
 type ServicesApiResponse = {
@@ -64,23 +67,12 @@ const normalizeServicesData = (data: unknown): ServicesListData => {
     }
 }
 
-const getServicesFromInternalApi = async (
+const getServicesFromClientApi = async (
     params: Record<string, string | string[] | undefined>,
 ): Promise<ServicesListData> => {
-    const headerStore = await headers()
-    const host =
-        headerStore.get('x-forwarded-host') || headerStore.get('host') || ''
-    const protocol =
-        headerStore.get('x-forwarded-proto') ||
-        (process.env.NODE_ENV === 'development' ? 'http' : 'https')
-
-    if (!host) {
-        return { list: [], total: 0 }
-    }
-
     const pageIndex = toNumber(params.pageIndex, 1) || 1
     const pageSize = toNumber(params.pageSize, 10) || 10
-    const url = new URL('/api/client/services', 'http://localhost')
+    const url = new URL('/api/client/services', window.location.origin)
 
     Object.entries(params).forEach(([key, value]) => {
         if (
@@ -113,8 +105,7 @@ const getServicesFromInternalApi = async (
     }
 
     try {
-        const { internalServerFetch } = await import('@/utils/serverFetch')
-        const response = await internalServerFetch(url.pathname + url.search, undefined, {
+        const response = await fetch(url.pathname + url.search, {
             method: 'GET',
             cache: 'no-store',
         })
@@ -131,9 +122,22 @@ const getServicesFromInternalApi = async (
     }
 }
 
-export default async function Page({ searchParams }: PageProps) {
-    const params = await searchParams
-    const data = await getServicesFromInternalApi(params)
+export default function Page() {
+    const searchParams = useSearchParams()
+    const params = Object.fromEntries(searchParams.entries())
+    
+    const [data, setData] = useState<ServicesListData>({ list: [], total: 0 })
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchServices = async () => {
+            setLoading(true)
+            const result = await getServicesFromClientApi(params)
+            setData(result)
+            setLoading(false)
+        }
+        fetchServices()
+    }, [searchParams])
 
     return (
         <ProductListProvider productList={data.list}>
@@ -143,13 +147,38 @@ export default async function Page({ searchParams }: PageProps) {
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                             <h3>Services</h3>
                         </div>
-                        <ServiceListGrid
-                            productListTotal={data.total}
-                            pageIndex={
-                                parseInt(params.pageIndex as string) || 1
-                            }
-                            pageSize={parseInt(params.pageSize as string) || 10}
-                        />
+                        {loading && data.list.length === 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+                                {Array.from({ length: 6 }).map((_, index) => (
+                                    <div
+                                        key={`skeleton-${index}`}
+                                        className="rounded-xl border p-5 shadow-sm flex flex-col h-full bg-white dark:bg-gray-800"
+                                    >
+                                        <div className="flex justify-between items-start mb-2">
+                                            <Skeleton width="60%" height={24} />
+                                            <Skeleton variant="circle" width={32} height={32} />
+                                        </div>
+                                        <Skeleton width="100%" height={16} className="mt-2" />
+                                        <Skeleton width="80%" height={16} className="mt-1 mb-5" />
+                                        <div className="mt-auto">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <Skeleton width={100} height={20} />
+                                                <Skeleton width={80} height={24} />
+                                            </div>
+                                            <Skeleton width="100%" height={40} />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <ServiceListGrid
+                                productListTotal={data.total}
+                                pageIndex={
+                                    parseInt(params.pageIndex as string) || 1
+                                }
+                                pageSize={parseInt(params.pageSize as string) || 10}
+                            />
+                        )}
                     </div>
                 </AdaptiveCard>
             </Container>
