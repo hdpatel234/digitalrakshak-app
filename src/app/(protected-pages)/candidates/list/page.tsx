@@ -236,7 +236,7 @@ const getCandidatesFromClientApi = async (
     }
 
     try {
-        const response = await fetch('/api/client/candidates' + (queryParams && queryParams !== "undefined" ? "?" + new URLSearchParams(queryParams as any).toString() : ""), {
+        const response = await fetch('/api/client/candidates?' + new URLSearchParams(queryParams).toString(), {
             method: 'GET',
             cache: 'no-store',
         })
@@ -273,7 +273,7 @@ const getCandidatesFromClientApi = async (
 
 export default function Page() {
     const searchParams = useSearchParams()
-    
+    const params = Object.fromEntries(searchParams.entries())
     
     const [data, setData] = useState<CandidateListData>({ list: [], total: 0 } as unknown as CandidateListData)
     const [loading, setLoading] = useState(true)
