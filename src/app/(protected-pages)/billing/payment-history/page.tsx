@@ -1,3 +1,4 @@
+"use client"
 import Container from '@/components/shared/Container'
 import AdaptiveCard from '@/components/shared/AdaptiveCard'
 import TransactionListTable from './_components/TransactionListTable'
@@ -5,7 +6,8 @@ import TransactionListTableTools from './_components/TransactionListTableTools'
 import TransactionListProvider from './_components/TransactionListProvider'
 import type { PageProps } from '@/@types/common'
 import type { Transaction, StatusOption } from './types'
-import { headers } from 'next/headers'
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 type TransactionsApiResponse = {
     status?: boolean
@@ -108,23 +110,14 @@ const normalizeTransactionsData = (data: unknown): TransactionsListData => {
     }
 }
 
-const getTransactionsFromInternalApi = async (
+const getTransactionsFromClientApi = async (
     params: Record<string, string | string[] | undefined>,
 ): Promise<TransactionsListData> => {
-    const headerStore = await headers()
-    const host =
-        headerStore.get('x-forwarded-host') || headerStore.get('host') || ''
-    const protocol =
-        headerStore.get('x-forwarded-proto') ||
-        (process.env.NODE_ENV === 'development' ? 'http' : 'https')
-
-    if (!host) {
-        return { list: [], total: 0, statusList: [] }
     }
 
     const pageIndex = Number(params.pageIndex) || 1
     const pageSize = Number(params.pageSize) || 10
-    const url = new URL('/api/client/billing/transactions', 'http://localhost')
+    const url = new URL('/api/client/billing/transactions', window.location.origin)
 
     if (typeof params.search === 'string' && params.search.trim()) {
         url.searchParams.set('search', params.search.trim())
@@ -147,8 +140,7 @@ const getTransactionsFromInternalApi = async (
     url.searchParams.set('limit', String(pageSize))
 
     try {
-        const { internalServerFetch } = await import('@/utils/serverFetch')
-        const response = await internalServerFetch('/api/client/billing/transactions' + url.search, undefined, {
+        const response = await fetch('/api/client/billing/transactions' + url.search + (undefined && undefined !== "undefined" ? "?" + new URLSearchParams(undefined as any).toString() : ""), {
             method: 'GET',
             cache: 'no-store',
         })
@@ -169,9 +161,23 @@ const getTransactionsFromInternalApi = async (
     }
 }
 
-export default async function Page({ searchParams }: PageProps) {
-    const params = await searchParams
-    const data = await getTransactionsFromInternalApi(params)
+export default function Page() {
+    const searchParams = useSearchParams()
+    
+    
+    const [data, setData] = useState<TransactionsListData>({ list: [], total: 0 } as unknown as TransactionsListData)
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true)
+            
+            const result = await getTransactionsFromClientApi(params)
+            setData(result)
+            setLoading(false)
+        }
+        fetchData()
+    }, [searchParams])
 
     return (
         <TransactionListProvider

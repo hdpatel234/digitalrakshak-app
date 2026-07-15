@@ -1,3 +1,4 @@
+"use client"
 import Container from '@/components/shared/Container'
 import AdaptiveCard from '@/components/shared/AdaptiveCard'
 import TicketListTable from './_components/TicketListTable'
@@ -6,7 +7,8 @@ import TicketListTableTools from './_components/TicketListTableTools'
 import TicketListProvider from './_components/TicketListProvider'
 import type { PageProps } from '@/@types/common'
 import type { Ticket, StatusOption, DepartmentOption, PriorityOption } from './_components/types'
-import { headers } from 'next/headers'
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import dayjs from 'dayjs'
 
 type TicketsApiResponse = {
@@ -137,23 +139,14 @@ const normalizeTicketsData = (data: unknown): TicketsListData => {
     }
 }
 
-const getTicketsFromInternalApi = async (
+const getTicketsFromClientApi = async (
     params: Record<string, string | string[] | undefined>,
 ): Promise<TicketsListData> => {
-    const headerStore = await headers()
-    const host =
-        headerStore.get('x-forwarded-host') || headerStore.get('host') || ''
-    const protocol =
-        headerStore.get('x-forwarded-proto') ||
-        (process.env.NODE_ENV === 'development' ? 'http' : 'https')
-
-    if (!host) {
-        return { list: [], total: 0, statusList: [], departmentList: [], priorityList: [] }
     }
 
     const pageIndex = toNumber(params.pageIndex, 1) || 1
     const pageSize = toNumber(params.pageSize, 10) || 10
-    const url = new URL('/api/client/tickets', 'http://localhost')
+    const url = new URL('/api/client/tickets', window.location.origin)
 
     if (typeof params.query === 'string' && params.query.trim()) {
         url.searchParams.set('search', params.query.trim())
@@ -183,8 +176,7 @@ const getTicketsFromInternalApi = async (
     url.searchParams.set('limit', String(pageSize))
 
     try {
-        const { internalServerFetch } = await import('@/utils/serverFetch')
-        const response = await internalServerFetch(url.pathname + url.search, undefined, {
+        const response = await fetch(url.pathname + url.search + (undefined && undefined !== "undefined" ? "?" + new URLSearchParams(undefined as any).toString() : ""), {
             method: 'GET',
             cache: 'no-store',
         })
@@ -201,9 +193,23 @@ const getTicketsFromInternalApi = async (
     }
 }
 
-export default async function Page({ searchParams }: PageProps) {
-    const params = await searchParams
-    const data = await getTicketsFromInternalApi(params)
+export default function Page() {
+    const searchParams = useSearchParams()
+    
+    
+    const [data, setData] = useState<TicketsListData>({ list: [], total: 0 } as unknown as TicketsListData)
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true)
+            
+            const result = await getTicketsFromClientApi(params)
+            setData(result)
+            setLoading(false)
+        }
+        fetchData()
+    }, [searchParams])
 
     return (
         <TicketListProvider

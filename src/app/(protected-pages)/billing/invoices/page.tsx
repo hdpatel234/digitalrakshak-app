@@ -1,3 +1,4 @@
+"use client"
 import Container from '@/components/shared/Container'
 import AdaptiveCard from '@/components/shared/AdaptiveCard'
 import InvoiceListTable from './_components/InvoiceListTable'
@@ -5,7 +6,8 @@ import InvoiceListTableTools from './_components/InvoiceListTableTools'
 import InvoiceListProvider from './_components/InvoiceListProvider'
 import type { PageProps } from '@/@types/common'
 import type { Invoice, StatusOption } from './types'
-import { headers } from 'next/headers'
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 type InvoicesApiResponse = {
     status?: boolean
@@ -91,23 +93,14 @@ const normalizeInvoicesData = (data: unknown): InvoicesListData => {
     }
 }
 
-const getInvoicesFromInternalApi = async (
+const getInvoicesFromClientApi = async (
     params: Record<string, string | string[] | undefined>,
 ): Promise<InvoicesListData> => {
-    const headerStore = await headers()
-    const host =
-        headerStore.get('x-forwarded-host') || headerStore.get('host') || ''
-    const protocol =
-        headerStore.get('x-forwarded-proto') ||
-        (process.env.NODE_ENV === 'development' ? 'http' : 'https')
-
-    if (!host) {
-        return { list: [], total: 0, statusList: [] }
     }
 
     const pageIndex = Number(params.pageIndex) || 1
     const pageSize = Number(params.pageSize) || 10
-    const url = new URL('/api/client/invoices', 'http://localhost')
+    const url = new URL('/api/client/invoices', window.location.origin)
 
     if (typeof params.search === 'string' && params.search.trim()) {
         url.searchParams.set('search', params.search.trim())
@@ -133,8 +126,7 @@ const getInvoicesFromInternalApi = async (
     url.searchParams.set('limit', String(pageSize))
 
     try {
-        const { internalServerFetch } = await import('@/utils/serverFetch')
-        const response = await internalServerFetch('/api/client/invoices' + url.search, undefined, {
+        const response = await fetch('/api/client/invoices' + url.search + (undefined && undefined !== "undefined" ? "?" + new URLSearchParams(undefined as any).toString() : ""), {
             method: 'GET',
             cache: 'no-store',
         })
@@ -155,9 +147,23 @@ const getInvoicesFromInternalApi = async (
     }
 }
 
-export default async function Page({ searchParams }: PageProps) {
-    const params = await searchParams
-    const data = await getInvoicesFromInternalApi(params)
+export default function Page() {
+    const searchParams = useSearchParams()
+    
+    
+    const [data, setData] = useState<InvoicesListData>({ list: [], total: 0 } as unknown as InvoicesListData)
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true)
+            
+            const result = await getInvoicesFromClientApi(params)
+            setData(result)
+            setLoading(false)
+        }
+        fetchData()
+    }, [searchParams])
 
     return (
         <InvoiceListProvider

@@ -1,8 +1,10 @@
+"use client"
 import CustomerListProvider from './_components/CustomerListProvider'
 import type { PageProps } from '@/@types/common'
 import ClientContent from './_components/ClientContent'
 import type { Customer, StatusOption } from './types'
-import { headers } from 'next/headers'
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 type CandidateListApiResponse = {
     status?: boolean
@@ -219,7 +221,7 @@ const normalizeCandidateListData = (
     }
 }
 
-const getCandidatesFromInternalApi = async (
+const getCandidatesFromClientApi = async (
     params: Record<string, string | string[] | undefined>,
 ): Promise<CandidateListData> => {
     const pageIndex = toNumber(params.pageIndex, 1) || 1
@@ -234,8 +236,7 @@ const getCandidatesFromInternalApi = async (
     }
 
     try {
-        const { internalServerFetch } = await import('@/utils/serverFetch')
-        const response = await internalServerFetch('/api/client/candidates', queryParams, {
+        const response = await fetch('/api/client/candidates' + (queryParams && queryParams !== "undefined" ? "?" + new URLSearchParams(queryParams as any).toString() : ""), {
             method: 'GET',
             cache: 'no-store',
         })
@@ -270,12 +271,23 @@ const getCandidatesFromInternalApi = async (
     }
 }
 
-export default async function Page({ searchParams }: PageProps) {
-    const params = await searchParams
-    const data = await getCandidatesFromInternalApi(params)
+export default function Page() {
+    const searchParams = useSearchParams()
+    
+    
+    const [data, setData] = useState<CandidateListData>({ list: [], total: 0 } as unknown as CandidateListData)
+    const [loading, setLoading] = useState(true)
 
-    console.log('data', data)
-
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true)
+            
+            const result = await getCandidatesFromClientApi(params)
+            setData(result)
+            setLoading(false)
+        }
+        fetchData()
+    }, [searchParams])
 
     return (
         <CustomerListProvider customerList={data.list}>

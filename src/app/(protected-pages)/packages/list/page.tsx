@@ -1,7 +1,9 @@
+"use client"
 import Container from '@/components/shared/Container'
 import AdaptiveCard from '@/components/shared/AdaptiveCard'
 import Button from '@/components/ui/Button'
-import { headers } from 'next/headers'
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import * as TablerIcons from 'react-icons/tb'
 import { TbLayersLinked, TbUsers, TbPlus } from 'react-icons/tb'
@@ -84,23 +86,12 @@ const normalizePackagesData = (data: unknown): PackagesListData => {
     }
 }
 
-const getPackagesFromInternalApi = async (
+const getPackagesFromClientApi = async (
     params: Record<string, string | string[] | undefined>,
 ): Promise<PackagesListData> => {
-    const headerStore = await headers()
-    const host =
-        headerStore.get('x-forwarded-host') || headerStore.get('host') || ''
-    const protocol =
-        headerStore.get('x-forwarded-proto') ||
-        (process.env.NODE_ENV === 'development' ? 'http' : 'https')
-
-    if (!host) {
-        return { list: [], total: 0 }
-    }
-
     const pageIndex = toNumber(params.pageIndex, 1) || 1
     const pageSize = toNumber(params.pageSize, 100) || 100
-    const url = new URL('/api/client/packages', 'http://localhost')
+    const url = new URL('/api/client/packages', window.location.origin)
 
     Object.entries(params).forEach(([key, value]) => {
         if (
@@ -133,8 +124,7 @@ const getPackagesFromInternalApi = async (
     }
 
     try {
-        const { internalServerFetch } = await import('@/utils/serverFetch')
-        const response = await internalServerFetch(url.pathname + url.search, undefined, {
+        const response = await fetch(url.pathname + url.search, {
             method: 'GET',
             cache: 'no-store',
         })
@@ -151,9 +141,23 @@ const getPackagesFromInternalApi = async (
     }
 }
 
-export default async function Page({ searchParams }: PageProps) {
-    const params = await searchParams
-    const data = await getPackagesFromInternalApi(params)
+export default function Page() {
+    const searchParams = useSearchParams()
+    
+    const [data, setData] = useState<PackagesListData>({ list: [], total: 0 })
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchPackages = async () => {
+            setLoading(true)
+            
+            const params = Object.fromEntries(searchParams.entries())
+            const result = await getPackagesFromClientApi(params)
+            setData(result)
+            setLoading(false)
+        }
+        fetchPackages()
+    }, [searchParams])
 
     return (
         <Container>
