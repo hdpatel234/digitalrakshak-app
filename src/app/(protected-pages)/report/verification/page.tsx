@@ -26,14 +26,9 @@ async function getVerificationReportData(): Promise<VerificationReportData | nul
         return null
     }
 
-    const url = new URL('/api/client/reports/verification', 'http://localhost')
-    
     try {
-        const { internalServerFetch } = await import('@/utils/serverFetch')
-        const response = await internalServerFetch(url.pathname + url.search, undefined, {
-            method: 'GET',
-            cache: 'no-store',
-        })
+        const { GET } = await import('@/app/api/client/reports/verification/route')
+        const response = await GET()
         const payload = await response.json()
         if (payload?.status) {
             return payload.data

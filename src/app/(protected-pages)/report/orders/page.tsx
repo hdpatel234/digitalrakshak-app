@@ -19,14 +19,9 @@ async function getOrderReportData(): Promise<OrderReportData | null> {
         return null
     }
 
-    const url = new URL('/api/client/reports/orders', 'http://localhost')
-    
     try {
-        const { internalServerFetch } = await import('@/utils/serverFetch')
-        const response = await internalServerFetch(url.pathname + url.search, undefined, {
-            method: 'GET',
-            cache: 'no-store',
-        })
+        const { GET } = await import('@/app/api/client/reports/orders/route')
+        const response = await GET()
         const payload = await response.json()
         if (payload?.status) {
             return payload.data
