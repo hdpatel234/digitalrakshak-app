@@ -241,7 +241,6 @@ const mapSortKey = (value: string) => {
 const getOrdersFromClientApi = async (
     params: Record<string, string | string[] | undefined>,
 ): Promise<OrdersListData> => {
-    }
 
     const pageIndex = toNumber(params.pageIndex, 1) || 1
     const pageSize = toNumber(params.pageSize, 10) || 10
@@ -330,7 +329,7 @@ const getOrdersFromClientApi = async (
     url.searchParams.set('limit', String(pageSize))
 
     try {
-        const response = await fetch('/api/client/orders' + url.search + (undefined && undefined !== "undefined" ? "?" + new URLSearchParams(undefined as any).toString() : ""), {
+        const response = await fetch('/api/client/orders' + url.search, {
             method: 'GET',
             cache: 'no-store',
         })
@@ -354,8 +353,7 @@ const getOrdersFromClientApi = async (
 
 export default function Page() {
     const searchParams = useSearchParams()
-    
-    
+    const params = Object.fromEntries(searchParams.entries())
     const [data, setData] = useState<OrdersListData>({ list: [], total: 0 } as unknown as OrdersListData)
     const [loading, setLoading] = useState(true)
 

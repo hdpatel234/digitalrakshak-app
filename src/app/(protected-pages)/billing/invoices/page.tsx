@@ -96,7 +96,6 @@ const normalizeInvoicesData = (data: unknown): InvoicesListData => {
 const getInvoicesFromClientApi = async (
     params: Record<string, string | string[] | undefined>,
 ): Promise<InvoicesListData> => {
-    }
 
     const pageIndex = Number(params.pageIndex) || 1
     const pageSize = Number(params.pageSize) || 10
@@ -126,7 +125,7 @@ const getInvoicesFromClientApi = async (
     url.searchParams.set('limit', String(pageSize))
 
     try {
-        const response = await fetch('/api/client/invoices' + url.search + (undefined && undefined !== "undefined" ? "?" + new URLSearchParams(undefined as any).toString() : ""), {
+        const response = await fetch('/api/client/invoices' + url.search, {
             method: 'GET',
             cache: 'no-store',
         })
@@ -149,7 +148,7 @@ const getInvoicesFromClientApi = async (
 
 export default function Page() {
     const searchParams = useSearchParams()
-    
+    const params = Object.fromEntries(searchParams.entries())
     
     const [data, setData] = useState<InvoicesListData>({ list: [], total: 0 } as unknown as InvoicesListData)
     const [loading, setLoading] = useState(true)

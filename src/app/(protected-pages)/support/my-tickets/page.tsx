@@ -142,7 +142,6 @@ const normalizeTicketsData = (data: unknown): TicketsListData => {
 const getTicketsFromClientApi = async (
     params: Record<string, string | string[] | undefined>,
 ): Promise<TicketsListData> => {
-    }
 
     const pageIndex = toNumber(params.pageIndex, 1) || 1
     const pageSize = toNumber(params.pageSize, 10) || 10
@@ -176,7 +175,7 @@ const getTicketsFromClientApi = async (
     url.searchParams.set('limit', String(pageSize))
 
     try {
-        const response = await fetch(url.pathname + url.search + (undefined && undefined !== "undefined" ? "?" + new URLSearchParams(undefined as any).toString() : ""), {
+        const response = await fetch(url.pathname + url.search, {
             method: 'GET',
             cache: 'no-store',
         })
@@ -195,7 +194,7 @@ const getTicketsFromClientApi = async (
 
 export default function Page() {
     const searchParams = useSearchParams()
-    
+    const params = Object.fromEntries(searchParams.entries())
     
     const [data, setData] = useState<TicketsListData>({ list: [], total: 0 } as unknown as TicketsListData)
     const [loading, setLoading] = useState(true)

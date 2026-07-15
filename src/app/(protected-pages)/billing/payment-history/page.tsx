@@ -113,7 +113,6 @@ const normalizeTransactionsData = (data: unknown): TransactionsListData => {
 const getTransactionsFromClientApi = async (
     params: Record<string, string | string[] | undefined>,
 ): Promise<TransactionsListData> => {
-    }
 
     const pageIndex = Number(params.pageIndex) || 1
     const pageSize = Number(params.pageSize) || 10
