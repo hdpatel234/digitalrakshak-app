@@ -3,13 +3,39 @@
 import React from 'react';
 import Card from '@/components/ui/Card';
 import Chart from '@/components/shared/Chart';
+import { Skeleton } from '@/components/ui';
 import { useDashboardData } from './DashboardProvider';
 
 const ServiceUsageChart = () => {
     const { data, loading } = useDashboardData();
 
     if (loading || !data?.service_usage) {
-        return <Card className="h-[400px] animate-pulse bg-gray-100 dark:bg-gray-800"></Card>;
+        return (
+            <Card className="h-full flex flex-col p-6">
+                <div className="pb-4 border-b border-gray-100 dark:border-gray-800">
+                    <Skeleton className="w-48 h-6 mb-1" />
+                    <Skeleton className="w-64 h-4 mt-1" />
+                </div>
+                
+                <div className="flex-1 flex flex-col md:flex-row items-center justify-center pt-8 pb-4">
+                    <div className="flex justify-center w-full md:w-1/2 h-[260px]">
+                        <Skeleton variant="circle" className="w-[260px] h-[260px]" />
+                    </div>
+                    
+                    <div className="flex flex-col space-y-6 w-full md:w-1/2 mt-8 md:mt-0 md:pl-12">
+                        {[...Array(6)].map((_, i) => (
+                            <div key={i} className="flex items-center text-sm w-full">
+                                <Skeleton variant="circle" className="w-3 h-3 mr-4 flex-shrink-0" />
+                                <div className="flex justify-between w-full">
+                                    <Skeleton className="w-1/2 h-5" />
+                                    <Skeleton className="w-12 h-5 ml-4" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </Card>
+        );
     }
 
     const { service_usage } = data;

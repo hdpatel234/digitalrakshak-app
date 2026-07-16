@@ -2,6 +2,7 @@
 import React from 'react';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
+import { Skeleton } from '@/components/ui';
 import Chart from '@/components/shared/Chart';
 import { useDashboardData } from './DashboardProvider';
 
@@ -9,7 +10,22 @@ const VerificationTrendChart = () => {
     const { data, loading } = useDashboardData();
 
     if (loading || !data?.verification_trend) {
-        return <Card className="mb-6 h-[400px] animate-pulse bg-gray-100 dark:bg-gray-800"></Card>;
+        return (
+            <Card className="mb-6">
+                <div className="flex justify-between items-start mb-4">
+                    <div>
+                        <Skeleton className="w-32 h-6 mb-1" />
+                        <Skeleton className="w-24 h-4" />
+                    </div>
+                    <div className="flex gap-2">
+                        <Skeleton className="w-12 h-8 rounded-lg" />
+                        <Skeleton className="w-12 h-8 rounded-lg" />
+                        <Skeleton className="w-12 h-8 rounded-lg" />
+                    </div>
+                </div>
+                <Skeleton className="w-full h-[300px]" />
+            </Card>
+        );
     }
 
     const { verification_trend } = data;

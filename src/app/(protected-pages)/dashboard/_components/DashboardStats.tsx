@@ -2,9 +2,20 @@
 import React from 'react';
 import { FiUsers, FiClock, FiCheckCircle, FiShield, FiCreditCard, FiZap, FiArrowUpRight, FiArrowDownRight } from 'react-icons/fi';
 import Card from '@/components/ui/Card';
+import { Skeleton } from '@/components/ui';
 import { useDashboardData } from './DashboardProvider';
 
-const StatCard = ({ title, value, change, changeText, isPositive, isNegative, icon: Icon }) => (
+interface StatCardProps {
+    title: string;
+    value: string | number;
+    change: string;
+    changeText: string;
+    isPositive?: boolean;
+    isNegative?: boolean;
+    icon: React.ElementType;
+}
+
+const StatCard = ({ title, value, change, changeText, isPositive, isNegative, icon: Icon }: StatCardProps) => (
     <Card className="flex flex-col justify-between">
         <div className="flex justify-between items-start mb-4">
             <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-wider uppercase">{title}</h3>
@@ -28,7 +39,25 @@ const DashboardStats = () => {
     const { data, loading } = useDashboardData();
 
     if (loading || !data?.stats) {
-        return <div className="animate-pulse flex space-x-4 mb-6"><div className="flex-1 space-y-4 py-1"><div className="h-24 bg-gray-200 rounded"></div></div></div>;
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                {[...Array(6)].map((_, i) => (
+                    <Card key={i} className="flex flex-col justify-between">
+                        <div className="flex justify-between items-start mb-4">
+                            <Skeleton className="w-24 h-4" />
+                            <Skeleton variant="circle" className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <Skeleton className="w-16 h-8 mb-2" />
+                            <div className="flex items-center">
+                                <Skeleton className="w-8 h-4 mr-2" />
+                                <Skeleton className="w-24 h-4" />
+                            </div>
+                        </div>
+                    </Card>
+                ))}
+            </div>
+        );
     }
 
     const { stats } = data;

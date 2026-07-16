@@ -1,6 +1,7 @@
 'use client'
 import React from 'react';
 import Card from '@/components/ui/Card';
+import { Skeleton } from '@/components/ui';
 import { FiDollarSign, FiActivity, FiClock, FiCalendar } from 'react-icons/fi';
 import { useDashboardData } from './DashboardProvider';
 
@@ -8,7 +9,35 @@ const MonthSpend = () => {
     const { data, loading } = useDashboardData();
 
     if (loading || !data?.month_spend) {
-        return <Card className="h-full relative overflow-hidden flex flex-col p-8 min-h-[300px] animate-pulse bg-gray-100 dark:bg-gray-800"></Card>;
+        return (
+            <Card className="h-full relative overflow-hidden flex flex-col p-8 min-h-[300px]">
+                <div className="z-10 relative mb-4">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <Skeleton className="w-24 h-3 mb-2" />
+                            <Skeleton className="w-48 h-4" />
+                        </div>
+                        <Skeleton className="w-10 h-10 ml-4 shrink-0 rounded-xl" />
+                    </div>
+                </div>
+                
+                <div className="z-10 relative flex-1 flex flex-col justify-between mt-2 pt-4 border-t border-gray-100 dark:border-gray-800/60">
+                    {[...Array(3)].map((_, i) => (
+                        <div key={i} className="flex items-center justify-between py-2 group">
+                            <div className="flex items-center">
+                                <Skeleton className="w-9 h-9 rounded-lg mr-4 shrink-0" />
+                                <div>
+                                    <Skeleton className="w-16 h-3 mb-1.5" />
+                                    <Skeleton className="w-20 h-3" />
+                                </div>
+                            </div>
+                            <Skeleton className="w-20 h-6" />
+                        </div>
+                    ))}
+                </div>
+                <div className="absolute -bottom-20 -right-20 w-72 h-72 bg-indigo-50/40 dark:bg-indigo-900/10 rounded-full pointer-events-none" />
+            </Card>
+        );
     }
 
     const { month_spend } = data;

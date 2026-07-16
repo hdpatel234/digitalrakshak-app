@@ -4,6 +4,7 @@ import { FiArrowRight, FiStar } from 'react-icons/fi';
 import Card from '@/components/ui/Card';
 import Avatar from '@/components/ui/Avatar';
 import Badge from '@/components/ui/Badge';
+import { Skeleton } from '@/components/ui';
 import { useDashboardData } from './DashboardProvider';
 import Link from 'next/link';
 
@@ -39,7 +40,34 @@ const LatestCandidates = () => {
     const { data, loading } = useDashboardData();
 
     if (loading || !data?.latest_candidates) {
-        return <Card className="mb-6 h-[400px] flex flex-col p-0 animate-pulse bg-gray-100 dark:bg-gray-800"></Card>;
+        return (
+            <Card className="mb-6 h-full flex flex-col p-0" bodyClass="p-0 flex flex-col h-full">
+                <div className="p-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Skeleton variant="circle" className="w-5 h-5" />
+                        <Skeleton className="w-40 h-6" />
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <Skeleton className="w-24 h-4" />
+                        <Skeleton className="w-16 h-4" />
+                    </div>
+                </div>
+                <div className="px-5 pb-2 flex-1">
+                    {[...Array(5)].map((_, i) => (
+                        <div key={i} className="flex items-center justify-between py-4 border-b border-gray-100 dark:border-gray-800 last:border-0">
+                            <div className="flex items-center gap-4 w-full">
+                                <Skeleton variant="circle" className="w-10 h-10 shrink-0" />
+                                <div className="w-full">
+                                    <Skeleton className="w-3/4 h-5 mb-1.5" />
+                                    <Skeleton className="w-1/2 h-4" />
+                                </div>
+                            </div>
+                            <Skeleton className="w-20 h-6 rounded-full shrink-0 ml-4" />
+                        </div>
+                    ))}
+                </div>
+            </Card>
+        );
     }
 
     const getStatusColor = (status: string) => {
