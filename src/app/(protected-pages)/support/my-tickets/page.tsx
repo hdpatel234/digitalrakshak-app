@@ -5,6 +5,7 @@ import TicketListTable from './_components/TicketListTable'
 import TicketListActionTools from './_components/TicketListActionTools'
 import TicketListTableTools from './_components/TicketListTableTools'
 import TicketListProvider from './_components/TicketListProvider'
+import Skeleton from '@/components/ui/Skeleton'
 import type { PageProps } from '@/@types/common'
 import type { Ticket, StatusOption, DepartmentOption, PriorityOption } from './_components/types'
 import { useSearchParams } from 'next/navigation'
@@ -225,11 +226,20 @@ export default function Page() {
                             <TicketListActionTools />
                         </div>
                         <TicketListTableTools />
-                        <TicketListTable
-                            ticketListTotal={data.total}
-                            pageIndex={parseInt(params.pageIndex as string) || 1}
-                            pageSize={parseInt(params.pageSize as string) || 10}
-                        />
+                        {loading && data.list.length === 0 ? (
+                            <div className="flex flex-col gap-4 mt-2">
+                                <Skeleton width="100%" height={48} className="rounded-lg" />
+                                {Array.from({ length: 5 }).map((_, index) => (
+                                    <Skeleton key={`skeleton-${index}`} width="100%" height={64} className="rounded-lg" />
+                                ))}
+                            </div>
+                        ) : (
+                            <TicketListTable
+                                ticketListTotal={data.total}
+                                pageIndex={parseInt(params.pageIndex as string) || 1}
+                                pageSize={parseInt(params.pageSize as string) || 10}
+                            />
+                        )}
                     </div>
                 </AdaptiveCard>
             </Container>
