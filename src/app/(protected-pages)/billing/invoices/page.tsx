@@ -4,6 +4,7 @@ import AdaptiveCard from '@/components/shared/AdaptiveCard'
 import InvoiceListTable from './_components/InvoiceListTable'
 import InvoiceListTableTools from './_components/InvoiceListTableTools'
 import InvoiceListProvider from './_components/InvoiceListProvider'
+import Skeleton from '@/components/ui/Skeleton'
 import type { PageProps } from '@/@types/common'
 import type { Invoice, StatusOption } from './types'
 import { useSearchParams } from 'next/navigation'
@@ -176,13 +177,22 @@ export default function Page() {
                             <h3>Invoices</h3>
                         </div>
                         <InvoiceListTableTools />
-                        <InvoiceListTable
-                            invoiceListTotal={data.total}
-                            pageIndex={
-                                parseInt(params.pageIndex as string) || 1
-                            }
-                            pageSize={parseInt(params.pageSize as string) || 10}
-                        />
+                        {loading && data.list.length === 0 ? (
+                            <div className="flex flex-col gap-4 mt-2">
+                                <Skeleton width="100%" height={48} className="rounded-lg" />
+                                {Array.from({ length: 5 }).map((_, index) => (
+                                    <Skeleton key={`skeleton-${index}`} width="100%" height={64} className="rounded-lg" />
+                                ))}
+                            </div>
+                        ) : (
+                            <InvoiceListTable
+                                invoiceListTotal={data.total}
+                                pageIndex={
+                                    parseInt(params.pageIndex as string) || 1
+                                }
+                                pageSize={parseInt(params.pageSize as string) || 10}
+                            />
+                        )}
                     </div>
                 </AdaptiveCard>
             </Container>
