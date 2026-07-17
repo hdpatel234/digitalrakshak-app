@@ -69,7 +69,7 @@ const AddressSection = ({ control, errors, setValue }: AddressSectionProps) => {
     const stateValue = useWatch({ control, name: 'state' })
     const cityValue = useWatch({ control, name: 'city' })
 
-    const { data: countriesData } = useSWR<CountriesApiResponse>(
+    const { data: countriesData, isLoading: isCountriesLoading } = useSWR<CountriesApiResponse>(
         '/api/auth/countries',
         () => apiGetCountries<CountriesApiResponse>(),
         {
@@ -79,7 +79,7 @@ const AddressSection = ({ control, errors, setValue }: AddressSectionProps) => {
         },
     )
 
-    const { data: statesData } = useSWR<LocationApiResponse>(
+    const { data: statesData, isLoading: isStatesLoading } = useSWR<LocationApiResponse>(
         countryValue ? `/api/auth/states?country_id=${countryValue}` : null,
         () => apiGetStates<LocationApiResponse>(countryValue as string),
         {
@@ -89,7 +89,7 @@ const AddressSection = ({ control, errors, setValue }: AddressSectionProps) => {
         },
     )
 
-    const { data: citiesData } = useSWR<LocationApiResponse>(
+    const { data: citiesData, isLoading: isCitiesLoading } = useSWR<LocationApiResponse>(
         stateValue ? `/api/auth/cities?state_id=${stateValue}` : null,
         () => apiGetCities<LocationApiResponse>(stateValue as string),
         {
@@ -197,6 +197,7 @@ const AddressSection = ({ control, errors, setValue }: AddressSectionProps) => {
                                     Option: CountrySelectOption,
                                     Control: CountrySelectControl,
                                 }}
+                                isLoading={isCountriesLoading}
                                 placeholder="Select Country"
                                 value={countryOptions.find(
                                     (option) => option.value === field.value,
@@ -224,6 +225,7 @@ const AddressSection = ({ control, errors, setValue }: AddressSectionProps) => {
                                 options={stateOptions}
                                 placeholder="Select State"
                                 isDisabled={!countryValue}
+                                isLoading={isStatesLoading}
                                 value={stateOptions.find(
                                     (option) => option.value === field.value,
                                 )}
@@ -251,6 +253,7 @@ const AddressSection = ({ control, errors, setValue }: AddressSectionProps) => {
                                 options={cityOptions}
                                 placeholder="Select City"
                                 isDisabled={!stateValue}
+                                isLoading={isCitiesLoading}
                                 value={cityOptions.find(
                                     (option) => option.value === field.value,
                                 )}
