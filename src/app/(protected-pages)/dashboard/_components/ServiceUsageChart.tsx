@@ -51,8 +51,8 @@ const ServiceUsageChart = () => {
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Total volume split across gateway services.</p>
             </div>
             
-            <div className="flex-1 flex flex-col md:flex-row items-center justify-center pt-8 pb-4">
-                <div className="flex justify-center w-full md:w-1/2 h-[260px]">
+            <div className="flex-1 flex flex-col items-center justify-center pt-8 pb-4 overflow-hidden">
+                <div className="flex justify-center w-full h-[260px]">
                     <Chart
                         type="donut"
                         series={series}
@@ -108,18 +108,18 @@ const ServiceUsageChart = () => {
                     />
                 </div>
                 
-                <div className="flex flex-col space-y-6 w-full md:w-1/2 mt-8 md:mt-0 md:pl-12">
+                <div className="grid grid-cols-2 gap-4 w-full mt-8 px-2 md:px-6">
                     {labels.map((label, index) => (
-                        <div key={label} className="flex items-center text-sm">
+                        <div key={label} className="flex items-center text-sm w-full overflow-hidden">
                             <span 
-                                className="w-3 h-3 rounded-full mr-4 flex-shrink-0" 
+                                className="w-3 h-3 rounded-full mr-3 flex-shrink-0" 
                                 style={{ backgroundColor: colors[index] }}
                             />
-                            <div className="flex justify-between w-full">
-                                <span className="text-gray-600 dark:text-gray-400 font-medium whitespace-nowrap">
+                            <div className="flex justify-between w-full overflow-hidden gap-2">
+                                <span className="text-gray-600 dark:text-gray-400 font-medium truncate">
                                     {label}
                                 </span>
-                                <span className="text-gray-800 dark:text-gray-200 font-bold ml-4">
+                                <span className="text-gray-800 dark:text-gray-200 font-bold flex-shrink-0">
                                     {series[index]}%
                                 </span>
                             </div>

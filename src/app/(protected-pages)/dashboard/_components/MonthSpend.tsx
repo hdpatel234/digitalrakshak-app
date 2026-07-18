@@ -11,17 +11,12 @@ const MonthSpend = () => {
     if (loading || !data?.month_spend) {
         return (
             <Card className="h-full relative overflow-hidden flex flex-col p-8 min-h-[300px]">
-                <div className="z-10 relative mb-4">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <Skeleton className="w-24 h-3 mb-2" />
-                            <Skeleton className="w-48 h-4" />
-                        </div>
-                        <Skeleton className="w-10 h-10 ml-4 shrink-0 rounded-xl" />
-                    </div>
+                <div className="z-10 relative pb-4 border-b border-gray-100 dark:border-gray-800/60 mb-2">
+                    <Skeleton className="w-48 h-6 mb-1" />
+                    <Skeleton className="w-64 h-4 mt-1" />
                 </div>
                 
-                <div className="z-10 relative flex-1 flex flex-col justify-between mt-2 pt-4 border-t border-gray-100 dark:border-gray-800/60">
+                <div className="z-10 relative flex-1 flex flex-col justify-between mt-2 pt-4">
                     {[...Array(3)].map((_, i) => (
                         <div key={i} className="flex items-center justify-between py-2 group">
                             <div className="flex items-center">
@@ -47,22 +42,13 @@ const MonthSpend = () => {
     return (
         <Card className="h-full relative overflow-hidden flex flex-col p-8 min-h-[300px]">
             {/* Header */}
-            <div className="z-10 relative mb-4">
-                <div className="flex justify-between items-start">
-                    <div>
-                        <h3 className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-1">Spend Summary</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mt-1">
-                            API usage limits recharged auto
-                        </p>
-                    </div>
-                    <div className="text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 p-2.5 rounded-xl shrink-0 ml-4">
-                        <FiDollarSign className="w-5 h-5 stroke-[2.5]" />
-                    </div>
-                </div>
+            <div className="z-10 relative pb-4 border-b border-gray-100 dark:border-gray-800/60 mb-2">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Spend Summary</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">API usage limits recharged auto</p>
             </div>
             
             {/* List */}
-            <div className="z-10 relative flex-1 flex flex-col justify-between mt-2 pt-4 border-t border-gray-100 dark:border-gray-800/60">
+            <div className="z-10 relative flex-1 flex flex-col justify-between mt-2 pt-4">
                 {/* Weekly */}
                 <div className="flex items-center justify-between py-2 group">
                     <div className="flex items-center">

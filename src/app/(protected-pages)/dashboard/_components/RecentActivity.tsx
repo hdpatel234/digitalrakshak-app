@@ -34,7 +34,7 @@ const RecentActivity = () => {
 
     if (loading || !data?.recent_activities) {
         return (
-            <Card className="mb-6 p-0" bodyClass="p-0">
+            <Card className="p-0 h-full" bodyClass="p-0">
                 <div className="p-5 border-b border-gray-200 dark:border-gray-800">
                     <Skeleton className="w-32 h-6 mb-1" />
                     <Skeleton className="w-48 h-4" />
@@ -84,7 +84,7 @@ const RecentActivity = () => {
     });
 
     return (
-        <Card className="mb-6 p-0" bodyClass="p-0">
+        <Card className="p-0 h-full" bodyClass="p-0">
             <div className="p-5 border-b border-gray-200 dark:border-gray-800">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent activity</h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Live verification events</p>

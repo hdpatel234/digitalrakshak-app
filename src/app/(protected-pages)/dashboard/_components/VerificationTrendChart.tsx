@@ -11,7 +11,7 @@ const VerificationTrendChart = () => {
 
     if (loading || !data?.verification_trend) {
         return (
-            <Card className="mb-6">
+            <Card className="h-full">
                 <div className="flex justify-between items-start mb-4">
                     <div>
                         <Skeleton className="w-32 h-6 mb-1" />
@@ -37,7 +37,7 @@ const VerificationTrendChart = () => {
     ];
 
     return (
-        <Card className="mb-6">
+        <Card className="h-full">
             <div className="flex justify-between items-start mb-4">
                 <div>
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Verification trend</h2>

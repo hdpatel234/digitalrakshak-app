@@ -73,7 +73,7 @@ const ActivePackages = () => {
 
     if (loading || !data?.active_packages) {
         return (
-            <Card className="mb-6 h-full flex flex-col p-0" bodyClass="p-0 flex flex-col h-full">
+            <Card className="h-full flex flex-col p-0" bodyClass="p-0 flex flex-col h-full">
                 <div className="p-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Skeleton variant="circle" className="w-5 h-5" />
@@ -111,7 +111,7 @@ const ActivePackages = () => {
     }));
 
     return (
-        <Card className="mb-6 h-full flex flex-col p-0" bodyClass="p-0 flex flex-col h-full">
+        <Card className="h-full flex flex-col p-0" bodyClass="p-0 flex flex-col h-full">
             <div className="p-5 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <FiStar className="text-blue-500 w-5 h-5" />
