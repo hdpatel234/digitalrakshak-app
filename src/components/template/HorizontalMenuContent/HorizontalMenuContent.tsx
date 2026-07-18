@@ -36,7 +36,7 @@ const HorizontalMenuContent = (props: HorizontalMenuContentProps) => {
     const { activedRoute } = useMenuActive(navigationTree, routeKey)
 
     return (
-        <div className="gap-1 hidden lg:flex">
+        <div className="hidden lg:flex items-center gap-0.5 overflow-x-auto scrollbar-hide max-w-full flex-nowrap">
             {navigationTree.map((nav) => (
                 <AuthorityCheck
                     key={nav.key}
